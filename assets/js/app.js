@@ -128,6 +128,109 @@
     }
     if (productGrid) filterProducts();
 
+    // Video hero experience & 8-phrase headline rotation loop changing every 2 seconds
+    const scrubSection = qs('[data-hero-scrub-section]');
+    const scrubVideo = qs('[data-hero-scrub-video]', scrubSection || document);
+    const scrubPoster = qs('[data-hero-scrub-poster]', scrubSection || document);
+    const scrubTitle = qs('[data-scrub-title]', scrubSection || document);
+    const scrubSteps = qsa('[data-scrub-step]', scrubSection || document);
+    const scrubIndicator = qs('[data-scrub-indicator]', scrubSection || document);
+
+    // 8-Phrase rotating headline loop changing every 1 second without starting delay
+    if (scrubTitle) {
+        const headlines = [
+            "PURE FOOD. BETTER EVERYDAY.",
+            "ORGANIC GOODNESS. PURE HARVEST.",
+            "SOULFUL WELLNESS. NATURALLY CRAFTED.",
+            "HANDPICKED INGREDIENTS. HONEST TASTE.",
+            "TRADITIONAL RECIPES. MODERN LIVING.",
+            "NO CHEMICALS. 100% AUTHENTIC.",
+            "SUSTAINABLE LIVING. BETTER HEALTH.",
+            "FROM NATURE TO YOUR TABLE."
+        ];
+        let headlineIndex = 0;
+
+        const rotateHeadline = () => {
+            scrubTitle.style.opacity = '0';
+            scrubTitle.style.transform = 'translateY(10px)';
+            setTimeout(() => {
+                headlineIndex = (headlineIndex + 1) % headlines.length;
+                scrubTitle.textContent = headlines[headlineIndex];
+                scrubTitle.style.opacity = '1';
+                scrubTitle.style.transform = 'translateY(0)';
+            }, 150);
+        };
+
+        setInterval(rotateHeadline, 1000);
+    }
+
+    if (scrubSection && scrubVideo) {
+        let isPlayingCompleted = false;
+        let isPlaybackStarted = false;
+
+        scrubVideo.pause();
+        scrubVideo.currentTime = 0;
+
+        const unlockPageScroll = () => {
+            isPlayingCompleted = true;
+            document.body.classList.remove('hero-video-locked');
+            if (scrubIndicator) scrubIndicator.style.opacity = '0';
+        };
+
+        const startNonstopPlayback = () => {
+            if (isPlaybackStarted) return;
+            isPlaybackStarted = true;
+
+            document.body.classList.add('hero-video-locked');
+
+            if (scrubPoster) {
+                scrubPoster.style.opacity = '0';
+            }
+            if (scrubIndicator) {
+                scrubIndicator.style.opacity = '0';
+            }
+
+            scrubVideo.currentTime = 0;
+            scrubVideo.playbackRate = 0.85;
+            scrubVideo.play().catch(() => {
+                unlockPageScroll();
+            });
+        };
+
+        scrubVideo.addEventListener('ended', unlockPageScroll);
+        scrubVideo.addEventListener('timeupdate', () => {
+            if (scrubVideo.duration && scrubVideo.currentTime >= scrubVideo.duration - 0.15) {
+                unlockPageScroll();
+            }
+        });
+
+        const triggerOnFirstScroll = () => {
+            if (isPlayingCompleted || isPlaybackStarted) return;
+            const rect = scrubSection.getBoundingClientRect();
+            if (rect.top <= window.innerHeight * 0.85 && rect.bottom >= 0) {
+                startNonstopPlayback();
+            }
+        };
+
+        if (reduceMotion) {
+            scrubSteps.forEach(step => step.classList.add('is-active'));
+            if (scrubPoster) scrubPoster.style.opacity = '1';
+            unlockPageScroll();
+        } else {
+            window.addEventListener('scroll', triggerOnFirstScroll, { passive: true });
+            window.addEventListener('wheel', (e) => {
+                if (!isPlayingCompleted && !isPlaybackStarted) {
+                    const rect = scrubSection.getBoundingClientRect();
+                    if (rect.top <= 100) {
+                        startNonstopPlayback();
+                    }
+                }
+            }, { passive: true });
+            window.addEventListener('touchstart', triggerOnFirstScroll, { passive: true });
+            triggerOnFirstScroll();
+        }
+    }
+
     // Full-image hero carousel with autoplay, keyboard controls and touch swiping.
     const heroSlider = qs('[data-hero-slider]');
     const heroTrack = qs('[data-hero-track]', heroSlider || document);

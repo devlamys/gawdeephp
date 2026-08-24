@@ -13,32 +13,19 @@ $isReferenceProductPage = str_contains($bodyClass, 'product-page--reference');
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#08652f">
+    <meta name="theme-color" content="#063E2B">
     <meta name="description" content="<?= htmlspecialchars($pageDescription) ?>">
     <meta name="gawdee-csrf" content="<?= htmlspecialchars(gawdee_csrf_token()) ?>">
     <title><?= htmlspecialchars($pageTitle) ?></title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Lora:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400..700;1,9..40,400..700&family=Lora:ital,wght@0,400..700;1,400..700&family=Manrope:wght@400..800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
     <link rel="stylesheet" href="assets/css/style.css">
     <script>document.documentElement.classList.add('js');</script>
 </head>
 <body class="<?= htmlspecialchars($bodyClass) ?>">
 <a class="skip-link" href="#main-content">Skip to content</a>
-
-<div class="promo-strip">
-    <?php if ($isReferenceProductPage): ?>
-    <div class="product-reference-promo">
-        <span><i class="ph ph-truck"></i> Free Shipping on Orders Above ₹<?= number_format((int) gawdee_setting('free_shipping_threshold', '999')) ?></span>
-        <span><i class="ph ph-seal-check"></i> 100% Natural &amp; Pure</span>
-        <span><i class="ph ph-plant"></i> Made with Love in India</span>
-    </div>
-    <?php else: ?>
-    <div class="promo-strip__offer"><span>🇮🇳</span> <?= htmlspecialchars(gawdee_setting('promo_text', 'Independence Day Specials — Flat 10% OFF on all orders | Use Code: FREEDOM10')) ?></div>
-    <div class="promo-strip__shipping"><i class="ph ph-truck" aria-hidden="true"></i> Free shipping on orders above ₹<?= number_format((int) gawdee_setting('free_shipping_threshold', '999')) ?></div>
-    <?php endif; ?>
-</div>
 
 <header class="commerce-header" data-header>
     <div class="container commerce-header__main">
@@ -72,7 +59,7 @@ $isReferenceProductPage = str_contains($bodyClass, 'product-page--reference');
 
     <div class="container commerce-nav-shell">
         <a class="category-menu-button" href="products.php" aria-label="Browse all categories">
-            <i class="ph ph-list" aria-hidden="true"></i> All Categories
+            <i class="ph ph-squares-four" aria-hidden="true"></i> All Categories
         </a>
         <nav class="commerce-nav" aria-label="Product categories">
             <a href="products.php?category=ghee" data-nav-filter="ghee">Ghee</a>

@@ -250,6 +250,20 @@ SQL);
             admin_redirect('settings', 'Homepage offer settings saved.');
         }
 
+        if ($action === 'save_hero_scrub') {
+            gawdee_set_setting('hero_scrub_enabled', isset($_POST['hero_scrub_enabled']) ? '1' : '0');
+            gawdee_set_setting('hero_scrub_title', trim((string) ($_POST['hero_scrub_title'] ?? 'PURE FOOD. BETTER EVERYDAY.')));
+            gawdee_set_setting('hero_scrub_subtitle', trim((string) ($_POST['hero_scrub_subtitle'] ?? 'Thoughtfully sourced natural goodness for everyday wellness.')));
+
+            $videoPath = admin_upload_media('hero_scrub_video', 'hero', trim((string) ($_POST['existing_hero_scrub_video'] ?? '')), ['video']);
+            gawdee_set_setting('hero_scrub_video', $videoPath);
+
+            $posterPath = admin_upload_media('hero_scrub_poster', 'hero', trim((string) ($_POST['existing_hero_scrub_poster'] ?? '')), ['image']);
+            gawdee_set_setting('hero_scrub_poster', $posterPath);
+
+            admin_redirect('cms', 'Hero scrub video settings saved successfully.');
+        }
+
         if ($action === 'save_integrations') {
             foreach (['razorpay_key_id', 'dtdc_booking_endpoint', 'dtdc_tracking_endpoint', 'dtdc_customer_code', 'dtdc_service_type', 'dtdc_pickup_pincode', 'dtdc_auth_header', 'dtdc_auth_prefix', 'dtdc_payload_template'] as $key) {
                 gawdee_set_setting($key, trim((string) ($_POST[$key] ?? '')));
