@@ -354,8 +354,9 @@ function gawdee_set_manual_shipment(int $orderId, string $courierName, string $t
 function gawdee_expire_stale_payment_orders(int $minutes = 45): int
 {
     $minutes = min(1440, max(15, $minutes));
-    $statement = gawdee_db()->prepare("SELECT id FROM orders WHERE payment_method='razorpay' AND payment_status IN ('initializing','pending') AND created_at <= datetime('now', ?)");
-    $statement->execute(['-' . $minutes . ' minutes']);
+    $cutoff = date('Y-m-d H:i:s', strtotime("-{$minutes} minutes"));
+    $statement = gawdee_db()->prepare("SELECT id FROM orders WHERE payment_method='razorpay' AND payment_status IN ('initializing','pending') AND created_at <= ?");
+    $statement->execute([$cutoff]);
     $expired = 0;
     foreach ($statement->fetchAll() as $row) {
         $orderId = (int) $row['id'];
