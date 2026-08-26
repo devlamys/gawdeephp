@@ -16,16 +16,10 @@ $categoryFilters = [
     'wellness' => ['Wellness', 'ph-leaf'],
 ];
 $activeCategory = array_key_exists((string) ($_GET['category'] ?? ''), $categoryFilters) ? (string) $_GET['category'] : 'all';
+$hideCommerceNav = true;
 require __DIR__ . '/includes/header.php';
 ?>
 
-<section class="catalog-header reveal reveal--scale">
-    <div class="container">
-        <span class="eyebrow"><i class="ph ph-storefront"></i> Gawdee Collection</span>
-        <h1>The Complete<br><em>Gawdee Pantry.</em></h1>
-        <p>Pure, traditional ingredients carefully made for everyday family nourishment and wellness.</p>
-    </div>
-</section>
 
 <section class="catalog-shell section" id="product-catalog">
     <div class="container">

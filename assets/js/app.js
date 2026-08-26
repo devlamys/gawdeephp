@@ -136,98 +136,138 @@
     const scrubSteps = qsa('[data-scrub-step]', scrubSection || document);
     const scrubIndicator = qs('[data-scrub-indicator]', scrubSection || document);
 
-    // 8-Phrase rotating headline loop changing every 1 second without starting delay
-    if (scrubTitle) {
-        const headlines = [
-            "PURE FOOD. BETTER EVERYDAY.",
-            "ORGANIC GOODNESS. PURE HARVEST.",
-            "SOULFUL WELLNESS. NATURALLY CRAFTED.",
-            "HANDPICKED INGREDIENTS. HONEST TASTE.",
-            "TRADITIONAL RECIPES. MODERN LIVING.",
-            "NO CHEMICALS. 100% AUTHENTIC.",
-            "SUSTAINABLE LIVING. BETTER HEALTH.",
-            "FROM NATURE TO YOUR TABLE."
-        ];
-        let headlineIndex = 0;
-
-        const rotateHeadline = () => {
-            scrubTitle.style.opacity = '0';
-            scrubTitle.style.transform = 'translateY(10px)';
-            setTimeout(() => {
-                headlineIndex = (headlineIndex + 1) % headlines.length;
-                scrubTitle.textContent = headlines[headlineIndex];
-                scrubTitle.style.opacity = '1';
-                scrubTitle.style.transform = 'translateY(0)';
-            }, 150);
-        };
-
-        setInterval(rotateHeadline, 1000);
-    }
-
-    if (scrubSection && scrubVideo) {
-        let isPlayingCompleted = false;
-        let isPlaybackStarted = false;
-
-        scrubVideo.pause();
-        scrubVideo.currentTime = 0;
-
-        const unlockPageScroll = () => {
-            isPlayingCompleted = true;
-            document.body.classList.remove('hero-video-locked');
-            if (scrubIndicator) scrubIndicator.style.opacity = '0';
-        };
-
-        const startNonstopPlayback = () => {
-            if (isPlaybackStarted) return;
-            isPlaybackStarted = true;
-
-            document.body.classList.add('hero-video-locked');
-
-            if (scrubPoster) {
-                scrubPoster.style.opacity = '0';
+    // Hero banner 2 dynamic video slides & headlines player
+    if (scrubSection) {
+        let heroSlides = [];
+        try {
+            if (scrubSection.dataset.heroSlides) {
+                heroSlides = JSON.parse(scrubSection.dataset.heroSlides);
             }
-            if (scrubIndicator) {
-                scrubIndicator.style.opacity = '0';
+        } catch (e) {
+            heroSlides = [];
+        }
+
+        if (Array.isArray(heroSlides) && heroSlides.length > 0) {
+            let activeSlideIndex = 0;
+            let slideTimer = null;
+            let fadeTimer = null;
+
+            const scrubSticky = qs('.hero-scrub-sticky', scrubSection);
+            let videoA = qs('[data-hero-scrub-video]', scrubSection);
+            let videoB = qs('[data-hero-scrub-video-next]', scrubSection);
+
+            if (!videoB && scrubSticky) {
+                videoB = document.createElement('video');
+                videoB.className = 'hero-scrub-video hero-scrub-video--next';
+                videoB.setAttribute('data-hero-scrub-video-next', '');
+                videoB.muted = true;
+                videoB.playsInline = true;
+                videoB.preload = 'auto';
+                scrubSticky.insertBefore(videoB, scrubSection.querySelector('.hero-scrub-overlay'));
             }
 
-            scrubVideo.currentTime = 0;
-            scrubVideo.playbackRate = 0.85;
-            scrubVideo.play().catch(() => {
-                unlockPageScroll();
-            });
-        };
+            let activeVideoEl = videoA;
+            let nextVideoEl = videoB;
 
-        scrubVideo.addEventListener('ended', unlockPageScroll);
-        scrubVideo.addEventListener('timeupdate', () => {
-            if (scrubVideo.duration && scrubVideo.currentTime >= scrubVideo.duration - 0.15) {
-                unlockPageScroll();
-            }
-        });
+            const playSlideIndex = (index) => {
+                activeSlideIndex = index % heroSlides.length;
+                const slide = heroSlides[activeSlideIndex];
+                const nextSlide = heroSlides[(activeSlideIndex + 1) % heroSlides.length];
+                const isMobile = window.innerWidth <= 700;
 
-        const triggerOnFirstScroll = () => {
-            if (isPlayingCompleted || isPlaybackStarted) return;
-            const rect = scrubSection.getBoundingClientRect();
-            if (rect.top <= window.innerHeight * 0.85 && rect.bottom >= 0) {
-                startNonstopPlayback();
-            }
-        };
+                const currentVideoUrl = isMobile && slide.mobile_video ? slide.mobile_video : (slide.desktop_video || slide.mobile_video);
+                const nextVideoUrl = isMobile && nextSlide.mobile_video ? nextSlide.mobile_video : (nextSlide.desktop_video || nextSlide.mobile_video);
 
-        if (reduceMotion) {
-            scrubSteps.forEach(step => step.classList.add('is-active'));
-            if (scrubPoster) scrubPoster.style.opacity = '1';
-            unlockPageScroll();
-        } else {
-            window.addEventListener('scroll', triggerOnFirstScroll, { passive: true });
-            window.addEventListener('wheel', (e) => {
-                if (!isPlayingCompleted && !isPlaybackStarted) {
-                    const rect = scrubSection.getBoundingClientRect();
-                    if (rect.top <= 100) {
-                        startNonstopPlayback();
-                    }
+                if (scrubTitle) {
+                    scrubTitle.style.opacity = '0';
+                    scrubTitle.style.transform = 'translateY(10px)';
+                    setTimeout(() => {
+                        scrubTitle.textContent = slide.headline || slide.title || "PURE FOOD. BETTER EVERYDAY.";
+                        scrubTitle.style.opacity = '1';
+                        scrubTitle.style.transform = 'translateY(0)';
+                    }, 150);
                 }
-            }, { passive: true });
-            window.addEventListener('touchstart', triggerOnFirstScroll, { passive: true });
-            triggerOnFirstScroll();
+
+                if (scrubPoster) scrubPoster.style.opacity = '0';
+                if (scrubIndicator) scrubIndicator.style.opacity = '0';
+
+                // Play current video slide on active video element
+                if (activeVideoEl && currentVideoUrl) {
+                    const src = activeVideoEl.getAttribute('src') || activeVideoEl.querySelector('source')?.getAttribute('src');
+                    if (src !== currentVideoUrl) {
+                        activeVideoEl.src = currentVideoUrl;
+                        activeVideoEl.load();
+                    }
+                    activeVideoEl.style.transition = 'opacity 200ms ease-in-out';
+                    activeVideoEl.style.opacity = '1';
+                    activeVideoEl.style.zIndex = '2';
+                    try { activeVideoEl.currentTime = 0; } catch (e) {}
+                    activeVideoEl.play().catch(() => {});
+                }
+
+                const durationMs = Math.max(1, Number(slide.duration || 1)) * 1000;
+                const fadeOffsetMs = Math.min(200, Math.floor(durationMs / 2));
+                const fadeStartTimeMs = Math.max(0, durationMs - fadeOffsetMs);
+
+                clearTimeout(slideTimer);
+                clearTimeout(fadeTimer);
+
+                // 200ms before end of current video: reduce opacity of first video & start next video with reduced opacity
+                fadeTimer = setTimeout(() => {
+                    if (activeVideoEl) {
+                        activeVideoEl.style.transition = `opacity ${fadeOffsetMs}ms ease-in-out`;
+                        activeVideoEl.style.opacity = '0.25'; // Reduce opacity at end of first video
+                    }
+
+                    if (nextVideoEl && nextVideoUrl) {
+                        const src = nextVideoEl.getAttribute('src') || nextVideoEl.querySelector('source')?.getAttribute('src');
+                        if (src !== nextVideoUrl) {
+                            nextVideoEl.src = nextVideoUrl;
+                            nextVideoEl.load();
+                        }
+                        nextVideoEl.style.zIndex = '1';
+                        nextVideoEl.style.transition = 'none';
+                        nextVideoEl.style.opacity = '0.25'; // Start next video with reduced opacity
+                        try { nextVideoEl.currentTime = 0; } catch (e) {}
+
+                        const playPromise = nextVideoEl.play();
+                        if (playPromise !== undefined) {
+                            playPromise.then(() => {
+                                requestAnimationFrame(() => {
+                                    nextVideoEl.style.transition = `opacity ${fadeOffsetMs}ms ease-in-out`;
+                                    nextVideoEl.style.opacity = '1'; // Fade up to full opacity
+                                });
+                            }).catch(() => {});
+                        }
+                    }
+                }, fadeStartTimeMs);
+
+                // At end of duration: swap video elements and continue loop
+                slideTimer = setTimeout(() => {
+                    if (activeVideoEl) {
+                        activeVideoEl.style.zIndex = '0';
+                        activeVideoEl.style.opacity = '0';
+                    }
+                    if (nextVideoEl) {
+                        nextVideoEl.style.zIndex = '2';
+                        nextVideoEl.style.opacity = '1';
+                    }
+
+                    // Swap active and next elements for continuous loop
+                    const temp = activeVideoEl;
+                    activeVideoEl = nextVideoEl;
+                    nextVideoEl = temp;
+
+                    playSlideIndex(activeSlideIndex + 1);
+                }, durationMs);
+            };
+
+            if (reduceMotion) {
+                scrubSteps.forEach(step => step.classList.add('is-active'));
+                if (scrubPoster) scrubPoster.style.opacity = '1';
+            } else {
+                playSlideIndex(0);
+            }
         }
     }
 
@@ -424,9 +464,9 @@
         });
     });
 
-    qsa('[data-copy-offer]').forEach(button => {
-        button.addEventListener('click', async () => {
-            const code = button.dataset.copyOffer || '';
+    qsa('[data-copy-offer], [data-copy-coupon]').forEach(button => {
+        button.addEventListener('click', async (e) => {
+            const code = button.dataset.copyCoupon || button.dataset.copyOffer || '';
             if (!code) return;
 
             try {
@@ -447,13 +487,13 @@
                 button.classList.add('is-copied');
                 const label = qs('span', button);
                 if (label) label.innerHTML = '<i class="ph ph-check"></i> Copied';
-                showToast(`Offer code ${code} copied`);
+                showToast(`Coupon ${code} copied to clipboard!`);
                 window.setTimeout(() => {
                     button.classList.remove('is-copied');
                     if (label) label.innerHTML = '<i class="ph ph-copy"></i> Copy code';
                 }, 2200);
             } catch {
-                showToast(`Use code ${code} at checkout`);
+                showToast(`Use coupon code ${code} at checkout`);
             }
         });
     });

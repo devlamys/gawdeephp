@@ -168,7 +168,7 @@ require __DIR__ . '/includes/header.php';
                 </p>
             </form>
 
-            <aside class="checkout-summary reveal">
+            <aside class="checkout-summary">
                 <div class="checkout-summary__top">
                     <span>Order Summary</span>
                     <strong data-checkout-count>0 items</strong>

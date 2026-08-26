@@ -309,6 +309,21 @@ CREATE TABLE IF NOT EXISTS banners (
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+CREATE TABLE IF NOT EXISTS hero_banners_two (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    headline VARCHAR(255) NOT NULL DEFAULT '',
+    desktop_video VARCHAR(255) NOT NULL DEFAULT '',
+    mobile_video VARCHAR(255) NOT NULL DEFAULT '',
+    duration INT NOT NULL DEFAULT 1,
+    link_url VARCHAR(255) NOT NULL DEFAULT '#shop',
+    alt_text VARCHAR(255) NOT NULL DEFAULT '',
+    sort_order INT NOT NULL DEFAULT 0,
+    is_active TINYINT(1) NOT NULL DEFAULT 1,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 CREATE TABLE IF NOT EXISTS cms_sections (
     section_key VARCHAR(191) PRIMARY KEY,
     eyebrow VARCHAR(255) NOT NULL DEFAULT '',
@@ -538,6 +553,21 @@ CREATE TABLE IF NOT EXISTS banners (
     updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS hero_banners_two (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    headline TEXT NOT NULL DEFAULT '',
+    desktop_video TEXT NOT NULL DEFAULT '',
+    mobile_video TEXT NOT NULL DEFAULT '',
+    duration INTEGER NOT NULL DEFAULT 1,
+    link_url TEXT NOT NULL DEFAULT '#shop',
+    alt_text TEXT NOT NULL DEFAULT '',
+    sort_order INTEGER NOT NULL DEFAULT 0,
+    is_active INTEGER NOT NULL DEFAULT 1,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE IF NOT EXISTS cms_sections (
     section_key TEXT PRIMARY KEY,
     eyebrow TEXT NOT NULL DEFAULT '',
@@ -731,6 +761,7 @@ SQL);
         'video_url' => "TEXT NOT NULL DEFAULT ''",
         'button_label' => "TEXT NOT NULL DEFAULT ''",
         'button_url' => "TEXT NOT NULL DEFAULT ''",
+        'coupon_code' => "TEXT NOT NULL DEFAULT ''",
     ] as $column => $definition) {
         gawdee_ensure_column($db, 'cms_sections', $column, $definition);
     }
@@ -841,6 +872,18 @@ function gawdee_seed_defaults(PDO $db): void
         $insertBanner->execute(['Independence Day wellness offer', 'assets/images/hero-slide-independence-v5.webp', 'assets/images/hero-slide-independence-mobile-v5.webp', '#shop', 'Happy Independence Day. Flat 10% off with code FREEDOM10. Featuring exact Gawdee A2 Gir Cow Ghee, Burra Sugar and MixMe Choco packs.', 10]);
         $insertBanner->execute(['Traditional A2 Ghee', 'assets/images/hero-slide-ghee-v5.webp', 'assets/images/hero-slide-ghee-mobile-v5.webp', 'product.php?slug=gawdee-gir-cow-a2-ghee-500-ml', 'Freedom to choose pure tradition with Gawdee Bilona-crafted A2 Gir Cow Ghee.', 20]);
         $insertBanner->execute(['MixMe daily nutrition', 'assets/images/hero-slide-mixme-v5.webp', 'assets/images/hero-slide-mixme-mobile-v5.webp', 'product.php?slug=gawdee-mixme-choco-500-g', 'Celebrate everyday wellness with Gawdee MixMe Choco.', 30]);
+    }
+
+    if (gawdee_setting('hero_banners_two_seeded', '0') !== '1') {
+        if ((int) $db->query('SELECT COUNT(*) FROM hero_banners_two')->fetchColumn() === 0) {
+            $insertBannerTwo = $db->prepare('INSERT INTO hero_banners_two (title, headline, desktop_video, mobile_video, duration, link_url, alt_text, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?)');
+            $insertBannerTwo->execute(['Pure Food Harvest', 'PURE FOOD. BETTER EVERYDAY.', 'assets/uploads/hero/hero-38c236d09817bc8426.mp4', 'assets/uploads/hero/hero-38c236d09817bc8426.mp4', 1, '#shop', 'Pure Food Better Everyday', 10]);
+            $insertBannerTwo->execute(['Organic Goodness', 'ORGANIC GOODNESS. PURE HARVEST.', 'assets/uploads/hero/hero-a3f9a6cc6ea5b3c2eb.mp4', 'assets/uploads/hero/hero-a3f9a6cc6ea5b3c2eb.mp4', 1, '#shop', 'Organic Goodness Pure Harvest', 20]);
+            $insertBannerTwo->execute(['Soulful Wellness', 'SOULFUL WELLNESS. NATURALLY CRAFTED.', 'assets/uploads/hero/hero-38c236d09817bc8426.mp4', 'assets/uploads/hero/hero-38c236d09817bc8426.mp4', 1, '#shop', 'Soulful Wellness Naturally Crafted', 30]);
+            $insertBannerTwo->execute(['Handpicked Ingredients', 'HANDPICKED INGREDIENTS. HONEST TASTE.', 'assets/uploads/hero/hero-a3f9a6cc6ea5b3c2eb.mp4', 'assets/uploads/hero/hero-a3f9a6cc6ea5b3c2eb.mp4', 1, '#shop', 'Handpicked Ingredients Honest Taste', 40]);
+            $insertBannerTwo->execute(['Traditional Recipes', 'TRADITIONAL RECIPES. MODERN LIVING.', 'assets/uploads/hero/hero-38c236d09817bc8426.mp4', 'assets/uploads/hero/hero-a3f9a6cc6ea5b3c2eb.mp4', 1, '#shop', 'Traditional Recipes Modern Living', 50]);
+        }
+        gawdee_set_setting('hero_banners_two_seeded', '1');
     }
 
     if ((int) $db->query('SELECT COUNT(*) FROM testimonials')->fetchColumn() === 0) {
@@ -1012,12 +1055,18 @@ function gawdee_sections(): array
 function gawdee_section(string $key): array
 {
     $sections = gawdee_sections();
-    return $sections[$key] ?? ['section_key' => $key, 'eyebrow' => '', 'title' => '', 'subtitle' => '', 'body' => '', 'image' => '', 'mobile_image' => '', 'video_url' => '', 'button_label' => '', 'button_url' => '', 'is_active' => 1, 'sort_order' => 0];
+    return $sections[$key] ?? ['section_key' => $key, 'eyebrow' => '', 'title' => '', 'subtitle' => '', 'body' => '', 'image' => '', 'mobile_image' => '', 'video_url' => '', 'button_label' => '', 'button_url' => '', 'coupon_code' => '', 'is_active' => 1, 'sort_order' => 0];
 }
 
 function gawdee_banners(bool $includeInactive = false): array
 {
     $sql = 'SELECT * FROM banners' . ($includeInactive ? '' : ' WHERE is_active = 1') . ' ORDER BY sort_order, id';
+    return gawdee_db()->query($sql)->fetchAll();
+}
+
+function gawdee_hero_banners_two(bool $includeInactive = false): array
+{
+    $sql = 'SELECT * FROM hero_banners_two' . ($includeInactive ? '' : ' WHERE is_active = 1') . ' ORDER BY sort_order, id';
     return gawdee_db()->query($sql)->fetchAll();
 }
 

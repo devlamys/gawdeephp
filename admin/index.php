@@ -7,7 +7,7 @@ require_once __DIR__ . '/../includes/integrations.php';
 
 $admin = gawdee_require_admin();
 $expiredPaymentOrders = gawdee_expire_stale_payment_orders();
-$allowedViews = ['dashboard', 'products', 'orders', 'banners', 'cms', 'testimonials', 'media', 'blog', 'ai', 'integrations', 'settings'];
+$allowedViews = ['dashboard', 'products', 'orders', 'banners', 'banners_two', 'cms', 'testimonials', 'media', 'blog', 'ai', 'integrations', 'settings'];
 $view = in_array($_GET['view'] ?? 'dashboard', $allowedViews, true) ? (string) ($_GET['view'] ?? 'dashboard') : 'dashboard';
 
 function admin_redirect(string $view, string $message, string $type = 'success'): never
@@ -129,12 +129,45 @@ SQL);
             admin_redirect('banners', 'Banner removed from the CMS.');
         }
 
+        if ($action === 'save_banner_two') {
+            $id = (int) ($_POST['id'] ?? 0);
+            $desktopVideo = admin_upload_media('desktop_video', 'banners_two', trim((string) ($_POST['existing_desktop_video'] ?? '')), ['video', 'image']);
+            $mobileVideo = admin_upload_media('mobile_video', 'banners_two', trim((string) ($_POST['existing_mobile_video'] ?? '')), ['video', 'image']);
+            $headline = trim((string) ($_POST['headline'] ?? ''));
+            $title = trim((string) ($_POST['title'] ?? ''));
+            $duration = max(1, (int) ($_POST['duration'] ?? 1));
+            if ($title === '') {
+                throw new RuntimeException('Banner title is required.');
+            }
+            $values = [
+                $title, $headline, $desktopVideo, $mobileVideo, $duration,
+                trim((string) ($_POST['link_url'] ?? '#shop')),
+                trim((string) ($_POST['alt_text'] ?? '')),
+                (int) ($_POST['sort_order'] ?? 0),
+                isset($_POST['is_active']) ? 1 : 0,
+            ];
+            if ($id > 0) {
+                $statement = gawdee_db()->prepare('UPDATE hero_banners_two SET title=?, headline=?, desktop_video=?, mobile_video=?, duration=?, link_url=?, alt_text=?, sort_order=?, is_active=?, updated_at=CURRENT_TIMESTAMP WHERE id=?');
+                $statement->execute([...$values, $id]);
+            } else {
+                $statement = gawdee_db()->prepare('INSERT INTO hero_banners_two (title, headline, desktop_video, mobile_video, duration, link_url, alt_text, sort_order, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)');
+                $statement->execute($values);
+            }
+            admin_redirect('banners_two', 'Hero banner two saved successfully.');
+        }
+
+        if ($action === 'delete_banner_two') {
+            gawdee_db()->prepare('DELETE FROM hero_banners_two WHERE id = ?')->execute([(int) $_POST['id']]);
+            admin_redirect('banners_two', 'Hero banner two slide removed.');
+        }
+
         if ($action === 'save_cms') {
             $sections = gawdee_sections();
-            $statement = gawdee_db()->prepare('UPDATE cms_sections SET eyebrow=?, title=?, subtitle=?, body=?, image=?, mobile_image=?, video_url=?, button_label=?, button_url=?, sort_order=?, is_active=?, updated_at=CURRENT_TIMESTAMP WHERE section_key=?');
+            $statement = gawdee_db()->prepare('UPDATE cms_sections SET eyebrow=?, title=?, subtitle=?, body=?, image=?, mobile_image=?, video_url=?, button_label=?, button_url=?, coupon_code=?, sort_order=?, is_active=?, updated_at=CURRENT_TIMESTAMP WHERE section_key=?');
             foreach ($sections as $key => $section) {
                 $image = admin_upload_media('section_image_' . $key, 'sections', trim((string) ($_POST['image'][$key] ?? '')), ['image']);
                 $mobileImage = admin_upload_media('section_mobile_image_' . $key, 'sections', trim((string) ($_POST['mobile_image'][$key] ?? '')), ['image']);
+                $couponCode = strtoupper(trim((string) ($_POST['coupon_code'][$key] ?? '')));
                 $statement->execute([
                     trim((string) ($_POST['eyebrow'][$key] ?? '')),
                     trim((string) ($_POST['title'][$key] ?? '')),
@@ -145,10 +178,14 @@ SQL);
                     trim((string) ($_POST['video_url'][$key] ?? '')),
                     trim((string) ($_POST['button_label'][$key] ?? '')),
                     trim((string) ($_POST['button_url'][$key] ?? '')),
+                    $couponCode,
                     (int) ($_POST['sort_order'][$key] ?? $section['sort_order']),
                     isset($_POST['active'][$key]) ? 1 : 0,
                     $key,
                 ]);
+                if ($key === 'offer' && $couponCode !== '') {
+                    gawdee_set_setting('offer_code', $couponCode);
+                }
             }
             admin_redirect('cms', 'Homepage sections updated.');
         }
@@ -390,10 +427,10 @@ SQL);
 
 $flash = $_SESSION['admin_flash'] ?? null;
 unset($_SESSION['admin_flash']);
-$viewTitles = ['dashboard' => 'Dashboard', 'products' => 'Products', 'orders' => 'Orders', 'banners' => 'Hero banners', 'cms' => 'Homepage CMS', 'testimonials' => 'Testimonials', 'media' => 'Homepage media', 'blog' => 'Blog', 'ai' => 'AI studio', 'integrations' => 'Integrations', 'settings' => 'Store settings'];
+$viewTitles = ['dashboard' => 'Dashboard', 'products' => 'Products', 'orders' => 'Orders', 'banners' => 'Hero banners', 'banners_two' => 'Hero banners 2', 'cms' => 'Homepage CMS', 'testimonials' => 'Testimonials', 'media' => 'Homepage media', 'blog' => 'Blog', 'ai' => 'AI studio', 'integrations' => 'Integrations', 'settings' => 'Store settings'];
 $navItems = [
     ['dashboard', 'ph-squares-four', 'Dashboard'], ['products', 'ph-package', 'Products'], ['orders', 'ph-receipt', 'Orders'],
-    ['banners', 'ph-image', 'Hero banners'], ['cms', 'ph-layout', 'Homepage CMS'], ['testimonials', 'ph-quotes', 'Testimonials'],
+    ['banners', 'ph-image', 'Hero banners'], ['banners_two', 'ph-film-strip', 'Hero banners 2'], ['cms', 'ph-layout', 'Homepage CMS'], ['testimonials', 'ph-quotes', 'Testimonials'],
     ['media', 'ph-video-camera', 'Homepage media'], ['blog', 'ph-article', 'Blog'],
     ['ai', 'ph-sparkle', 'AI studio'], ['integrations', 'ph-plugs-connected', 'Integrations'], ['settings', 'ph-sliders-horizontal', 'Settings'],
 ];
@@ -463,6 +500,14 @@ $stats = [
                 <div class="admin-section-title"><div><h2>Hero banner manager</h2><p>Upload desktop and mobile slides, change links and drag order with sort numbers</p></div><a class="admin-button admin-button--primary" href="?view=banners&edit=-1"><i class="ph ph-plus"></i> Add banner</a></div>
                 <?php if (isset($_GET['edit'])): $b = $editBanner ?? ['id'=>0,'title'=>'','desktop_image'=>'','mobile_image'=>'','link_url'=>'#shop','alt_text'=>'','sort_order'=>count($allBanners)*10+10,'is_active'=>1]; ?><section class="admin-card" style="margin-bottom:20px"><div class="admin-card__header"><div><h2><?= $editBanner ? 'Edit banner' : 'New banner' ?></h2><p>Recommended desktop ratio 16:6 and mobile ratio 4:5</p></div><a href="?view=banners" class="admin-action-icon"><i class="ph ph-x"></i></a></div><div class="admin-card__body"><form method="post" enctype="multipart/form-data" class="admin-form form-grid"><input type="hidden" name="csrf_token" value="<?= htmlspecialchars(gawdee_csrf_token()) ?>"><input type="hidden" name="action" value="save_banner"><input type="hidden" name="id" value="<?= (int) $b['id'] ?>"><input type="hidden" name="existing_desktop" value="<?= htmlspecialchars($b['desktop_image']) ?>"><input type="hidden" name="existing_mobile" value="<?= htmlspecialchars($b['mobile_image']) ?>"><label><span>Banner title</span><input name="title" required value="<?= htmlspecialchars($b['title']) ?>"></label><label><span>Destination link</span><input name="link_url" value="<?= htmlspecialchars($b['link_url']) ?>"></label><label><span>Desktop image</span><input type="file" name="desktop_image" accept="image/jpeg,image/png,image/webp"><small class="help-text"><?= htmlspecialchars($b['desktop_image']) ?></small></label><label><span>Mobile image</span><input type="file" name="mobile_image" accept="image/jpeg,image/png,image/webp"><small class="help-text"><?= htmlspecialchars($b['mobile_image']) ?></small></label><label class="form-span-2"><span>Accessible alt text</span><input name="alt_text" value="<?= htmlspecialchars($b['alt_text']) ?>"></label><label><span>Sort order</span><input type="number" name="sort_order" value="<?= (int) $b['sort_order'] ?>"></label><label class="form-switch"><input type="checkbox" name="is_active" <?= (int) $b['is_active'] ? 'checked' : '' ?>><span>Active slide</span></label><div class="form-span-2" style="display:flex;justify-content:flex-end"><button class="admin-button admin-button--primary">Save banner</button></div></form></div></section><?php endif; ?>
                 <div class="banner-grid"><?php foreach ($allBanners as $banner): ?><article class="banner-card"><img src="../<?= htmlspecialchars($banner['desktop_image']) ?>" alt=""><div class="banner-card__body"><h3><?= htmlspecialchars($banner['title']) ?></h3><p>Order <?= (int) $banner['sort_order'] ?> · <?= $banner['is_active'] ? 'Active' : 'Hidden' ?></p><div class="admin-actions"><a class="admin-button admin-button--secondary" href="?view=banners&edit=<?= (int) $banner['id'] ?>"><i class="ph ph-pencil-simple"></i> Edit</a><form method="post" onsubmit="return confirm('Remove this banner from the CMS?')"><input type="hidden" name="csrf_token" value="<?= htmlspecialchars(gawdee_csrf_token()) ?>"><input type="hidden" name="action" value="delete_banner"><input type="hidden" name="id" value="<?= (int) $banner['id'] ?>"><button class="admin-button admin-button--danger"><i class="ph ph-trash"></i></button></form></div></div></article><?php endforeach; ?></div>
+
+            <?php elseif ($view === 'banners_two'): ?>
+                <?php $allBannersTwo = gawdee_hero_banners_two(true); $bTwoEditId = (int) ($_GET['edit'] ?? 0); $editBTwo = null; foreach ($allBannersTwo as $candidate) { if ((int) $candidate['id'] === $bTwoEditId) $editBTwo = $candidate; } ?>
+                <div class="admin-section-title"><div><h2>Hero banner 2 manager</h2><p>Upload video slides, dynamic headlines and playback duration (minimum 1 second)</p></div><a class="admin-button admin-button--primary" href="?view=banners_two&edit=-1"><i class="ph ph-plus"></i> Add video banner</a></div>
+                <?php if (isset($_GET['edit'])): $b2 = $editBTwo ?? ['id'=>0,'title'=>'','headline'=>'','desktop_video'=>'','mobile_video'=>'','duration'=>1,'link_url'=>'#shop','alt_text'=>'','sort_order'=>count($allBannersTwo)*10+10,'is_active'=>1]; ?>
+                    <section class="admin-card" style="margin-bottom:20px"><div class="admin-card__header"><div><h2><?= $editBTwo ? 'Edit video banner' : 'New video banner' ?></h2><p>Multiple short video slides with dynamic headline updates</p></div><a href="?view=banners_two" class="admin-action-icon"><i class="ph ph-x"></i></a></div><div class="admin-card__body"><form method="post" enctype="multipart/form-data" class="admin-form form-grid"><input type="hidden" name="csrf_token" value="<?= htmlspecialchars(gawdee_csrf_token()) ?>"><input type="hidden" name="action" value="save_banner_two"><input type="hidden" name="id" value="<?= (int) $b2['id'] ?>"><input type="hidden" name="existing_desktop_video" value="<?= htmlspecialchars($b2['desktop_video']) ?>"><input type="hidden" name="existing_mobile_video" value="<?= htmlspecialchars($b2['mobile_video']) ?>"><label><span>Banner title</span><input name="title" required value="<?= htmlspecialchars($b2['title']) ?>"></label><label class="form-span-2"><span>Headline (Text displayed on slide)</span><input name="headline" placeholder="PURE FOOD. BETTER EVERYDAY." value="<?= htmlspecialchars($b2['headline']) ?>"></label><div class="cms-media-field"><label><span>Desktop video file</span><input type="file" name="desktop_video" accept="video/mp4,video/webm,image/*"></label><?php if (!empty($b2['desktop_video'])): ?><div style="margin-top:8px"><video src="../<?= htmlspecialchars($b2['desktop_video']) ?>" controls muted playsinline style="width:100%;max-height:160px;border-radius:10px;background:#031f16;object-fit:cover"></video><small class="help-text"><?= htmlspecialchars($b2['desktop_video']) ?></small></div><?php endif; ?></div><div class="cms-media-field"><label><span>Mobile video file</span><input type="file" name="mobile_video" accept="video/mp4,video/webm,image/*"></label><?php if (!empty($b2['mobile_video'])): ?><div style="margin-top:8px"><video src="../<?= htmlspecialchars($b2['mobile_video']) ?>" controls muted playsinline style="width:100%;max-height:160px;border-radius:10px;background:#031f16;object-fit:cover"></video><small class="help-text"><?= htmlspecialchars($b2['mobile_video']) ?></small></div><?php endif; ?></div><label><span>Duration (Seconds, min 1)</span><input type="number" name="duration" min="1" max="60" value="<?= (int) ($b2['duration'] ?? 1) ?>"></label><label><span>Destination link</span><input name="link_url" value="<?= htmlspecialchars($b2['link_url']) ?>"></label><label class="form-span-2"><span>Accessible alt text</span><input name="alt_text" value="<?= htmlspecialchars($b2['alt_text']) ?>"></label><label><span>Sort order</span><input type="number" name="sort_order" value="<?= (int) $b2['sort_order'] ?>"></label><label class="form-switch"><input type="checkbox" name="is_active" <?= (int) $b2['is_active'] ? 'checked' : '' ?>><span>Active slide</span></label><div class="form-span-2" style="display:flex;justify-content:flex-end"><button class="admin-button admin-button--primary">Save video banner</button></div></form></div></section>
+                <?php endif; ?>
+                <div class="banner-grid"><?php foreach ($allBannersTwo as $banner): ?><article class="banner-card"><?php if (!empty($banner['desktop_video'])): ?><video src="../<?= htmlspecialchars($banner['desktop_video']) ?>" controls muted playsinline style="width:100%;height:160px;object-fit:cover;background:#031f16"></video><?php else: ?><div style="height:160px;background:#031f16;display:flex;align-items:center;justify-content:center;color:#fff"><i class="ph ph-film-strip" style="font-size:2rem"></i></div><?php endif; ?><div class="banner-card__body"><h3><?= htmlspecialchars($banner['title']) ?></h3><p style="font-weight:600;color:#0a7540;margin:4px 0"><?= htmlspecialchars($banner['headline']) ?></p><p>Duration: <?= (int) $banner['duration'] ?>s · Order <?= (int) $banner['sort_order'] ?> · <?= $banner['is_active'] ? 'Active' : 'Hidden' ?></p><div class="admin-actions"><a class="admin-button admin-button--secondary" href="?view=banners_two&edit=<?= (int) $banner['id'] ?>"><i class="ph ph-pencil-simple"></i> Edit</a><form method="post" onsubmit="return confirm('Remove this video banner?')"><input type="hidden" name="csrf_token" value="<?= htmlspecialchars(gawdee_csrf_token()) ?>"><input type="hidden" name="action" value="delete_banner_two"><input type="hidden" name="id" value="<?= (int) $banner['id'] ?>"><button class="admin-button admin-button--danger"><i class="ph ph-trash"></i></button></form></div></div></article><?php endforeach; ?></div>
 
             <?php elseif ($view === 'cms'): ?>
                 <?php require __DIR__ . '/partials/cms.php'; ?>

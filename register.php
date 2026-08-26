@@ -69,8 +69,14 @@ require __DIR__ . '/includes/header.php';
 <section class="customer-auth-shell customer-auth-shell--register">
     <div class="customer-auth-visual">
         <span class="customer-auth-visual__label"><i class="ph ph-sparkle"></i> A simpler shopping journey</span>
-        <div><span class="eyebrow eyebrow--light">Join the Gawdee family</span><h1>Every order.<br><em>One calm place.</em></h1><p>Create an account before checkout and every new order will appear automatically with payment, packing and delivery progress.</p></div>
-        <div class="customer-auth-steps"><span><i class="ph ph-receipt"></i> Complete history</span><span><i class="ph ph-bell"></i> Status updates</span><span><i class="ph ph-map-pin"></i> DTDC tracking</span></div>
+        <div><span class="eyebrow eyebrow--light">Join the Gawdee family</span>
+            <h1>Every order.<br><em>One calm place.</em></h1>
+            <p>Create an account before checkout and every new order will appear automatically with payment, packing and
+                delivery progress.</p>
+        </div>
+        <div class="customer-auth-steps"><span><i class="ph ph-receipt"></i> Complete history</span><span><i
+                    class="ph ph-bell"></i> Status updates</span><span><i class="ph ph-map-pin"></i> DTDC
+                tracking</span></div>
     </div>
     <div class="customer-auth-panel">
         <div class="customer-auth-card">
@@ -78,16 +84,37 @@ require __DIR__ . '/includes/header.php';
             <span class="eyebrow">Create account</span>
             <h2>Start your order dashboard</h2>
             <p>Your account will securely connect future orders placed while signed in.</p>
-            <?php if ($error): ?><div class="customer-auth-alert"><i class="ph ph-warning-circle"></i><?= htmlspecialchars($error) ?></div><?php endif; ?>
+            <?php if ($error): ?>
+                <div class="customer-auth-alert"><i class="ph ph-warning-circle"></i><?= htmlspecialchars($error) ?></div>
+            <?php endif; ?>
             <form method="post" class="customer-auth-form">
-                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(gawdee_csrf_token()) ?>"><input type="hidden" name="return" value="<?= htmlspecialchars($returnTo) ?>">
-                <div class="customer-auth-form__row"><label><span>Full name</span><div><i class="ph ph-user"></i><input name="name" autocomplete="name" required value="<?= htmlspecialchars((string) ($_POST['name'] ?? '')) ?>"></div></label><label><span>Phone</span><div><i class="ph ph-phone"></i><input type="tel" name="phone" autocomplete="tel" required value="<?= htmlspecialchars((string) ($_POST['phone'] ?? '')) ?>"></div></label></div>
-                <label><span>Email address</span><div><i class="ph ph-envelope"></i><input type="email" name="email" autocomplete="email" required value="<?= htmlspecialchars((string) ($_POST['email'] ?? '')) ?>"></div></label>
-                <div class="customer-auth-form__row"><label><span>Password</span><div><i class="ph ph-lock-key"></i><input type="password" name="password" autocomplete="new-password" required><button type="button" data-password-toggle aria-label="Show password"><i class="ph ph-eye"></i></button></div></label><label><span>Confirm password</span><div><i class="ph ph-lock-key"></i><input type="password" name="password_confirmation" autocomplete="new-password" required></div></label></div>
+                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(gawdee_csrf_token()) ?>"><input
+                    type="hidden" name="return" value="<?= htmlspecialchars($returnTo) ?>">
+                <div class="customer-auth-form__row"><label><span>Full name</span>
+                        <div><i class="ph ph-user"></i><input name="name" autocomplete="name" required
+                                value="<?= htmlspecialchars((string) ($_POST['name'] ?? '')) ?>"></div>
+                    </label><label><span>Phone</span>
+                        <div><i class="ph ph-phone"></i><input type="tel" name="phone" autocomplete="tel" required
+                                value="<?= htmlspecialchars((string) ($_POST['phone'] ?? '')) ?>"></div>
+                    </label></div>
+                <label><span>Email address</span>
+                    <div><i class="ph ph-envelope"></i><input type="email" name="email" autocomplete="email" required
+                            value="<?= htmlspecialchars((string) ($_POST['email'] ?? '')) ?>"></div>
+                </label>
+                <div class="customer-auth-form__row"><label><span>Password</span>
+                        <div><i class="ph ph-lock-key"></i><input type="password" name="password"
+                                autocomplete="new-password" required><button type="button" data-password-toggle
+                                aria-label="Show password"><i class="ph ph-eye"></i></button></div>
+                    </label><label><span>Confirm password</span>
+                        <div><i class="ph ph-lock-key"></i><input type="password" name="password_confirmation"
+                                autocomplete="new-password" required></div>
+                    </label></div>
                 <small class="customer-password-help">At least 8 characters, including a letter and a number.</small>
-                <button class="button button--primary" type="submit">Create my account <i class="ph ph-arrow-right"></i></button>
+                <button class="button button--primary" type="submit">Create my account <i
+                        class="ph ph-arrow-right"></i></button>
             </form>
-            <p class="customer-auth-switch">Already registered? <a href="login.php?return=<?= rawurlencode($returnTo) ?>">Sign in here</a></p>
+            <p class="customer-auth-switch">Already registered? <a
+                    href="login.php?return=<?= rawurlencode($returnTo) ?>">Sign in here</a></p>
         </div>
     </div>
 </section>

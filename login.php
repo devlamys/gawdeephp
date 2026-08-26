@@ -47,32 +47,111 @@ require __DIR__ . '/includes/header.php';
 ?>
 <section class="customer-auth-shell">
     <div class="customer-auth-visual">
-        <span class="customer-auth-visual__label"><i class="ph ph-package"></i> One place for every order</span>
+        <div class="customer-auth-visual__glow" aria-hidden="true"></div>
+        <div class="customer-auth-visual__glow-alt" aria-hidden="true"></div>
+
+        <span class="customer-auth-visual__label">
+            <i class="ph ph-shield-check"></i> Gawdee Customer Portal
+        </span>
+
         <div class="customer-auth-product-collage" aria-hidden="true">
-            <figure class="customer-auth-product-collage__card customer-auth-product-collage__card--ghee"><img src="assets/images/products/ghee-500.webp" alt=""><figcaption>Pure pantry</figcaption></figure>
-            <figure class="customer-auth-product-collage__card customer-auth-product-collage__card--mixme"><img src="assets/images/products/mixme-choco.webp" alt=""><figcaption>Family wellness</figcaption></figure>
-            <span class="customer-auth-product-collage__rating"><strong>4.9</strong><i>★★★★★</i><small>customer love</small></span>
+            <figure class="customer-auth-product-collage__card customer-auth-product-collage__card--ghee">
+                <img src="assets/images/products/ghee-500.webp" alt="Gawdee A2 Gir Cow Ghee">
+                <figcaption>A2 Gir Cow Ghee</figcaption>
+            </figure>
+            <figure class="customer-auth-product-collage__card customer-auth-product-collage__card--mixme">
+                <img src="assets/images/products/mixme-choco.webp" alt="Gawdee MixMe Choco">
+                <figcaption>MixMe Nutrition</figcaption>
+            </figure>
+            <div class="customer-auth-product-collage__rating">
+                <strong>4.9</strong>
+                <i>★★★★★</i>
+                <small>10k+ Happy Families</small>
+            </div>
         </div>
-        <div class="customer-auth-visual__copy"><span class="eyebrow eyebrow--light">Gawdee customer account</span><h1>Your goodness,<br><em>always in view.</em></h1><p>See order history, follow fulfilment progress and open DTDC tracking as soon as your shipment is booked.</p></div>
-        <div class="customer-auth-steps"><span><i class="ph ph-check"></i> Order confirmed</span><span><i class="ph ph-package"></i> Packed with care</span><span><i class="ph ph-truck"></i> Tracked delivery</span></div>
+
+        <div class="customer-auth-visual__copy">
+            <span class="eyebrow eyebrow--light"><i class="ph ph-sparkle"></i> Pure · Authentic · Indian</span>
+            <h1>Your goodness,<br><em>always in view.</em></h1>
+            <p>Track your orders live, manage subscriptions, view past tax invoices, and get instant DTDC shipment updates in one place.</p>
+        </div>
+
+        <div class="customer-auth-steps">
+            <span><i class="ph ph-check-circle"></i> Instant Checkout</span>
+            <span><i class="ph ph-package"></i> Sealed Fresh</span>
+            <span><i class="ph ph-truck"></i> Live DTDC Tracking</span>
+        </div>
     </div>
+
     <div class="customer-auth-panel">
         <div class="customer-auth-card">
-            <div class="customer-auth-card__brand"><span><i class="ph ph-leaf"></i></span><div><strong>Welcome to Gawdee</strong><small>Secure customer portal</small></div></div>
-            <a class="customer-auth-back" href="index.php"><i class="ph ph-arrow-left"></i> Back to shop</a>
-            <span class="eyebrow">Welcome back</span>
+            <div class="customer-auth-card__brand">
+                <span><i class="ph ph-leaf"></i></span>
+                <div>
+                    <strong>Welcome to Gawdee</strong>
+                    <small>Secure Customer Sign In</small>
+                </div>
+            </div>
+
+            <a class="customer-auth-back" href="index.php">
+                <i class="ph ph-arrow-left"></i> Back to shop
+            </a>
+
+            <span class="eyebrow">Customer Sign In</span>
             <h2>Sign in to your account</h2>
-            <p>Use the email and password you registered with Gawdee.</p>
-            <?php if ($error): ?><div class="customer-auth-alert"><i class="ph ph-warning-circle"></i><?= htmlspecialchars($error) ?></div><?php endif; ?>
+            <p>Enter your registered email and password to access your account dashboard.</p>
+
+            <?php if ($error): ?>
+                <div class="customer-auth-alert" role="alert">
+                    <i class="ph ph-warning-circle"></i>
+                    <span><?= htmlspecialchars($error) ?></span>
+                </div>
+            <?php endif; ?>
+
             <form method="post" class="customer-auth-form">
                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(gawdee_csrf_token()) ?>">
                 <input type="hidden" name="return" value="<?= htmlspecialchars($returnTo) ?>">
-                <label><span>Email address</span><div><i class="ph ph-envelope"></i><input type="email" name="email" autocomplete="email" required value="<?= htmlspecialchars((string) ($_POST['email'] ?? '')) ?>" placeholder="you@example.com"></div></label>
-                <label><span>Password</span><div><i class="ph ph-lock-key"></i><input type="password" name="password" autocomplete="current-password" required placeholder="Your password"><button type="button" data-password-toggle aria-label="Show password"><i class="ph ph-eye"></i></button></div></label>
-                <button class="button button--primary" type="submit">Sign in securely <i class="ph ph-arrow-right"></i></button>
+
+                <label>
+                    <span>Email address</span>
+                    <div>
+                        <i class="ph ph-envelope"></i>
+                        <input type="email" name="email" autocomplete="email" required
+                            value="<?= htmlspecialchars((string) ($_POST['email'] ?? '')) ?>"
+                            placeholder="you@example.com">
+                    </div>
+                </label>
+
+                <label>
+                    <div class="customer-auth-label-row">
+                        <span>Password</span>
+                    </div>
+                    <div>
+                        <i class="ph ph-lock-key"></i>
+                        <input type="password" name="password" autocomplete="current-password" required
+                            placeholder="Enter your password">
+                        <button type="button" data-password-toggle aria-label="Toggle password visibility">
+                            <i class="ph ph-eye"></i>
+                        </button>
+                    </div>
+                </label>
+
+                <button class="button button--primary" type="submit">
+                    Sign in securely <i class="ph ph-arrow-right"></i>
+                </button>
             </form>
-            <p class="customer-auth-switch">New to Gawdee? <a href="register.php?return=<?= rawurlencode($returnTo) ?>">Create your account</a></p>
-            <div class="customer-auth-note"><i class="ph ph-shield-check"></i><span><strong>Your account stays private</strong>Order access is checked securely on the server.</span></div>
+
+            <p class="customer-auth-switch">
+                New to Gawdee? <a href="register.php?return=<?= rawurlencode($returnTo) ?>">Create your account</a>
+            </p>
+
+            <div class="customer-auth-note">
+                <i class="ph ph-shield-check"></i>
+                <div>
+                    <strong>256-Bit Encrypted & Private</strong>
+                    <span>Your personal information and order history are protected with industry-standard encryption.</span>
+                </div>
+            </div>
         </div>
     </div>
 </section>

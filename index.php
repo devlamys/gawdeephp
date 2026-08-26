@@ -63,6 +63,7 @@ $stories = [
 $reelProducts = [$products[2], $products[3], $products[0]];
 $homepageSections = gawdee_sections();
 $homepageBanners = gawdee_banners();
+$heroBannersTwo = gawdee_hero_banners_two();
 $homepageReels = gawdee_homepage_media('reels');
 $publishedStories = gawdee_db()->query("SELECT title, slug, excerpt, featured_image, category FROM blog_posts WHERE status='published' ORDER BY is_featured DESC, COALESCE(published_at, created_at) DESC LIMIT 4")->fetchAll();
 if ($publishedStories) {
@@ -87,13 +88,14 @@ $heroScrubSubtitle = gawdee_setting('hero_scrub_subtitle', 'Thoughtfully sourced
 ?>
 
 <?php if ($heroScrubEnabled): ?>
-<section class="hero-scrub-section" data-hero-scrub-section aria-label="Cinematic Gawdee experience">
+<section class="hero-scrub-section" data-hero-scrub-section data-hero-slides="<?= htmlspecialchars(json_encode($heroBannersTwo, JSON_UNESCAPED_SLASHES), ENT_QUOTES) ?>" aria-label="Cinematic Gawdee experience">
     <div class="hero-scrub-sticky">
-        <?php if ($heroScrubVideo): ?>
-            <video class="hero-scrub-video" data-hero-scrub-video muted playsinline autoplay loop preload="auto" <?= $heroScrubPoster ? 'poster="' . htmlspecialchars($heroScrubPoster) . '"' : '' ?>>
+        <video class="hero-scrub-video is-active" data-hero-scrub-video muted playsinline autoplay loop preload="auto" <?= $heroScrubPoster ? 'poster="' . htmlspecialchars($heroScrubPoster) . '"' : '' ?>>
+            <?php if ($heroScrubVideo): ?>
                 <source src="<?= htmlspecialchars($heroScrubVideo) ?>" type="video/mp4">
-            </video>
-        <?php endif; ?>
+            <?php endif; ?>
+        </video>
+        <video class="hero-scrub-video hero-scrub-video--next" data-hero-scrub-video-next muted playsinline preload="auto"></video>
         <?php if ($heroScrubPoster): ?>
             <img class="hero-scrub-poster-overlay" data-hero-scrub-poster src="<?= htmlspecialchars($heroScrubPoster) ?>" alt="Gawdee Pure Food">
         <?php endif; ?>
@@ -125,289 +127,340 @@ $heroScrubSubtitle = gawdee_setting('hero_scrub_subtitle', 'Thoughtfully sourced
     </div>
 </section>
 
-<?php if ($homepageSections['shop']['is_active'] ?? 1): ?>
-<section class="commerce-section" id="shop">
-    <div class="container">
-        <div class="commerce-section__heading reveal">
-            <div>
-                <span class="eyebrow"><i class="ph ph-fire"></i> Bestsellers</span>
-                <h2><?= htmlspecialchars($homepageSections['shop']['title']) ?></h2>
-                <p><?= htmlspecialchars($homepageSections['shop']['subtitle']) ?></p>
-            </div>
-            <div class="commerce-section__actions">
-                <a class="text-link" href="<?= htmlspecialchars($homepageSections['shop']['button_url'] ?: 'products.php') ?>"><?= htmlspecialchars($homepageSections['shop']['button_label'] ?: 'View all products') ?> <i class="ph ph-arrow-right"></i></a>
-                <div class="section-rail-controls home-slider-controls" aria-label="Bestseller slider controls">
-                    <button type="button" data-scroll-rail="#home-product-rail" data-scroll-direction="-1" aria-label="Previous products"><i class="ph ph-arrow-left"></i></button>
-                    <button type="button" data-scroll-rail="#home-product-rail" data-scroll-direction="1" aria-label="Next products"><i class="ph ph-arrow-right"></i></button>
-                </div>
-            </div>
-        </div>
+<?php
+foreach ($homepageSections as $sectionKey => $section) {
+    if (!($section['is_active'] ?? 1)) {
+        continue;
+    }
+    switch ($sectionKey) {
+        case 'shop':
+            ?>
+            <section class="commerce-section" id="shop">
+                <div class="container">
+                    <div class="commerce-section__heading reveal">
+                        <div>
+                            <span class="eyebrow"><i class="ph ph-fire"></i> <?= htmlspecialchars($homepageSections['shop']['eyebrow'] ?: 'Bestsellers') ?></span>
+                            <h2><?= htmlspecialchars($homepageSections['shop']['title']) ?></h2>
+                            <p><?= htmlspecialchars($homepageSections['shop']['subtitle']) ?></p>
+                        </div>
+                        <div class="commerce-section__actions">
+                            <a class="text-link" href="<?= htmlspecialchars($homepageSections['shop']['button_url'] ?: 'products.php') ?>"><?= htmlspecialchars($homepageSections['shop']['button_label'] ?: 'View all products') ?> <i class="ph ph-arrow-right"></i></a>
+                            <div class="section-rail-controls home-slider-controls" aria-label="Bestseller slider controls">
+                                <button type="button" data-scroll-rail="#home-product-rail" data-scroll-direction="-1" aria-label="Previous products"><i class="ph ph-arrow-left"></i></button>
+                                <button type="button" data-scroll-rail="#home-product-rail" data-scroll-direction="1" aria-label="Next products"><i class="ph ph-arrow-right"></i></button>
+                            </div>
+                        </div>
+                    </div>
 
-        <div class="compact-product-grid home-product-rail" id="home-product-rail" data-product-grid data-sliding-rail data-auto-slide="3600" tabindex="0" aria-label="Bestselling products">
-            <?php foreach ($featuredProducts as $index => $product): ?>
-                <article class="compact-product-card reveal" data-delay="<?= $index * 45 ?>" data-category="<?= htmlspecialchars($product['category_key']) ?>" data-search-name="<?= htmlspecialchars(strtolower($product['full_name'] . ' ' . $product['category'])) ?>">
-                    <a class="compact-product-card__media" href="product.php?slug=<?= urlencode($product['slug']) ?>">
-                        <span class="compact-product-card__badge <?= $index % 3 === 2 ? 'is-blue' : ($index % 2 === 0 ? 'is-orange' : '') ?>"><?= $index === 5 ? 'New arrival' : ($index % 2 === 0 ? 'Best seller' : 'Popular') ?></span>
-                        <img src="<?= htmlspecialchars($product['image']) ?>" alt="<?= htmlspecialchars($product['full_name']) ?>" loading="lazy">
+                    <div class="compact-product-grid home-product-rail" id="home-product-rail" data-product-grid data-sliding-rail data-auto-slide="3600" tabindex="0" aria-label="Bestselling products">
+                        <?php foreach ($featuredProducts as $index => $product): ?>
+                            <article class="compact-product-card reveal" data-delay="<?= $index * 45 ?>" data-category="<?= htmlspecialchars($product['category_key']) ?>" data-search-name="<?= htmlspecialchars(strtolower($product['full_name'] . ' ' . $product['category'])) ?>">
+                                <a class="compact-product-card__media" href="product.php?slug=<?= urlencode($product['slug']) ?>">
+                                    <span class="compact-product-card__badge <?= $index % 3 === 2 ? 'is-blue' : ($index % 2 === 0 ? 'is-orange' : '') ?>"><?= $index === 5 ? 'New arrival' : ($index % 2 === 0 ? 'Best seller' : 'Popular') ?></span>
+                                    <img src="<?= htmlspecialchars($product['image']) ?>" alt="<?= htmlspecialchars($product['full_name']) ?>" loading="lazy">
+                                </a>
+                                <div class="compact-product-card__body">
+                                    <h3><a href="product.php?slug=<?= urlencode($product['slug']) ?>"><?= htmlspecialchars($product['name']) ?></a></h3>
+                                    <span class="compact-product-card__weight"><?= htmlspecialchars($product['weight']) ?></span>
+                                    <div class="compact-product-card__price"><strong><?= money($product['price']) ?></strong><s><?= money($product['original_price']) ?></s></div>
+                                    <div class="compact-product-card__actions">
+                                        <button type="button" data-add-to-cart data-id="<?= htmlspecialchars($product['id']) ?>" data-name="<?= htmlspecialchars($product['full_name']) ?>" data-price="<?= (int) $product['price'] ?>" data-image="<?= htmlspecialchars($product['image']) ?>">Add to cart</button>
+                                        <button type="button" data-wishlist aria-label="Add <?= htmlspecialchars($product['name']) ?> to wishlist" aria-pressed="false"><i class="ph ph-heart"></i></button>
+                                    </div>
+                                </div>
+                            </article>
+                        <?php endforeach; ?>
+                    </div>
+                    <p class="product-empty" data-product-empty hidden>No products match your search.</p>
+                </div>
+            </section>
+            <?php
+            break;
+
+        case 'categories':
+            ?>
+            <section class="commerce-section category-section" id="categories">
+                <div class="container">
+                    <div class="commerce-section__heading reveal">
+                        <div>
+                            <span class="eyebrow"><i class="ph ph-squares-four"></i> <?= htmlspecialchars($homepageSections['categories']['eyebrow'] ?: 'Organic Categories') ?></span>
+                            <h2><?= htmlspecialchars($homepageSections['categories']['title']) ?></h2>
+                            <p><?= htmlspecialchars($homepageSections['categories']['subtitle']) ?></p>
+                        </div>
+                    </div>
+                    <div class="category-grid">
+                        <?php foreach ($categories as $index => $category): ?>
+                            <a class="category-card reveal" data-delay="<?= $index * 35 ?>" href="products.php?category=<?= rawurlencode((string) $category['filter']) ?>" data-category-link="<?= htmlspecialchars($category['filter']) ?>">
+                                <span class="category-card__visual">
+                                    <?php if (isset($category['image'])): ?><img src="<?= htmlspecialchars($category['image']) ?>" alt="" loading="lazy"><?php else: ?><i class="ph <?= htmlspecialchars($category['icon']) ?>"></i><?php endif; ?>
+                                </span>
+                                <strong><?= htmlspecialchars($category['name']) ?></strong>
+                                <span class="category-card__arrow"><i class="ph ph-arrow-right"></i></span>
+                            </a>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+            </section>
+            <?php
+            break;
+
+        case 'why':
+        case 'why_gawdee':
+            ?>
+            <section class="commerce-section brand-story-section reveal" id="why-gawdee">
+                <div class="container">
+                    <div class="brand-story-header">
+                        <span class="eyebrow"><i class="ph ph-plant"></i> <?= htmlspecialchars($section['eyebrow'] ?: 'Why Gawdee') ?></span>
+                        <h2><?= htmlspecialchars($section['title'] ?: 'Food should feel closer to nature.') ?></h2>
+                        <p><?= htmlspecialchars($section['subtitle'] ?: 'We believe everyday food should be pure, unadulterated, and made with traditional Indian care for modern families.') ?></p>
+                    </div>
+                    <div class="story-pillar-grid">
+                        <article class="story-pillar-card">
+                            <span class="story-pillar-num">01</span>
+                            <h3>Thoughtfully Sourced</h3>
+                            <p>Pure, untamed ingredients sourced directly from ethical small-batch farms across India.</p>
+                        </article>
+                        <article class="story-pillar-card">
+                            <span class="story-pillar-num">02</span>
+                            <h3>Traditional Goodness</h3>
+                            <p>Time-honoured recipes and wood-pressed or slow-cooked methods preserved over generations.</p>
+                        </article>
+                        <article class="story-pillar-card">
+                            <span class="story-pillar-num">03</span>
+                            <h3>Everyday Wellness</h3>
+                            <p>Nourishment designed for modern daily routines, 100% free from artificial additives.</p>
+                        </article>
+                        <article class="story-pillar-card">
+                            <span class="story-pillar-num">04</span>
+                            <h3>Made with Care in India</h3>
+                            <p>Mindfully crafted, lab-tested, and packaged to deliver peak purity to your doorstep.</p>
+                        </article>
+                    </div>
+                </div>
+            </section>
+            <?php
+            break;
+
+        case 'offer':
+            ?>
+            <section class="commerce-section campaign-offer-section" id="offers">
+                <div class="container">
+                    <?php
+                    $offerSection = $homepageSections['offer'];
+                    $offerDesktop = $offerSection['image'] ?: 'assets/images/independence-day-offer-banner-v1.png';
+                    $offerMobile = $offerSection['mobile_image'] ?: 'assets/images/independence-day-offer-banner-mobile-v1.png';
+                    $offerCoupon = trim((string) ($offerSection['coupon_code'] ?? gawdee_setting('offer_code', 'FREEDOM10'))) ?: 'FREEDOM10';
+                    ?>
+                    <?php if (!empty($offerSection['title']) || !empty($offerSection['eyebrow']) || !empty($offerSection['subtitle'])): ?>
+                        <div class="commerce-section__heading reveal">
+                            <div>
+                                <span class="eyebrow"><i class="ph ph-tag"></i> <?= htmlspecialchars($offerSection['eyebrow'] ?: 'Special Offer') ?></span>
+                                <h2><?= htmlspecialchars($offerSection['title'] ?: 'Flat 10% OFF') ?></h2>
+                                <?php if (!empty($offerSection['subtitle'])): ?>
+                                    <p><?= htmlspecialchars($offerSection['subtitle']) ?></p>
+                                <?php endif; ?>
+                            </div>
+                            <?php if (!empty($offerSection['button_label'])): ?>
+                                <div class="commerce-section__actions">
+                                    <a class="button button--primary" href="<?= htmlspecialchars($offerSection['button_url'] ?: '#shop') ?>" data-copy-coupon="<?= htmlspecialchars($offerCoupon) ?>">
+                                        <?= htmlspecialchars($offerSection['button_label']) ?> <i class="ph ph-arrow-right"></i>
+                                    </a>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    <?php endif; ?>
+                    <a class="independence-image-offer reveal reveal--scale" href="<?= htmlspecialchars($offerSection['button_url'] ?: '#shop') ?>" data-copy-coupon="<?= htmlspecialchars($offerCoupon) ?>" aria-label="<?= htmlspecialchars(($offerSection['title'] ?: 'Flat 10% OFF') . '. ' . ($offerSection['subtitle'] ?: '')) ?>">
+                        <picture>
+                            <?php if ($offerMobile): ?><source media="(max-width: 700px)" srcset="<?= htmlspecialchars($offerMobile) ?>"><?php endif; ?>
+                            <img src="<?= htmlspecialchars($offerDesktop) ?>" alt="<?= htmlspecialchars(($offerSection['title'] ?: 'Flat 10% OFF') . '. ' . ($offerSection['subtitle'] ?: '')) ?>" loading="lazy">
+                        </picture>
                     </a>
-                    <div class="compact-product-card__body">
-                        <h3><a href="product.php?slug=<?= urlencode($product['slug']) ?>"><?= htmlspecialchars($product['name']) ?></a></h3>
-                        <span class="compact-product-card__weight"><?= htmlspecialchars($product['weight']) ?></span>
-                        <div class="compact-product-card__price"><strong><?= money($product['price']) ?></strong><s><?= money($product['original_price']) ?></s></div>
-                        <div class="compact-product-card__actions">
-                            <button type="button" data-add-to-cart data-id="<?= htmlspecialchars($product['id']) ?>" data-name="<?= htmlspecialchars($product['full_name']) ?>" data-price="<?= (int) $product['price'] ?>" data-image="<?= htmlspecialchars($product['image']) ?>">Add to cart</button>
-                            <button type="button" data-wishlist aria-label="Add <?= htmlspecialchars($product['name']) ?> to wishlist" aria-pressed="false"><i class="ph ph-heart"></i></button>
-                        </div>
-                    </div>
-                </article>
-            <?php endforeach; ?>
-        </div>
-        <p class="product-empty" data-product-empty hidden>No products match your search.</p>
-    </div>
-</section>
-<?php endif; ?>
-
-<?php if ($homepageSections['categories']['is_active'] ?? 1): ?>
-<section class="commerce-section category-section" id="categories">
-    <div class="container">
-        <div class="commerce-section__heading reveal">
-            <div>
-                <span class="eyebrow"><i class="ph ph-squares-four"></i> Organic Categories</span>
-                <h2><?= htmlspecialchars($homepageSections['categories']['title']) ?></h2>
-                <p><?= htmlspecialchars($homepageSections['categories']['subtitle']) ?></p>
-            </div>
-        </div>
-        <div class="category-grid">
-            <?php foreach ($categories as $index => $category): ?>
-                <a class="category-card reveal" data-delay="<?= $index * 35 ?>" href="products.php?category=<?= rawurlencode((string) $category['filter']) ?>" data-category-link="<?= htmlspecialchars($category['filter']) ?>">
-                    <span class="category-card__visual">
-                        <?php if (isset($category['image'])): ?><img src="<?= htmlspecialchars($category['image']) ?>" alt="" loading="lazy"><?php else: ?><i class="ph <?= htmlspecialchars($category['icon']) ?>"></i><?php endif; ?>
-                    </span>
-                    <strong><?= htmlspecialchars($category['name']) ?></strong>
-                    <span class="category-card__arrow"><i class="ph ph-arrow-right"></i></span>
-                </a>
-            <?php endforeach; ?>
-        </div>
-    </div>
-</section>
-<?php endif; ?>
-
-<!-- Why Gawdee / Brand Story Section -->
-<section class="commerce-section brand-story-section reveal" id="why-gawdee">
-    <div class="container">
-        <div class="brand-story-header">
-            <span class="eyebrow"><i class="ph ph-plant"></i> Why Gawdee</span>
-            <h2>Food should feel <em>closer to nature.</em></h2>
-            <p>We believe everyday food should be pure, unadulterated, and made with traditional Indian care for modern families.</p>
-        </div>
-        <div class="story-pillar-grid">
-            <article class="story-pillar-card">
-                <span class="story-pillar-num">01</span>
-                <h3>Thoughtfully Sourced</h3>
-                <p>Pure, untamed ingredients sourced directly from ethical small-batch farms across India.</p>
-            </article>
-            <article class="story-pillar-card">
-                <span class="story-pillar-num">02</span>
-                <h3>Traditional Goodness</h3>
-                <p>Time-honoured recipes and wood-pressed or slow-cooked methods preserved over generations.</p>
-            </article>
-            <article class="story-pillar-card">
-                <span class="story-pillar-num">03</span>
-                <h3>Everyday Wellness</h3>
-                <p>Nourishment designed for modern daily routines, 100% free from artificial additives.</p>
-            </article>
-            <article class="story-pillar-card">
-                <span class="story-pillar-num">04</span>
-                <h3>Made with Care in India</h3>
-                <p>Mindfully crafted, lab-tested, and packaged to deliver peak purity to your doorstep.</p>
-            </article>
-        </div>
-    </div>
-</section>
-
-<?php if ($homepageSections['offer']['is_active'] ?? 1): ?>
-<section class="commerce-section campaign-offer-section" id="offers">
-    <div class="container">
-        <?php $offerSection = $homepageSections['offer']; $offerDesktop = $offerSection['image'] ?: 'assets/images/independence-day-offer-banner-v1.png'; $offerMobile = $offerSection['mobile_image'] ?: 'assets/images/independence-day-offer-banner-mobile-v1.png'; ?>
-        <a class="independence-image-offer reveal reveal--scale" href="<?= htmlspecialchars($offerSection['button_url'] ?: '#shop') ?>" aria-label="<?= htmlspecialchars($offerSection['title'] . '. ' . $offerSection['subtitle']) ?>">
-            <picture>
-                <?php if ($offerMobile): ?><source media="(max-width: 700px)" srcset="<?= htmlspecialchars($offerMobile) ?>"><?php endif; ?>
-                <img src="<?= htmlspecialchars($offerDesktop) ?>" alt="<?= htmlspecialchars($offerSection['title'] . '. ' . $offerSection['subtitle']) ?>" loading="lazy">
-            </picture>
-        </a>
-    </div>
-</section>
-<?php endif; ?>
-
-<?php if ($homepageSections['combos']['is_active'] ?? 1): ?>
-<section class="commerce-section combo-section">
-    <div class="container">
-        <div class="commerce-section__heading reveal">
-            <div>
-                <span class="eyebrow"><i class="ph ph-gift"></i> Value Bundles</span>
-                <h2><?= htmlspecialchars($homepageSections['combos']['title']) ?></h2>
-                <p><?= htmlspecialchars($homepageSections['combos']['subtitle']) ?></p>
-            </div>
-            <div class="commerce-section__actions">
-                <a class="text-link" href="#shop">View all combos <i class="ph ph-arrow-right"></i></a>
-                <div class="section-rail-controls home-slider-controls" aria-label="Combo slider controls">
-                    <button type="button" data-scroll-rail="#home-combo-rail" data-scroll-direction="-1" aria-label="Previous combos"><i class="ph ph-arrow-left"></i></button>
-                    <button type="button" data-scroll-rail="#home-combo-rail" data-scroll-direction="1" aria-label="Next combos"><i class="ph ph-arrow-right"></i></button>
                 </div>
-            </div>
-        </div>
-        <div class="combo-grid home-combo-rail" id="home-combo-rail" data-sliding-rail data-auto-slide="4200" tabindex="0" aria-label="Product combos">
-            <?php foreach ($combos as $index => $combo): ?>
-                <article class="combo-card reveal" data-delay="<?= $index * 70 ?>">
-                    <span class="combo-card__tag"><?= htmlspecialchars($combo['tag']) ?></span>
-                    <div class="combo-card__visual">
-                        <?php foreach ($combo['items'] as $item): ?><img src="<?= htmlspecialchars($item['image']) ?>" alt="<?= htmlspecialchars($item['name']) ?>" loading="lazy"><?php endforeach; ?>
-                    </div>
-                    <div class="combo-card__body">
-                        <h3><?= htmlspecialchars($combo['title']) ?></h3>
-                        <div><strong><?= money($combo['price']) ?></strong><s><?= money($combo['original']) ?></s><span class="combo-save">Save <?= (int) round((1 - $combo['price'] / $combo['original']) * 100) ?>%</span></div>
-                    </div>
-                </article>
-            <?php endforeach; ?>
-        </div>
-    </div>
-</section>
-<?php endif; ?>
+            </section>
+            <?php
+            break;
 
-<?php if ($homepageSections['reels']['is_active'] ?? 1): ?>
-<section class="content-section reels-section" id="made-with-care">
-    <div class="container">
-        <div class="content-heading content-heading--center reveal">
-            <div>
-                <span class="eyebrow"><i class="ph ph-film-strip"></i> Gawdee in Motion</span>
-                <h2><?= htmlspecialchars($homepageSections['reels']['title']) ?></h2>
-            </div>
-            <p><?= htmlspecialchars($homepageSections['reels']['subtitle']) ?></p>
-        </div>
-        <div class="reel-grid">
-            <?php foreach ($homepageReels as $index => $media): $product = product_by_slug($products, (string) $media['product_slug']); ?>
-                <article class="reel-card reveal" data-delay="<?= $index * 75 ?>">
-                    <div class="reel-card__media">
-                        <?php if ($media['media_type'] === 'video' && $media['file_path']): ?>
-                            <video controls playsinline preload="metadata" <?= $media['poster_path'] ? 'poster="' . htmlspecialchars($media['poster_path']) . '"' : '' ?>><source src="<?= htmlspecialchars($media['file_path']) ?>"></video>
-                        <?php elseif ($media['media_type'] === 'external_video'): ?>
-                            <?php if ($media['poster_path']): ?><img src="<?= htmlspecialchars($media['poster_path']) ?>" alt="<?= htmlspecialchars($media['alt_text'] ?: $media['title']) ?>" loading="lazy"><?php else: ?><span class="reel-card__placeholder"><i class="ph ph-video-camera"></i></span><?php endif; ?>
-                            <a href="<?= htmlspecialchars($media['external_url']) ?>" target="_blank" rel="noopener" aria-label="Watch <?= htmlspecialchars($media['title']) ?>"><i class="ph ph-play"></i></a>
-                        <?php else: ?>
-                            <img src="<?= htmlspecialchars($media['file_path']) ?>" alt="<?= htmlspecialchars($media['alt_text'] ?: $media['title']) ?>" loading="lazy">
-                            <?php if ($media['link_url']): ?><a href="<?= htmlspecialchars($media['link_url']) ?>" aria-label="Open <?= htmlspecialchars($media['title']) ?>"><i class="ph ph-arrow-up-right"></i></a><?php endif; ?>
-                        <?php endif; ?>
-                        <span class="reel-card__index"><?= sprintf('%02d', $index + 1) ?></span>
-                    </div>
-                    <div class="reel-card__product">
-                        <?php if ($product): ?>
-                            <img src="<?= htmlspecialchars($product['image']) ?>" alt="">
-                            <div><h3><?= htmlspecialchars($media['title'] ?: $product['name']) ?></h3><p><?= money($product['price']) ?> <span><?= htmlspecialchars($product['weight']) ?></span></p></div>
-                            <button type="button" data-add-to-cart data-id="<?= htmlspecialchars($product['id']) ?>" data-name="<?= htmlspecialchars($product['full_name']) ?>" data-price="<?= $product['price'] ?>" data-image="<?= htmlspecialchars($product['image']) ?>" aria-label="Add <?= htmlspecialchars($product['name']) ?> to cart"><i class="ph ph-shopping-bag"></i></button>
-                        <?php else: ?><div><h3><?= htmlspecialchars($media['title']) ?></h3><p><?= htmlspecialchars($media['subtitle']) ?></p></div><?php endif; ?>
-                    </div>
-                </article>
-            <?php endforeach; ?>
-        </div>
-    </div>
-</section>
-<?php endif; ?>
-
-<?php if ($homepageSections['reviews']['is_active'] ?? 1): ?>
-<section class="content-section testimonial-reference-section" id="reviews" aria-labelledby="testimonial-heading">
-    <div class="container">
-        <header class="testimonial-reference-head reveal">
-            <span class="eyebrow"><i class="ph ph-quotes"></i> Customer Love</span>
-            <h2 id="testimonial-heading"><span><?= htmlspecialchars($homepageSections['reviews']['title']) ?></span></h2>
-            <p><?= htmlspecialchars($homepageSections['reviews']['subtitle']) ?></p>
-        </header>
-
-        <div class="testimonial-reference-controls reveal" aria-label="Testimonial slider controls">
-            <span><i class="ph ph-hand-swipe-left"></i> Real stories from real families</span>
-            <div class="section-rail-controls">
-                <button type="button" data-scroll-rail="#testimonial-rail" data-scroll-direction="-1" aria-label="Previous testimonial"><i class="ph ph-arrow-left"></i></button>
-                <button type="button" data-scroll-rail="#testimonial-rail" data-scroll-direction="1" aria-label="Next testimonial"><i class="ph ph-arrow-right"></i></button>
-            </div>
-        </div>
-
-        <div class="testimonial-reference-rail" id="testimonial-rail" data-sliding-rail data-auto-slide="4600" tabindex="0" aria-label="Customer testimonials">
-            <?php foreach ($testimonialDeck as $index => $testimonial): ?>
-                <article class="testimonial-reference-card reveal" data-delay="<?= min($index * 45, 180) ?>">
-                    <div class="testimonial-reference-card__top">
-                        <?php if (!empty($testimonial['avatar'])): ?>
-                            <img class="testimonial-reference-avatar" src="<?= htmlspecialchars($testimonial['avatar']) ?>" alt="<?= htmlspecialchars($testimonial['name']) ?>" loading="lazy">
-                        <?php else: ?>
-                            <span class="testimonial-reference-avatar testimonial-reference-avatar--initials"><?= htmlspecialchars($testimonial['initials']) ?></span>
-                        <?php endif; ?>
-                        <div class="testimonial-reference-person">
-                            <h3><?= htmlspecialchars($testimonial['name']) ?></h3>
-                            <p><i class="ph ph-seal-check"></i> Verified Buyer</p>
+        case 'combos':
+            ?>
+            <section class="commerce-section combo-section">
+                <div class="container">
+                    <div class="commerce-section__heading reveal">
+                        <div>
+                            <span class="eyebrow"><i class="ph ph-gift"></i> <?= htmlspecialchars($homepageSections['combos']['eyebrow'] ?: 'Value Bundles') ?></span>
+                            <h2><?= htmlspecialchars($homepageSections['combos']['title']) ?></h2>
+                            <p><?= htmlspecialchars($homepageSections['combos']['subtitle']) ?></p>
                         </div>
-                        <span class="testimonial-reference-quote" aria-hidden="true"><i class="ph ph-quotes"></i></span>
+                        <div class="commerce-section__actions">
+                            <a class="text-link" href="#shop">View all combos <i class="ph ph-arrow-right"></i></a>
+                            <div class="section-rail-controls home-slider-controls" aria-label="Combo slider controls">
+                                <button type="button" data-scroll-rail="#home-combo-rail" data-scroll-direction="-1" aria-label="Previous combos"><i class="ph ph-arrow-left"></i></button>
+                                <button type="button" data-scroll-rail="#home-combo-rail" data-scroll-direction="1" aria-label="Next combos"><i class="ph ph-arrow-right"></i></button>
+                            </div>
+                        </div>
                     </div>
-                    <div class="testimonial-reference-meta">
-                        <span class="testimonial-reference-stars" aria-label="<?= (int) $testimonial['rating'] ?> out of 5 stars"><?= str_repeat('★', (int) $testimonial['rating']) ?></span>
-                        <span class="testimonial-reference-product"><?= htmlspecialchars($testimonial['product']) ?></span>
+                    <div class="combo-grid home-combo-rail" id="home-combo-rail" data-sliding-rail data-auto-slide="4200" tabindex="0" aria-label="Product combos">
+                        <?php foreach ($combos as $index => $combo): ?>
+                            <article class="combo-card reveal" data-delay="<?= $index * 70 ?>">
+                                <span class="combo-card__tag"><?= htmlspecialchars($combo['tag']) ?></span>
+                                <div class="combo-card__visual">
+                                    <?php foreach ($combo['items'] as $item): ?><img src="<?= htmlspecialchars($item['image']) ?>" alt="<?= htmlspecialchars($item['name']) ?>" loading="lazy"><?php endforeach; ?>
+                                </div>
+                                <div class="combo-card__body">
+                                    <h3><?= htmlspecialchars($combo['title']) ?></h3>
+                                    <div><strong><?= money($combo['price']) ?></strong><s><?= money($combo['original']) ?></s><span class="combo-save">Save <?= (int) round((1 - $combo['price'] / $combo['original']) * 100) ?>%</span></div>
+                                </div>
+                            </article>
+                        <?php endforeach; ?>
                     </div>
-                    <blockquote>“<?= htmlspecialchars($testimonial['quote']) ?>”</blockquote>
-                    <footer>
-                        <a href="product.php?slug=<?= urlencode($testimonial['slug']) ?>">Read Full Story</a>
-                        <a class="testimonial-reference-arrow" href="product.php?slug=<?= urlencode($testimonial['slug']) ?>" aria-label="Read <?= htmlspecialchars($testimonial['name']) ?>'s story"><i class="ph ph-caret-right"></i></a>
-                    </footer>
-                </article>
-            <?php endforeach; ?>
-        </div>
-    </div>
-</section>
-<?php endif; ?>
+                </div>
+            </section>
+            <?php
+            break;
 
-<?php if ($homepageSections['stories']['is_active'] ?? 1): ?>
-<section class="content-section blog-reference-section" id="stories" aria-labelledby="blog-reference-heading">
-    <div class="container">
-        <?php if ($homepageSections['stories']['image']): ?><img class="blog-reference-decoration" src="<?= htmlspecialchars($homepageSections['stories']['image']) ?>" alt="" aria-hidden="true" loading="lazy"><?php endif; ?>
-        <header class="blog-reference-head reveal">
-            <span class="eyebrow"><i class="ph ph-book-open"></i> Wellness Journal</span>
-            <h2 id="blog-reference-heading"><?= htmlspecialchars($homepageSections['stories']['title']) ?></h2>
-            <p><?= htmlspecialchars($homepageSections['stories']['subtitle']) ?></p>
-        </header>
-        <div class="blog-reference-grid" id="story-rail">
-            <?php foreach ($stories as $index => $story): ?>
-                <article class="blog-reference-card reveal" data-delay="<?= $index * 60 ?>">
-                    <img src="<?= htmlspecialchars($story['image']) ?>" alt="<?= htmlspecialchars($story['title']) ?>" loading="lazy">
-                    <span class="blog-reference-card__accent" aria-hidden="true"></span>
-                    <div class="blog-reference-card__wash" aria-hidden="true"></div>
-                    <div class="blog-reference-card__content">
-                        <span><?= htmlspecialchars($story['tag']) ?></span>
-                        <h3><?= htmlspecialchars($story['title']) ?></h3>
-                        <p><?= htmlspecialchars($story['excerpt']) ?></p>
-                        <a href="<?= htmlspecialchars($story['url'] ?? 'blog.php') ?>">Read Story <i class="ph ph-arrow-right"></i></a>
+        case 'reels':
+            ?>
+            <section class="content-section reels-section" id="made-with-care">
+                <div class="container">
+                    <div class="content-heading content-heading--center reveal">
+                        <div>
+                            <span class="eyebrow"><i class="ph ph-film-strip"></i> <?= htmlspecialchars($homepageSections['reels']['eyebrow'] ?: 'Gawdee in Motion') ?></span>
+                            <h2><?= htmlspecialchars($homepageSections['reels']['title']) ?></h2>
+                        </div>
+                        <p><?= htmlspecialchars($homepageSections['reels']['subtitle']) ?></p>
                     </div>
-                </article>
-            <?php endforeach; ?>
-        </div>
-        <div class="blog-reference-footer reveal">
-            <a class="button button--secondary" href="<?= htmlspecialchars($homepageSections['stories']['button_url'] ?: 'blog.php') ?>"><?= htmlspecialchars($homepageSections['stories']['button_label'] ?: 'View All Stories') ?> <i class="ph ph-arrow-right"></i></a>
-        </div>
-    </div>
-</section>
-<?php endif; ?>
+                    <div class="reel-grid">
+                        <?php foreach ($homepageReels as $index => $media): $product = product_by_slug($products, (string) $media['product_slug']); ?>
+                            <article class="reel-card reveal" data-delay="<?= $index * 75 ?>">
+                                <div class="reel-card__media">
+                                    <?php if ($media['media_type'] === 'video' && $media['file_path']): ?>
+                                        <video controls playsinline preload="metadata" <?= $media['poster_path'] ? 'poster="' . htmlspecialchars($media['poster_path']) . '"' : '' ?>><source src="<?= htmlspecialchars($media['file_path']) ?>"></video>
+                                    <?php elseif ($media['media_type'] === 'external_video'): ?>
+                                        <?php if ($media['poster_path']): ?><img src="<?= htmlspecialchars($media['poster_path']) ?>" alt="<?= htmlspecialchars($media['alt_text'] ?: $media['title']) ?>" loading="lazy"><?php else: ?><span class="reel-card__placeholder"><i class="ph ph-video-camera"></i></span><?php endif; ?>
+                                        <a href="<?= htmlspecialchars($media['external_url']) ?>" target="_blank" rel="noopener" aria-label="Watch <?= htmlspecialchars($media['title']) ?>"><i class="ph ph-play"></i></a>
+                                    <?php else: ?>
+                                        <img src="<?= htmlspecialchars($media['file_path']) ?>" alt="<?= htmlspecialchars($media['alt_text'] ?: $media['title']) ?>" loading="lazy">
+                                        <?php if ($media['link_url']): ?><a href="<?= htmlspecialchars($media['link_url']) ?>" aria-label="Open <?= htmlspecialchars($media['title']) ?>"><i class="ph ph-arrow-up-right"></i></a><?php endif; ?>
+                                    <?php endif; ?>
+                                    <span class="reel-card__index"><?= sprintf('%02d', $index + 1) ?></span>
+                                </div>
+                                <div class="reel-card__product">
+                                    <?php if ($product): ?>
+                                        <img src="<?= htmlspecialchars($product['image']) ?>" alt="">
+                                        <div><h3><?= htmlspecialchars($media['title'] ?: $product['name']) ?></h3><p><?= money($product['price']) ?> <span><?= htmlspecialchars($product['weight']) ?></span></p></div>
+                                        <button type="button" data-add-to-cart data-id="<?= htmlspecialchars($product['id']) ?>" data-name="<?= htmlspecialchars($product['full_name']) ?>" data-price="<?= $product['price'] ?>" data-image="<?= htmlspecialchars($product['image']) ?>" aria-label="Add <?= htmlspecialchars($product['name']) ?> to cart"><i class="ph ph-shopping-bag"></i></button>
+                                    <?php else: ?><div><h3><?= htmlspecialchars($media['title']) ?></h3><p><?= htmlspecialchars($media['subtitle']) ?></p></div><?php endif; ?>
+                                </div>
+                            </article>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+            </section>
+            <?php
+            break;
 
-<?php if ($homepageSections['newsletter']['is_active'] ?? 1): ?>
-<section class="commerce-section newsletter-section reveal">
-    <div class="container">
-        <div class="newsletter-panel">
-            <div class="newsletter-panel__icon"><i class="ph ph-envelope-simple"></i></div>
-            <div>
-                <span class="eyebrow eyebrow--light"><i class="ph ph-paper-plane-tilt"></i> Stay Connected</span>
-                <h2><?= htmlspecialchars($homepageSections['newsletter']['title']) ?></h2>
-                <p><?= htmlspecialchars($homepageSections['newsletter']['subtitle']) ?></p>
-            </div>
-            <form action="#" data-newsletter-form><label class="sr-only" for="newsletter-email">Enter your email</label><input id="newsletter-email" type="email" placeholder="Enter your email" required><button type="submit"><?= htmlspecialchars($homepageSections['newsletter']['button_label'] ?: 'Subscribe') ?> <i class="ph ph-arrow-right"></i></button></form>
-            <div class="newsletter-panel__leaf" aria-hidden="true"><i class="ph ph-plant"></i></div>
-        </div>
-    </div>
-</section>
-<?php endif; ?>
+        case 'reviews':
+            ?>
+            <section class="content-section testimonial-reference-section" id="reviews" aria-labelledby="testimonial-heading">
+                <div class="container">
+                    <header class="testimonial-reference-head reveal">
+                        <span class="eyebrow"><i class="ph ph-quotes"></i> <?= htmlspecialchars($homepageSections['reviews']['eyebrow'] ?: 'Customer Love') ?></span>
+                        <h2 id="testimonial-heading"><span><?= htmlspecialchars($homepageSections['reviews']['title']) ?></span></h2>
+                        <p><?= htmlspecialchars($homepageSections['reviews']['subtitle']) ?></p>
+                    </header>
+
+                    <div class="testimonial-reference-controls reveal" aria-label="Testimonial slider controls">
+                        <span><i class="ph ph-hand-swipe-left"></i> Real stories from real families</span>
+                        <div class="section-rail-controls">
+                            <button type="button" data-scroll-rail="#testimonial-rail" data-scroll-direction="-1" aria-label="Previous testimonial"><i class="ph ph-arrow-left"></i></button>
+                            <button type="button" data-scroll-rail="#testimonial-rail" data-scroll-direction="1" aria-label="Next testimonial"><i class="ph ph-arrow-right"></i></button>
+                        </div>
+                    </div>
+
+                    <div class="testimonial-reference-rail" id="testimonial-rail" data-sliding-rail data-auto-slide="4600" tabindex="0" aria-label="Customer testimonials">
+                        <?php foreach ($testimonialDeck as $index => $testimonial): ?>
+                            <article class="testimonial-reference-card reveal" data-delay="<?= min($index * 45, 180) ?>">
+                                <div class="testimonial-reference-card__top">
+                                    <?php if (!empty($testimonial['avatar'])): ?>
+                                        <img class="testimonial-reference-avatar" src="<?= htmlspecialchars($testimonial['avatar']) ?>" alt="<?= htmlspecialchars($testimonial['name']) ?>" loading="lazy">
+                                    <?php else: ?>
+                                        <span class="testimonial-reference-avatar testimonial-reference-avatar--initials"><?= htmlspecialchars($testimonial['initials']) ?></span>
+                                    <?php endif; ?>
+                                    <div class="testimonial-reference-person">
+                                        <h3><?= htmlspecialchars($testimonial['name']) ?></h3>
+                                        <p><i class="ph ph-seal-check"></i> Verified Buyer</p>
+                                    </div>
+                                    <span class="testimonial-reference-quote" aria-hidden="true"><i class="ph ph-quotes"></i></span>
+                                </div>
+                                <div class="testimonial-reference-meta">
+                                    <span class="testimonial-reference-stars" aria-label="<?= (int) $testimonial['rating'] ?> out of 5 stars"><?= str_repeat('★', (int) $testimonial['rating']) ?></span>
+                                    <span class="testimonial-reference-product"><?= htmlspecialchars($testimonial['product']) ?></span>
+                                </div>
+                                <blockquote>“<?= htmlspecialchars($testimonial['quote']) ?>”</blockquote>
+                                <footer>
+                                    <a href="product.php?slug=<?= urlencode($testimonial['slug']) ?>">Read Full Story</a>
+                                    <a class="testimonial-reference-arrow" href="product.php?slug=<?= urlencode($testimonial['slug']) ?>" aria-label="Read <?= htmlspecialchars($testimonial['name']) ?>'s story"><i class="ph ph-caret-right"></i></a>
+                                </footer>
+                            </article>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+            </section>
+            <?php
+            break;
+
+        case 'stories':
+            ?>
+            <section class="content-section blog-reference-section" id="stories" aria-labelledby="blog-reference-heading">
+                <div class="container">
+                    <header class="blog-reference-head reveal">
+                        <span class="eyebrow"><i class="ph ph-book-open"></i> <?= htmlspecialchars($homepageSections['stories']['eyebrow'] ?: 'Wellness Journal') ?></span>
+                        <h2 id="blog-reference-heading"><?= htmlspecialchars($homepageSections['stories']['title']) ?></h2>
+                        <p><?= htmlspecialchars($homepageSections['stories']['subtitle']) ?></p>
+                    </header>
+                    <div class="blog-reference-grid" id="story-rail">
+                        <?php foreach ($stories as $index => $story): ?>
+                            <article class="blog-reference-card reveal" data-delay="<?= $index * 60 ?>">
+                                <img src="<?= htmlspecialchars($story['image']) ?>" alt="<?= htmlspecialchars($story['title']) ?>" loading="lazy">
+                                <span class="blog-reference-card__accent" aria-hidden="true"></span>
+                                <div class="blog-reference-card__wash" aria-hidden="true"></div>
+                                <div class="blog-reference-card__content">
+                                    <span><?= htmlspecialchars($story['tag']) ?></span>
+                                    <h3><?= htmlspecialchars($story['title']) ?></h3>
+                                    <p><?= htmlspecialchars($story['excerpt']) ?></p>
+                                    <a href="<?= htmlspecialchars($story['url'] ?? 'blog.php') ?>">Read Story <i class="ph ph-arrow-right"></i></a>
+                                </div>
+                            </article>
+                        <?php endforeach; ?>
+                    </div>
+                    <div class="blog-reference-footer reveal">
+                        <a class="button button--secondary" href="<?= htmlspecialchars($homepageSections['stories']['button_url'] ?: 'blog.php') ?>"><?= htmlspecialchars($homepageSections['stories']['button_label'] ?: 'View All Stories') ?> <i class="ph ph-arrow-right"></i></a>
+                    </div>
+                </div>
+            </section>
+            <?php
+            break;
+
+        case 'newsletter':
+            ?>
+            <section class="commerce-section newsletter-section reveal">
+                <div class="container">
+                    <div class="newsletter-panel">
+                        <div class="newsletter-panel__icon"><i class="ph ph-envelope-simple"></i></div>
+                        <div>
+                            <span class="eyebrow eyebrow--light"><i class="ph ph-paper-plane-tilt"></i> <?= htmlspecialchars($homepageSections['newsletter']['eyebrow'] ?: 'Stay Connected') ?></span>
+                            <h2><?= htmlspecialchars($homepageSections['newsletter']['title']) ?></h2>
+                            <p><?= htmlspecialchars($homepageSections['newsletter']['subtitle']) ?></p>
+                        </div>
+                        <form action="#" data-newsletter-form><label class="sr-only" for="newsletter-email">Enter your email</label><input id="newsletter-email" type="email" placeholder="Enter your email" required><button type="submit"><?= htmlspecialchars($homepageSections['newsletter']['button_label'] ?: 'Subscribe') ?> <i class="ph ph-arrow-right"></i></button></form>
+                        <div class="newsletter-panel__leaf" aria-hidden="true"><i class="ph ph-plant"></i></div>
+                    </div>
+                </div>
+            </section>
+            <?php
+            break;
+    }
+}
+?>
 
 <?php if (gawdee_setting('offer_popup_enabled', '1') === '1'): ?>
 <?php
