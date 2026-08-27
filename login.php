@@ -71,9 +71,10 @@ require __DIR__ . '/includes/header.php';
         </div>
 
         <div class="customer-auth-visual__copy">
-            <span class="eyebrow eyebrow--light"><i class="ph ph-sparkle"></i> Pure · Authentic · Indian</span>
+            <span class="eyebrow eyebrow--light"><i class="ph ph-sparkle"></i> PURE • WHOLESOME • NUTRITIOUS</span>
             <h1>Your goodness,<br><em>always in view.</em></h1>
-            <p>Track your orders live, manage subscriptions, view past tax invoices, and get instant DTDC shipment updates in one place.</p>
+            <p>Track your orders live, manage subscriptions, view past tax invoices, and get instant DTDC shipment
+                updates in one place.</p>
         </div>
 
         <div class="customer-auth-steps">
@@ -149,7 +150,8 @@ require __DIR__ . '/includes/header.php';
                 <i class="ph ph-shield-check"></i>
                 <div>
                     <strong>256-Bit Encrypted & Private</strong>
-                    <span>Your personal information and order history are protected with industry-standard encryption.</span>
+                    <span>Your personal information and order history are protected with industry-standard
+                        encryption.</span>
                 </div>
             </div>
         </div>

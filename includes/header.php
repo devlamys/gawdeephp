@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-$pageTitle = $pageTitle ?? 'Gawdee — Pure food, thoughtfully made';
-$pageDescription = $pageDescription ?? 'Traditional foods and natural wellness essentials, thoughtfully sourced and made for modern families.';
+$pageTitle = $pageTitle ?? 'Gawdee — Pure food, Thoughtfully made';
+$pageDescription = $pageDescription ?? 'Traditional foods and natural wellness essentials, Thoughtfully sourced and made for modern families.';
 $bodyClass = $bodyClass ?? '';
 $headerCustomer = gawdee_customer();
 $isReferenceProductPage = str_contains($bodyClass, 'product-page--reference');
@@ -70,20 +70,20 @@ $isReferenceProductPage = str_contains($bodyClass, 'product-page--reference');
         </div>
 
         <?php if (empty($hideCommerceNav)): ?>
-        <div class="container commerce-nav-shell">
-            <a class="category-menu-button" href="products.php" aria-label="Browse all categories">
-                <i class="ph ph-squares-four" aria-hidden="true"></i> All Categories
-            </a>
-            <nav class="commerce-nav" aria-label="Product categories">
-                <a href="products.php?category=ghee" data-nav-filter="ghee">Ghee</a>
-                <a href="products.php?category=honey" data-nav-filter="honey">Honey</a>
-                <a href="products.php?category=wellness" data-nav-filter="wellness">Drops</a>
-                <a href="products.php?category=nutrition" data-nav-filter="nutrition">Mix Me</a>
-                <a href="products.php?category=sugar" data-nav-filter="sugar">Sugar</a>
-                <a href="index.php#offers">Offers <small>HOT</small></a>
-                <a href="blog.php">Blog</a>
-            </nav>
-        </div>
+                <div class="container commerce-nav-shell">
+                    <a class="category-menu-button" href="products.php" aria-label="Browse all categories">
+                        <i class="ph ph-squares-four" aria-hidden="true"></i> All Categories
+                    </a>
+                    <nav class="commerce-nav" aria-label="Product categories">
+                        <a href="products.php?category=ghee" data-nav-filter="ghee">Ghee</a>
+                        <a href="products.php?category=honey" data-nav-filter="honey">Honey</a>
+                        <a href="products.php?category=wellness" data-nav-filter="wellness">Drops</a>
+                        <a href="products.php?category=nutrition" data-nav-filter="nutrition">Mix Me</a>
+                        <a href="products.php?category=sugar" data-nav-filter="sugar">Sugar</a>
+                        <a href="index.php#offers">Offers <small>HOT</small></a>
+                        <a href="blog.php">Blog</a>
+                    </nav>
+                </div>
         <?php endif; ?>
 
         <nav class="mobile-nav commerce-mobile-nav" data-mobile-menu aria-label="Mobile navigation">

@@ -313,6 +313,8 @@ CREATE TABLE IF NOT EXISTS hero_banners_two (
     id INT AUTO_INCREMENT PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
     headline VARCHAR(255) NOT NULL DEFAULT '',
+    eyebrow VARCHAR(255) NOT NULL DEFAULT '',
+    subtitle VARCHAR(255) NOT NULL DEFAULT '',
     desktop_video VARCHAR(255) NOT NULL DEFAULT '',
     mobile_video VARCHAR(255) NOT NULL DEFAULT '',
     duration INT NOT NULL DEFAULT 1,
@@ -557,6 +559,8 @@ CREATE TABLE IF NOT EXISTS hero_banners_two (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     title TEXT NOT NULL,
     headline TEXT NOT NULL DEFAULT '',
+    eyebrow TEXT NOT NULL DEFAULT '',
+    subtitle TEXT NOT NULL DEFAULT '',
     desktop_video TEXT NOT NULL DEFAULT '',
     mobile_video TEXT NOT NULL DEFAULT '',
     duration INTEGER NOT NULL DEFAULT 1,
@@ -772,6 +776,12 @@ SQL);
         'is_featured' => 'INTEGER NOT NULL DEFAULT 0',
     ] as $column => $definition) {
         gawdee_ensure_column($db, 'blog_posts', $column, $definition);
+    }
+    foreach ([
+        'eyebrow' => "TEXT NOT NULL DEFAULT ''",
+        'subtitle' => "TEXT NOT NULL DEFAULT ''",
+    ] as $column => $definition) {
+        gawdee_ensure_column($db, 'hero_banners_two', $column, $definition);
     }
     gawdee_ensure_column($db, 'orders', 'user_id', 'INTEGER');
     foreach ([
@@ -1279,11 +1289,21 @@ function gawdee_mark_order_paid(int $orderId, string $paymentId = '', string $si
     }
 }
 
-function gawdee_base_url(): string
+function gawdee_base_url(string $path = ''): string
 {
-    $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-    $host = $_SERVER['HTTP_HOST'] ?? 'localhost:8080';
-    return $scheme . '://' . $host;
+    $envUrl = gawdee_env('APP_URL');
+    if (!empty($envUrl)) {
+        $baseUrl = rtrim($envUrl, '/');
+    } else {
+        $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+        $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+        $scriptName = $_SERVER['SCRIPT_NAME'] ?? '';
+        $dir = str_replace('\\', '/', dirname($scriptName));
+        $dir = preg_replace('#/admin$#', '', $dir);
+        $basePath = ($dir === '/' || $dir === '.') ? '' : $dir;
+        $baseUrl = $scheme . '://' . $host . $basePath;
+    }
+    return $path !== '' ? $baseUrl . '/' . ltrim($path, '/') : $baseUrl;
 }
 
 gawdee_db();

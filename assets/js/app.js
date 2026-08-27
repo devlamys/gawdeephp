@@ -132,7 +132,9 @@
     const scrubSection = qs('[data-hero-scrub-section]');
     const scrubVideo = qs('[data-hero-scrub-video]', scrubSection || document);
     const scrubPoster = qs('[data-hero-scrub-poster]', scrubSection || document);
+    const scrubEyebrow = qs('.hero-scrub-eyebrow', scrubSection || document) || qs('[data-scrub-step="1"]', scrubSection || document);
     const scrubTitle = qs('[data-scrub-title]', scrubSection || document);
+    const scrubSubtitle = qs('.hero-scrub-subtitle', scrubSection || document) || qs('[data-scrub-step="3"]', scrubSection || document);
     const scrubSteps = qsa('[data-scrub-step]', scrubSection || document);
     const scrubIndicator = qs('[data-scrub-indicator]', scrubSection || document);
 
@@ -178,13 +180,34 @@
                 const currentVideoUrl = isMobile && slide.mobile_video ? slide.mobile_video : (slide.desktop_video || slide.mobile_video);
                 const nextVideoUrl = isMobile && nextSlide.mobile_video ? nextSlide.mobile_video : (nextSlide.desktop_video || nextSlide.mobile_video);
 
+                if (scrubEyebrow) {
+                    scrubEyebrow.style.opacity = '0';
+                    scrubEyebrow.style.transform = 'translateY(10px)';
+                    setTimeout(() => {
+                        const eb = slide.eyebrow || "";
+                        scrubEyebrow.innerHTML = `<i class="ph ph-sparkle"></i> ${eb}`;
+                        scrubEyebrow.style.opacity = '1';
+                        scrubEyebrow.style.transform = 'translateY(0)';
+                    }, 150);
+                }
+
                 if (scrubTitle) {
                     scrubTitle.style.opacity = '0';
                     scrubTitle.style.transform = 'translateY(10px)';
                     setTimeout(() => {
-                        scrubTitle.textContent = slide.headline || slide.title || "PURE FOOD. BETTER EVERYDAY.";
+                        scrubTitle.textContent = slide.headline || slide.title || "Nourishment, Rooted in Nature";
                         scrubTitle.style.opacity = '1';
                         scrubTitle.style.transform = 'translateY(0)';
+                    }, 150);
+                }
+
+                if (scrubSubtitle) {
+                    scrubSubtitle.style.opacity = '0';
+                    scrubSubtitle.style.transform = 'translateY(10px)';
+                    setTimeout(() => {
+                        scrubSubtitle.textContent = slide.subtitle || "Thoughtfully sourced natural goodness for everyday wellness.";
+                        scrubSubtitle.style.opacity = '1';
+                        scrubSubtitle.style.transform = 'translateY(0)';
                     }, 150);
                 }
 
