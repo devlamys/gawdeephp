@@ -117,7 +117,7 @@ $initialSubtitle = !empty($firstSlide['subtitle']) ? $firstSlide['subtitle'] : (
                 <p class="hero-scrub-subtitle is-active" data-scrub-step="3"><?= htmlspecialchars($initialSubtitle) ?></p>
                 <div class="hero-scrub-actions is-active" data-scrub-step="4">
                     <a href="#shop" class="button button--primary">Shop Collection <i class="ph ph-arrow-right"></i></a>
-                    <a href="#why-gawdee" class="button button--cream">Discover Gawdee</a>
+                    <a href="#why-gawdee" class="button button--cream">Meet Gawdee</a>
                 </div>
                 <div class="hero-scrub-indicator" data-scrub-indicator>
                     <span>Scroll to explore</span>
@@ -231,7 +231,8 @@ foreach ($homepageSections as $sectionKey => $section) {
                                 data-category-link="<?= htmlspecialchars($category['filter']) ?>">
                                 <span class="category-card__visual">
                                     <?php if (!empty($category['image'])): ?>
-                                        <img src="<?= htmlspecialchars($category['image']) ?>" alt="<?= htmlspecialchars($category['name']) ?>" loading="lazy">
+                                        <img src="<?= htmlspecialchars($category['image']) ?>"
+                                            alt="<?= htmlspecialchars($category['name']) ?>" loading="lazy">
                                     <?php elseif (!empty($category['icon'])): ?>
                                         <i class="ph <?= htmlspecialchars($category['icon']) ?>"></i>
                                     <?php else: ?>
@@ -263,23 +264,27 @@ foreach ($homepageSections as $sectionKey => $section) {
                     <div class="story-pillar-grid">
                         <article class="story-pillar-card">
                             <span class="story-pillar-num">01</span>
-                            <h3>Thoughtfully Sourced</h3>
-                            <p>Pure, untamed ingredients sourced directly from ethical small-batch farms across India.</p>
+                            <h3>Nutrient-Rich Ingredients</h3>
+                            <p>Carefully selected natural ingredients packed with essential nutrients to support your body and make
+                                everyday meals more nourishing.</p>
                         </article>
                         <article class="story-pillar-card">
                             <span class="story-pillar-num">02</span>
-                            <h3>Traditional Goodness</h3>
-                            <p>Time-honoured recipes and wood-pressed or slow-cooked methods preserved over generations.</p>
+                            <h3>Clean & Wholesome</h3>
+                            <p>Made with thoughtfully chosen ingredients and no unnecessary artificial additives, so you know
+                                exactly what goes into your food.</p>
                         </article>
                         <article class="story-pillar-card">
                             <span class="story-pillar-num">03</span>
-                            <h3>Everyday Wellness</h3>
-                            <p>Nourishment designed for modern daily routines, 100% free from artificial additives.</p>
+                            <h3>Nutrition for Every Day</h3>
+                            <p>Created to fit effortlessly into your daily routine, helping you add wholesome nourishment to your
+                                breakfast, snacks, and everyday meals.</p>
                         </article>
                         <article class="story-pillar-card">
                             <span class="story-pillar-num">04</span>
-                            <h3>Made with Care in India</h3>
-                            <p>Mindfully crafted, lab-tested, and packaged to deliver peak purity to your doorstep.</p>
+                            <h3>Quality You Can Trust</h3>
+                            <p>Every Gawdee product is carefully prepared, quality checked, and packed with care to preserve its
+                                freshness, goodness, and nutritional value.</p>
                         </article>
                     </div>
                 </div>
@@ -346,7 +351,7 @@ foreach ($homepageSections as $sectionKey => $section) {
                             <p><?= htmlspecialchars($homepageSections['combos']['subtitle']) ?></p>
                         </div>
                         <div class="commerce-section__actions">
-                            <a class="text-link" href="#shop">View all combos <i class="ph ph-arrow-right"></i></a>
+                            <a class="text-link" href="#shop">Explore all combos <i class="ph ph-arrow-right"></i></a>
                             <div class="section-rail-controls home-slider-controls" aria-label="Combo slider controls">
                                 <button type="button" data-scroll-rail="#home-combo-rail" data-scroll-direction="-1"
                                     aria-label="Previous combos"><i class="ph ph-arrow-left"></i></button>
