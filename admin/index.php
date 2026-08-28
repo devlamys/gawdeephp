@@ -235,12 +235,17 @@ SQL);
         }
 
         if ($action === 'save_cms') {
+            $featuredStoriesCount = (int) gawdee_db()->query("SELECT COUNT(*) FROM blog_posts WHERE status='published' AND is_featured=1")->fetchColumn();
             $sections = gawdee_sections();
             $statement = gawdee_db()->prepare('UPDATE cms_sections SET eyebrow=?, title=?, subtitle=?, body=?, image=?, mobile_image=?, video_url=?, button_label=?, button_url=?, coupon_code=?, sort_order=?, is_active=?, updated_at=CURRENT_TIMESTAMP WHERE section_key=?');
             foreach ($sections as $key => $section) {
                 $image = admin_upload_media('section_image_' . $key, 'sections', trim((string) ($_POST['image'][$key] ?? '')), ['image']);
                 $mobileImage = admin_upload_media('section_mobile_image_' . $key, 'sections', trim((string) ($_POST['mobile_image'][$key] ?? '')), ['image']);
                 $couponCode = strtoupper(trim((string) ($_POST['coupon_code'][$key] ?? '')));
+                $isActive = isset($_POST['active'][$key]) ? 1 : 0;
+                if ($key === 'stories' && $featuredStoriesCount === 0) {
+                    $isActive = 0;
+                }
                 $statement->execute([
                     trim((string) ($_POST['eyebrow'][$key] ?? '')),
                     trim((string) ($_POST['title'][$key] ?? '')),
@@ -253,7 +258,7 @@ SQL);
                     trim((string) ($_POST['button_url'][$key] ?? '')),
                     $couponCode,
                     (int) ($_POST['sort_order'][$key] ?? $section['sort_order']),
-                    isset($_POST['active'][$key]) ? 1 : 0,
+                    $isActive,
                     $key,
                 ]);
                 if ($key === 'offer' && $couponCode !== '') {

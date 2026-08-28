@@ -49,26 +49,20 @@ $blogCovers = [
     'assets/images/blogs/modern-food-choices-v1.webp',
     'assets/images/blogs/quality-over-quantity-v1.webp',
 ];
-$stories = [
-    ['tag' => 'Better eating', 'title' => 'Why Small Daily Food Improvements Matter More Than Big Changes', 'excerpt' => 'When it comes to improving eating habits, small thoughtful choices can create lasting change.', 'image' => $blogCovers[0]],
-    ['tag' => 'Mindful habits', 'title' => 'How to Gradually Shift to Better Eating Without Sudden Changes', 'excerpt' => 'Improving everyday nutrition can feel simpler when each new habit is introduced with care.', 'image' => $blogCovers[1]],
-    ['tag' => 'Modern wellness', 'title' => 'How Modern Lifestyle Is Changing Food Choices in India', 'excerpt' => 'Busy routines are reshaping how families plan, prepare and enjoy everyday nourishment.', 'image' => $blogCovers[2]],
-    ['tag' => 'Ingredients', 'title' => 'Why Quality Matters More Than Quantity in Daily Food Consumption', 'excerpt' => 'Thoughtfully chosen ingredients and balanced portions matter more than simply eating more.', 'image' => $blogCovers[3]],
-];
-
 $reelProducts = [$products[2], $products[3], $products[0]];
 $homepageSections = gawdee_sections();
 $homepageBanners = gawdee_banners();
 $heroBannersTwo = gawdee_hero_banners_two();
 $homepageReels = gawdee_homepage_media('reels');
-$publishedStories = gawdee_db()->query("SELECT title, slug, excerpt, featured_image, category FROM blog_posts WHERE status='published' ORDER BY is_featured DESC, COALESCE(published_at, created_at) DESC LIMIT 4")->fetchAll();
+$publishedStories = gawdee_db()->query("SELECT title, slug, excerpt, featured_image, category FROM blog_posts WHERE status='published' AND is_featured=1 ORDER BY COALESCE(published_at, created_at) DESC LIMIT 4")->fetchAll();
+$stories = [];
 if ($publishedStories) {
     foreach ($publishedStories as $index => $post) {
-        $stories[$index] = [
+        $stories[] = [
             'tag' => trim((string) $post['category']) ?: 'Gawdee journal',
             'title' => $post['title'],
-            'excerpt' => trim((string) $post['excerpt']) ?: $stories[$index]['excerpt'],
-            'image' => trim((string) $post['featured_image']) ?: $blogCovers[$index],
+            'excerpt' => trim((string) $post['excerpt']),
+            'image' => trim((string) $post['featured_image']) ?: ($blogCovers[$index % count($blogCovers)] ?? ''),
             'url' => 'blog-post.php?slug=' . rawurlencode($post['slug']),
         ];
     }
@@ -508,6 +502,9 @@ foreach ($homepageSections as $sectionKey => $section) {
             break;
 
         case 'stories':
+            if (empty($stories)) {
+                break;
+            }
             ?>
             <section class="content-section blog-reference-section" id="stories" aria-labelledby="blog-reference-heading">
                 <div class="container">

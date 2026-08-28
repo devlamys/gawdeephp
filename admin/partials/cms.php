@@ -1,6 +1,6 @@
 <?php
-
 $sections = gawdee_sections();
+$featuredStoriesCount = (int) gawdee_db()->query("SELECT COUNT(*) FROM blog_posts WHERE status='published' AND is_featured=1")->fetchColumn();
 ?>
 <div class="admin-section-title">
     <div>
@@ -19,6 +19,7 @@ $sections = gawdee_sections();
     <input type="hidden" name="action" value="save_cms">
     <div class="cms-editor-list">
         <?php $posIndex = 0; foreach ($sections as $key => $section): $posIndex++; ?>
+            <?php $isStoriesBlocked = ($key === 'stories' && $featuredStoriesCount === 0); ?>
             <details class="cms-editor" data-section-key="<?= htmlspecialchars($key) ?>" <?= in_array($key, ['offer', 'reviews', 'stories', 'reels'], true) ? 'open' : '' ?>>
                 <summary>
                     <span class="cms-card__key"><i class="ph ph-layout"></i></span>
@@ -28,7 +29,7 @@ $sections = gawdee_sections();
                         <button type="button" class="cms-reorder-btn js-move-up" title="Move section up"><i class="ph ph-caret-up"></i></button>
                         <button type="button" class="cms-reorder-btn js-move-down" title="Move section down"><i class="ph ph-caret-down"></i></button>
                     </div>
-                    <span class="status-pill <?= $section['is_active'] ? '' : 'status-pill--draft' ?>"><?= $section['is_active'] ? 'Visible' : 'Hidden' ?></span>
+                    <span class="status-pill <?= ($section['is_active'] && !$isStoriesBlocked) ? '' : 'status-pill--draft' ?>"><?= ($section['is_active'] && !$isStoriesBlocked) ? 'Visible' : 'Hidden' ?></span>
                     <i class="ph ph-caret-down"></i>
                 </summary>
                 <div class="cms-editor__body form-grid form-grid--3">
@@ -75,8 +76,15 @@ $sections = gawdee_sections();
                                 src="../<?= htmlspecialchars($section['mobile_image']) ?>" alt=""
                                 loading="lazy"><small><?= htmlspecialchars($section['mobile_image']) ?></small><?php endif; ?>
                     </div>
-                    <label class="form-switch"><input type="checkbox" name="active[<?= htmlspecialchars($key) ?>]"
-                            <?= $section['is_active'] ? 'checked' : '' ?>><span>Show this section</span></label>
+                    <?php if ($isStoriesBlocked): ?>
+                        <label class="form-switch form-switch--disabled" title="No featured published stories available. Mark 'Feature on homepage' on published articles under Stories &amp; Publishing first.">
+                            <input type="checkbox" disabled name="active[stories]">
+                            <span>Show this section <small class="text-danger" style="color:var(--gawdee-danger,#d9534f); display:block; margin-top:2px;"><i class="ph ph-warning-circle"></i> Blocked: No featured published stories available. Check "Feature on homepage" in Stories to enable.</small></span>
+                        </label>
+                    <?php else: ?>
+                        <label class="form-switch"><input type="checkbox" name="active[<?= htmlspecialchars($key) ?>]"
+                                <?= $section['is_active'] ? 'checked' : '' ?>><span>Show this section</span></label>
+                    <?php endif; ?>
                 </div>
             </details>
         <?php endforeach; ?>
