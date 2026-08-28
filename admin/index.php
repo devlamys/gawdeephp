@@ -7,7 +7,7 @@ require_once __DIR__ . '/../includes/integrations.php';
 
 $admin = gawdee_require_admin();
 $expiredPaymentOrders = gawdee_expire_stale_payment_orders();
-$allowedViews = ['dashboard', 'products', 'orders', 'banners', 'banners_two', 'cms', 'testimonials', 'media', 'blog', 'ai', 'integrations', 'settings'];
+$allowedViews = ['dashboard', 'categories', 'products', 'orders', 'banners', 'banners_two', 'cms', 'testimonials', 'media', 'blog', 'ai', 'integrations', 'settings'];
 $view = in_array($_GET['view'] ?? 'dashboard', $allowedViews, true) ? (string) ($_GET['view'] ?? 'dashboard') : 'dashboard';
 
 function admin_redirect(string $view, string $message, string $type = 'success'): never
@@ -350,6 +350,39 @@ SQL);
             admin_redirect('media', 'Homepage media visibility updated.');
         }
 
+        if ($action === 'save_category') {
+            $id = (int) ($_POST['id'] ?? 0);
+            $name = trim((string) ($_POST['name'] ?? ''));
+            $filter = gawdee_slug((string) ($_POST['filter'] ?? '')) ?: 'all';
+            if ($name === '') {
+                throw new RuntimeException('Category name is required.');
+            }
+            $existingImage = trim((string) ($_POST['existing_image'] ?? ''));
+            $image = admin_upload_media('category_image', 'categories', $existingImage, ['image']);
+            $icon = trim((string) ($_POST['icon'] ?? ''));
+            $sortOrder = (int) ($_POST['sort_order'] ?? 0);
+            $isActive = isset($_POST['is_active']) ? 1 : 0;
+
+            if ($id > 0) {
+                gawdee_db()->prepare('UPDATE categories SET name=?, filter=?, image=?, icon=?, sort_order=?, is_active=?, updated_at=CURRENT_TIMESTAMP WHERE id=?')
+                    ->execute([$name, $filter, $image, $icon, $sortOrder, $isActive, $id]);
+            } else {
+                gawdee_db()->prepare('INSERT INTO categories (name, filter, image, icon, sort_order, is_active) VALUES (?, ?, ?, ?, ?, ?)')
+                    ->execute([$name, $filter, $image, $icon, $sortOrder, $isActive]);
+            }
+            admin_redirect('categories', 'Category card saved successfully.');
+        }
+
+        if ($action === 'delete_category') {
+            gawdee_db()->prepare('DELETE FROM categories WHERE id=?')->execute([(int) ($_POST['id'] ?? 0)]);
+            admin_redirect('categories', 'Category card deleted.');
+        }
+
+        if ($action === 'toggle_category') {
+            gawdee_db()->prepare('UPDATE categories SET is_active=CASE is_active WHEN 1 THEN 0 ELSE 1 END, updated_at=CURRENT_TIMESTAMP WHERE id=?')->execute([(int) ($_POST['id'] ?? 0)]);
+            admin_redirect('categories', 'Category visibility updated.');
+        }
+
         if ($action === 'save_store') {
             foreach (['store_name', 'store_email', 'store_phone', 'free_shipping_threshold', 'shipping_fee', 'cod_enabled', 'promo_text', 'whatsapp_number'] as $key) {
                 gawdee_set_setting($key, trim((string) ($_POST[$key] ?? '')));
@@ -512,9 +545,10 @@ SQL);
 
 $flash = $_SESSION['admin_flash'] ?? null;
 unset($_SESSION['admin_flash']);
-$viewTitles = ['dashboard' => 'Dashboard', 'products' => 'Products', 'orders' => 'Orders', 'banners' => 'Hero banners', 'banners_two' => 'Hero banners 2', 'cms' => 'Homepage CMS', 'testimonials' => 'Testimonials', 'media' => 'Homepage media', 'blog' => 'Blog', 'ai' => 'AI studio', 'integrations' => 'Integrations', 'settings' => 'Store settings'];
+$viewTitles = ['dashboard' => 'Dashboard', 'categories' => 'Shop by Category', 'products' => 'Products', 'orders' => 'Orders', 'banners' => 'Hero banners', 'banners_two' => 'Hero banners 2', 'cms' => 'Homepage CMS', 'testimonials' => 'Testimonials', 'media' => 'Homepage media', 'blog' => 'Blog', 'ai' => 'AI studio', 'integrations' => 'Integrations', 'settings' => 'Store settings'];
 $navItems = [
     ['dashboard', 'ph-squares-four', 'Dashboard'],
+    ['categories', 'ph-squares-four', 'Categories'],
     ['products', 'ph-package', 'Products'],
     ['orders', 'ph-receipt', 'Orders'],
     ['banners', 'ph-image', 'Hero banners'],
@@ -968,6 +1002,9 @@ $stats = [
 
                 <?php elseif ($view === 'cms'): ?>
                     <?php require __DIR__ . '/partials/cms.php'; ?>
+
+                <?php elseif ($view === 'categories'): ?>
+                    <?php require __DIR__ . '/partials/categories.php'; ?>
 
                 <?php elseif ($view === 'testimonials'): ?>
                     <?php require __DIR__ . '/partials/testimonials.php'; ?>

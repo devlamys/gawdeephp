@@ -8,16 +8,7 @@ $pageTitle = 'Gawdee — Authentic organic food for everyday wellness';
 $pageDescription = 'Shop Gawdee A2 Gir cow ghee, raw honey, natural nutrition blends and traditional pantry essentials.';
 $bodyClass = 'commerce-home';
 
-$categories = [
-    ['name' => 'Ghee', 'filter' => 'ghee', 'image' => $products[2]['image']],
-    ['name' => 'Honey', 'filter' => 'honey', 'image' => $products[3]['image']],
-    ['name' => 'Drops', 'filter' => 'wellness', 'image' => $products[4]['image']],
-    ['name' => 'Mix Me', 'filter' => 'nutrition', 'image' => $products[0]['image']],
-    ['name' => 'Sugar', 'filter' => 'sugar', 'image' => $products[6]['image']],
-    ['name' => 'Combo Offers', 'filter' => 'all', 'image' => $products[3]['image']],
-    ['name' => 'Gift Packs', 'filter' => 'all', 'icon' => 'ph-gift'],
-    ['name' => 'New Arrivals', 'filter' => 'all', 'image' => $products[5]['image']],
-];
+$categories = gawdee_categories();
 
 $combos = [
     ['tag' => 'Wellness Combo', 'title' => 'A2 Ghee 500ml + Honey 650g', 'items' => [$products[2], $products[3]], 'price' => 1499, 'original' => 1748],
@@ -239,9 +230,13 @@ foreach ($homepageSections as $sectionKey => $section) {
                                 href="products.php?category=<?= rawurlencode((string) $category['filter']) ?>"
                                 data-category-link="<?= htmlspecialchars($category['filter']) ?>">
                                 <span class="category-card__visual">
-                                    <?php if (isset($category['image'])): ?><img src="<?= htmlspecialchars($category['image']) ?>"
-                                            alt="" loading="lazy"><?php else: ?><i
-                                            class="ph <?= htmlspecialchars($category['icon']) ?>"></i><?php endif; ?>
+                                    <?php if (!empty($category['image'])): ?>
+                                        <img src="<?= htmlspecialchars($category['image']) ?>" alt="<?= htmlspecialchars($category['name']) ?>" loading="lazy">
+                                    <?php elseif (!empty($category['icon'])): ?>
+                                        <i class="ph <?= htmlspecialchars($category['icon']) ?>"></i>
+                                    <?php else: ?>
+                                        <i class="ph ph-squares-four"></i>
+                                    <?php endif; ?>
                                 </span>
                                 <strong><?= htmlspecialchars($category['name']) ?></strong>
                                 <span class="category-card__arrow"><i class="ph ph-arrow-right"></i></span>

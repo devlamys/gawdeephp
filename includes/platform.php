@@ -358,6 +358,18 @@ CREATE TABLE IF NOT EXISTS testimonials (
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+CREATE TABLE IF NOT EXISTS categories (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    filter VARCHAR(100) NOT NULL DEFAULT 'all',
+    image VARCHAR(255) NOT NULL DEFAULT '',
+    icon VARCHAR(100) NOT NULL DEFAULT '',
+    sort_order INT NOT NULL DEFAULT 0,
+    is_active TINYINT(1) NOT NULL DEFAULT 1,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 CREATE TABLE IF NOT EXISTS homepage_media (
     id INT AUTO_INCREMENT PRIMARY KEY,
     section_key VARCHAR(100) NOT NULL DEFAULT 'reels',
@@ -622,6 +634,18 @@ CREATE TABLE IF NOT EXISTS homepage_media (
     updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS categories (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    filter TEXT NOT NULL DEFAULT 'all',
+    image TEXT NOT NULL DEFAULT '',
+    icon TEXT NOT NULL DEFAULT '',
+    sort_order INTEGER NOT NULL DEFAULT 0,
+    is_active INTEGER NOT NULL DEFAULT 1,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE IF NOT EXISTS blog_posts (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     title TEXT NOT NULL,
@@ -804,6 +828,7 @@ SQL);
 
     gawdee_create_index($db, 'products', 'idx_products_category_key', 'category_key');
     gawdee_create_index($db, 'testimonials', 'idx_testimonials_active', 'is_active, sort_order, id');
+    gawdee_create_index($db, 'categories', 'idx_categories_active', 'is_active, sort_order, id');
     gawdee_create_index($db, 'homepage_media', 'idx_homepage_media_section', 'section_key, is_active, sort_order, id');
     gawdee_create_index($db, 'blog_posts', 'idx_blog_posts_status', 'status, published_at, id');
     gawdee_create_index($db, 'orders', 'idx_orders_user_id', 'user_id');
@@ -1090,6 +1115,32 @@ function gawdee_testimonials(bool $includeInactive = false): array
         $row['is_active'] = (int) $row['is_active'];
         return $row;
     }, gawdee_db()->query($sql)->fetchAll());
+}
+
+function gawdee_categories(bool $includeInactive = false): array
+{
+    $sql = 'SELECT * FROM categories' . ($includeInactive ? '' : ' WHERE is_active = 1') . ' ORDER BY sort_order, id';
+    $rows = gawdee_db()->query($sql)->fetchAll();
+    return array_map(static function (array $row): array {
+        $row['id'] = (int) $row['id'];
+        $row['sort_order'] = (int) $row['sort_order'];
+        $row['is_active'] = (int) $row['is_active'];
+        return $row;
+    }, $rows);
+}
+
+function gawdee_category_by_id(int $id): ?array
+{
+    $stmt = gawdee_db()->prepare('SELECT * FROM categories WHERE id = ?');
+    $stmt->execute([$id]);
+    $row = $stmt->fetch();
+    if (!$row) {
+        return null;
+    }
+    $row['id'] = (int) $row['id'];
+    $row['sort_order'] = (int) $row['sort_order'];
+    $row['is_active'] = (int) $row['is_active'];
+    return $row;
 }
 
 function gawdee_homepage_media(?string $sectionKey = null, bool $includeInactive = false): array
