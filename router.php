@@ -18,6 +18,10 @@ if ($uri === '/') {
     require __DIR__ . '/index.php';
     return true;
 }
+if ($uri === '/sitemap.xml') {
+    require __DIR__ . '/sitemap.php';
+    return true;
+}
 
 http_response_code(404);
 header('Content-Type: text/plain; charset=utf-8');

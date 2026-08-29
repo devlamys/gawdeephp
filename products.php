@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 require __DIR__ . '/includes/data.php';
 
-$pageTitle = 'All Gawdee Products | Natural Pantry & Wellness';
-$pageDescription = 'Browse the complete Gawdee catalogue: A2 Gir Cow Ghee, raw honey, MixMe nutrition, traditional sugar, powders and wellness essentials.';
-$bodyClass = 'catalog-page';
 $categoryFilters = [
     'all' => ['All Products', 'ph-squares-four'],
     'ghee' => ['Ghee', 'ph-bowl-steam'],
@@ -16,6 +13,19 @@ $categoryFilters = [
     'wellness' => ['Wellness', 'ph-leaf'],
 ];
 $activeCategory = array_key_exists((string) ($_GET['category'] ?? ''), $categoryFilters) ? (string) $_GET['category'] : 'all';
+
+if ($activeCategory !== 'all') {
+    $catName = $categoryFilters[$activeCategory][0];
+    $pageTitle = 'Pure Gawdee ' . $catName . ' Products | Natural Storefront';
+    $pageDescription = 'Shop Gawdee ' . $catName . ' collection. Pure, unadulterated, lab-tested traditional wellness essentials thoughtfully crafted for modern living.';
+    $pageKeywords = 'Gawdee ' . $catName . ', organic ' . $catName . ', pure ' . $catName . ', natural wellness India';
+} else {
+    $pageTitle = 'All Gawdee Products | Natural Pantry & Wellness';
+    $pageDescription = 'Browse the complete Gawdee catalogue: A2 Gir Cow Ghee, raw honey, MixMe nutrition, traditional sugar, powders and wellness essentials.';
+    $pageKeywords = 'Gawdee products, A2 Gir cow ghee, raw forest honey, MixMe nutrition, organic food catalogue, wellness drops';
+}
+
+$bodyClass = 'catalog-page';
 $hideCommerceNav = true;
 require __DIR__ . '/includes/header.php';
 ?>

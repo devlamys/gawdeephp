@@ -12,6 +12,34 @@ if (!$post) {
 } else {
     $pageTitle = $post['title'] . ' — Gawdee Journal';
     $pageDescription = $post['meta_description'] ?: $post['excerpt'];
+    $pageKeywords = 'Gawdee, Gawdee Journal, ' . ($post['category'] ?: 'Wellness') . ', natural wellness, health guide';
+    $ogType = 'article';
+    $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+    $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+    $canonicalUrl = $scheme . '://' . $host . '/blog-post.php?slug=' . urlencode($post['slug']);
+    if (!empty($post['cover_image'])) {
+        $ogImage = str_starts_with($post['cover_image'], 'http') ? $post['cover_image'] : ($scheme . '://' . $host . '/' . ltrim($post['cover_image'], '/'));
+    }
+    $jsonLdExtra = [
+        '@context' => 'https://schema.org',
+        '@type' => 'BlogPosting',
+        'headline' => $post['title'],
+        'description' => $pageDescription,
+        'url' => $canonicalUrl,
+        'datePublished' => $post['created_at'] ?? null,
+        'author' => [
+            '@type' => 'Organization',
+            'name' => 'Gawdee'
+        ],
+        'publisher' => [
+            '@type' => 'Organization',
+            'name' => 'Gawdee',
+            'logo' => [
+                '@type' => 'ImageObject',
+                'url' => $scheme . '://' . $host . '/assets/images/logo.png'
+            ]
+        ]
+    ];
 }
 $bodyClass = 'blog-post-page';
 require __DIR__ . '/includes/header.php';

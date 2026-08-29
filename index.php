@@ -6,6 +6,7 @@ require __DIR__ . '/includes/data.php';
 
 $pageTitle = 'Gawdee — Authentic organic food for everyday wellness';
 $pageDescription = 'Shop Gawdee A2 Gir cow ghee, raw honey, natural nutrition blends and traditional pantry essentials.';
+$pageKeywords = 'Gawdee, Gawdee organic, A2 Gir cow ghee, raw wild forest honey, MixMe nutrition, Taral drops, organic food store India, pure ghee, natural sweeteners';
 $bodyClass = 'commerce-home';
 
 $categories = gawdee_categories();

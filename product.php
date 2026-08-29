@@ -26,6 +26,33 @@ if ($product === null) {
 
 $pageTitle = $product['full_name'] . ' | Gawdee';
 $pageDescription = $product['description'];
+$pageKeywords = 'Gawdee, ' . $product['name'] . ', ' . $product['category'] . ', organic food, natural wellness, pure nutrition';
+$ogType = 'og:product';
+$scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+$host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+$ogImage = (!empty($product['image']) && str_starts_with($product['image'], 'http')) ? $product['image'] : ($scheme . '://' . $host . '/' . ltrim((string) ($product['image'] ?? 'assets/images/logo.png'), '/'));
+$canonicalUrl = $scheme . '://' . $host . '/product.php?slug=' . urlencode($product['slug']);
+
+$jsonLdExtra = [
+    '@context' => 'https://schema.org/',
+    '@type' => 'Product',
+    'name' => $product['full_name'],
+    'image' => $ogImage,
+    'description' => $product['description'],
+    'sku' => (string) $product['id'],
+    'brand' => [
+        '@type' => 'Brand',
+        'name' => 'Gawdee'
+    ],
+    'offers' => [
+        '@type' => 'Offer',
+        'url' => $canonicalUrl,
+        'priceCurrency' => 'INR',
+        'price' => (float) $product['price'],
+        'availability' => 'https://schema.org/InStock',
+        'itemCondition' => 'https://schema.org/NewCondition'
+    ]
+];
 $bodyClass = 'product-page product-page--commerce product-page--reference';
 $submittedReviews = gawdee_product_reviews((string) $product['id']);
 $baseReviewCount = (int) $product['review_count'];

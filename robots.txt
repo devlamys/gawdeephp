@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: /sitemap.xml
+
+# LLM Documentation & Context
+llm: /llm.text
+llms: /llms.txt

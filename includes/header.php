@@ -4,7 +4,20 @@ declare(strict_types=1);
 
 $pageTitle = $pageTitle ?? 'Gawdee — Pure food, Thoughtfully made';
 $pageDescription = $pageDescription ?? 'Traditional foods and natural wellness essentials, Thoughtfully sourced and made for modern families.';
+$pageKeywords = $pageKeywords ?? 'Gawdee, organic food, A2 Gir cow ghee, raw wild forest honey, MixMe nutrition, wellness drops, natural food India, pure ghee, traditional foods';
+$pageRobots = $pageRobots ?? 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1';
 $bodyClass = $bodyClass ?? '';
+
+$scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+$host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+$requestUri = $_SERVER['REQUEST_URI'] ?? '/';
+$canonicalUrl = $canonicalUrl ?? ($scheme . '://' . $host . strtok($requestUri, '?'));
+$siteUrl = $scheme . '://' . $host;
+
+$ogType = $ogType ?? 'website';
+$ogImage = $ogImage ?? ($siteUrl . '/assets/images/logo.png');
+$twitterCard = $twitterCard ?? 'summary_large_image';
+
 $headerCustomer = gawdee_customer();
 $isReferenceProductPage = str_contains($bodyClass, 'product-page--reference');
 ?>
@@ -15,9 +28,67 @@ $isReferenceProductPage = str_contains($bodyClass, 'product-page--reference');
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#063E2B">
-    <meta name="description" content="<?= htmlspecialchars($pageDescription) ?>">
-    <meta name="gawdee-csrf" content="<?= htmlspecialchars(gawdee_csrf_token()) ?>">
+
+    <!-- SEO Primary Meta Tags -->
     <title><?= htmlspecialchars($pageTitle) ?></title>
+    <meta name="description" content="<?= htmlspecialchars($pageDescription) ?>">
+    <meta name="keywords" content="<?= htmlspecialchars($pageKeywords) ?>">
+    <meta name="author" content="Gawdee">
+    <meta name="application-name" content="Gawdee">
+    <meta name="robots" content="<?= htmlspecialchars($pageRobots) ?>">
+    <link rel="canonical" href="<?= htmlspecialchars($canonicalUrl) ?>">
+    <link rel="sitemap" type="application/xml" title="Sitemap" href="<?= htmlspecialchars($siteUrl) ?>/sitemap.xml">
+    <link rel="alternate" type="text/plain" href="<?= htmlspecialchars($siteUrl) ?>/llm.text"
+        title="Gawdee LLM Context">
+
+    <!-- Open Graph / Social Media Meta Tags -->
+    <meta property="og:site_name" content="Gawdee">
+    <meta property="og:type" content="<?= htmlspecialchars($ogType) ?>">
+    <meta property="og:url" content="<?= htmlspecialchars($canonicalUrl) ?>">
+    <meta property="og:title" content="<?= htmlspecialchars($pageTitle) ?>">
+    <meta property="og:description" content="<?= htmlspecialchars($pageDescription) ?>">
+    <meta property="og:image" content="<?= htmlspecialchars($ogImage) ?>">
+    <meta property="og:locale" content="en_US">
+
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="<?= htmlspecialchars($twitterCard) ?>">
+    <meta name="twitter:site" content="@gawdee">
+    <meta name="twitter:title" content="<?= htmlspecialchars($pageTitle) ?>">
+    <meta name="twitter:description" content="<?= htmlspecialchars($pageDescription) ?>">
+    <meta name="twitter:image" content="<?= htmlspecialchars($ogImage) ?>">
+
+    <meta name="gawdee-csrf" content="<?= htmlspecialchars(gawdee_csrf_token()) ?>">
+    <meta name="google-site-verification" content="sMQUAczenGsQG2ZP_s3YY5s-stxH5gxvJK6MYAEMUxY" />
+
+    <!-- Structured Data (Schema.org JSON-LD) -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "Gawdee",
+        "url": <?= json_encode($siteUrl, JSON_UNESCAPED_SLASHES) ?>,
+        "logo": <?= json_encode($siteUrl . '/assets/images/logo.png', JSON_UNESCAPED_SLASHES) ?>,
+        "description": <?= json_encode($pageDescription) ?>
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "Gawdee",
+        "url": <?= json_encode($siteUrl, JSON_UNESCAPED_SLASHES) ?>,
+        "potentialAction": {
+            "@type": "SearchAction",
+            "target": <?= json_encode($siteUrl . '/products.php?search={search_term_string}', JSON_UNESCAPED_SLASHES) ?>,
+            "query-input": "required name=search_term_string"
+        }
+    }
+    </script>
+    <?php if (isset($jsonLdExtra) && is_array($jsonLdExtra)): ?>
+        <script type="application/ld+json">
+                <?= json_encode($jsonLdExtra, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) ?>
+                </script>
+    <?php endif; ?>
     <!-- Favicon & App Icons -->
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <link rel="icon" type="image/png" sizes="32x32" href="assets/images/favicon-32x32.png">
@@ -76,20 +147,20 @@ $isReferenceProductPage = str_contains($bodyClass, 'product-page--reference');
         </div>
 
         <?php if (empty($hideCommerceNav)): ?>
-                <div class="container commerce-nav-shell">
-                    <a class="category-menu-button" href="products.php" aria-label="Browse all categories">
-                        <i class="ph ph-squares-four" aria-hidden="true"></i> All Categories
-                    </a>
-                    <nav class="commerce-nav" aria-label="Product categories">
-                        <a href="products.php?category=ghee" data-nav-filter="ghee">Ghee</a>
-                        <a href="products.php?category=honey" data-nav-filter="honey">Honey</a>
-                        <a href="products.php?category=wellness" data-nav-filter="wellness">Drops</a>
-                        <a href="products.php?category=nutrition" data-nav-filter="nutrition">Mix Me</a>
-                        <a href="products.php?category=sugar" data-nav-filter="sugar">Sugar</a>
-                        <a href="index.php#offers">Offers <small>HOT</small></a>
-                        <a href="blog.php">Blog</a>
-                    </nav>
-                </div>
+            <div class="container commerce-nav-shell">
+                <a class="category-menu-button" href="products.php" aria-label="Browse all categories">
+                    <i class="ph ph-squares-four" aria-hidden="true"></i> All Categories
+                </a>
+                <nav class="commerce-nav" aria-label="Product categories">
+                    <a href="products.php?category=ghee" data-nav-filter="ghee">Ghee</a>
+                    <a href="products.php?category=honey" data-nav-filter="honey">Honey</a>
+                    <a href="products.php?category=wellness" data-nav-filter="wellness">Drops</a>
+                    <a href="products.php?category=nutrition" data-nav-filter="nutrition">Mix Me</a>
+                    <a href="products.php?category=sugar" data-nav-filter="sugar">Sugar</a>
+                    <a href="index.php#offers">Offers <small>HOT</small></a>
+                    <a href="blog.php">Blog</a>
+                </nav>
+            </div>
         <?php endif; ?>
 
         <nav class="mobile-nav commerce-mobile-nav" data-mobile-menu aria-label="Mobile navigation">

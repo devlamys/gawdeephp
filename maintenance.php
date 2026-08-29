@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="google-site-verification" content="sMQUAczenGsQG2ZP_s3YY5s-stxH5gxvJK6MYAEMUxY" />
     <title>Under Maintenance | Gawdee</title>
     <!-- Favicon & App Icons -->
     <link rel="icon" type="image/x-icon" href="favicon.ico">
