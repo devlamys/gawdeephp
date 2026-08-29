@@ -75,19 +75,30 @@
                             <?= htmlspecialchars(ucfirst(gawdee_setting('ai_provider', 'groq'))) ?> powered</small></div>
                     <button type="button" data-ai-close aria-label="Close assistant"><i class="ph ph-x"></i></button>
                 </header>
-                <article class="ai-offer-card" aria-label="Latest Independence Day offer">
-                    <a class="ai-offer-card__media" href="index.php#offers" aria-label="View the Independence Day offer">
-                        <img src="assets/images/hero-slide-independence-v5.webp"
-                            alt="Happy Independence Day Gawdee wellness collection" loading="lazy">
-                        <span><i class="ph ph-sparkle"></i> Special offer</span>
-                    </a>
-                    <div class="ai-offer-card__body">
-                        <div><small>Happy Independence Day</small><strong>Flat 10% OFF <em>on all products</em></strong></div>
-                        <button type="button" data-copy-offer="<?= htmlspecialchars(gawdee_setting('offer_code', 'FREEDOM10')) ?>"
-                            aria-label="Copy offer code <?= htmlspecialchars(gawdee_setting('offer_code', 'FREEDOM10')) ?>"><strong><?= htmlspecialchars(gawdee_setting('offer_code', 'FREEDOM10')) ?></strong><span><i
-                                    class="ph ph-copy"></i> Copy</span></button>
-                    </div>
-                </article>
+                <?php if (gawdee_setting('offer_popup_enabled', '1') === '1'): ?>
+                    <?php
+                    $aiOfferCode    = gawdee_setting('offer_code', 'FREEDOM10');
+                    $aiOfferPercent = gawdee_setting('offer_percent', '10');
+                    $aiOfferTitle   = gawdee_setting('offer_popup_title', 'Independence Day Special');
+                    $aiOfferImage   = gawdee_setting('offer_popup_image', 'assets/images/hero-slide-independence-v5.webp');
+                    $aiOfferLink    = gawdee_setting('offer_popup_link', 'index.php#offers');
+                    ?>
+                    <article class="ai-offer-card" aria-label="Latest offer">
+                        <a class="ai-offer-card__media" href="<?= htmlspecialchars($aiOfferLink) ?>" aria-label="View offer">
+                            <img src="<?= htmlspecialchars($aiOfferImage) ?>"
+                                alt="<?= htmlspecialchars($aiOfferTitle) ?>" loading="lazy">
+                            <span><i class="ph ph-sparkle"></i> Special offer</span>
+                        </a>
+                        <div class="ai-offer-card__body">
+                            <div><small><?= htmlspecialchars($aiOfferTitle) ?></small><strong>Flat <?= htmlspecialchars($aiOfferPercent) ?>% OFF <em>on all products</em></strong></div>
+                            <?php if (!empty($aiOfferCode)): ?>
+                                <button type="button" data-copy-offer="<?= htmlspecialchars($aiOfferCode) ?>"
+                                    aria-label="Copy offer code <?= htmlspecialchars($aiOfferCode) ?>"><strong><?= htmlspecialchars($aiOfferCode) ?></strong><span><i
+                                            class="ph ph-copy"></i> Copy</span></button>
+                            <?php endif; ?>
+                        </div>
+                    </article>
+                <?php endif; ?>
                 <div class="ai-chat__messages" data-ai-messages>
                     <div class="ai-message ai-message--assistant">Namaste! How can I assist your wellness choices today?</div>
                 </div>
@@ -104,8 +115,13 @@
             </aside>
 <?php endif; ?>
 
+<?php
+$waNumber = preg_replace('/\D+/', '', gawdee_setting('whatsapp_number', '917055207030'));
+$waText = "Hi Gawdee Team! 👋 I’m interested in Gawdee products and would like to know more. Please assist me.";
+$waUrl = 'https://wa.me/' . $waNumber . '?text=' . rawurlencode($waText);
+?>
 <a class="whatsapp-float"
-    href="https://wa.me/<?= htmlspecialchars(preg_replace('/\D+/', '', gawdee_setting('whatsapp_number', '917055207030'))) ?>"
+    href="<?= htmlspecialchars($waUrl) ?>"
     target="_blank" rel="noopener" aria-label="Chat with Gawdee on WhatsApp"><i class="ph ph-whatsapp-logo"></i></a>
 <div class="toast" role="status" aria-live="polite" data-toast></div>
 <script src="assets/js/app.js" defer></script>

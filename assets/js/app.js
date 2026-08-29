@@ -861,28 +861,34 @@
         const reviewList = qs('[data-review-list]');
         if (!reviewList) return;
         const card = document.createElement('article');
-        card.className = 'review-card';
-        const avatar = document.createElement('div');
-        avatar.className = 'review-card__avatar';
-        avatar.textContent = (review.name || 'G').slice(0, 1).toUpperCase();
-        const content = document.createElement('div');
-        const top = document.createElement('div');
-        top.className = 'review-card__top';
-        const identity = document.createElement('div');
-        const name = document.createElement('strong');
-        name.textContent = review.name;
-        const meta = document.createElement('span');
-        meta.textContent = `Customer review · ${review.date}`;
-        identity.append(name, meta);
+        card.className = 'ref-review-card';
+
+        const header = document.createElement('div');
+        header.className = 'ref-review-card__header';
+        
+        const avatar = document.createElement('span');
+        avatar.className = 'ref-review-avatar';
+        avatar.textContent = (review.name || 'C').slice(0, 1).toUpperCase();
+        
+        const meta = document.createElement('div');
+        meta.className = 'ref-review-meta';
+        meta.innerHTML = `<strong>${safeText(review.name)}</strong><small><i class="ph-fill ph-seal-check"></i> Verified Buyer</small>`;
+        
+        header.append(avatar, meta);
+
         const stars = document.createElement('div');
-        stars.className = 'review-stars';
-        stars.setAttribute('aria-label', `${review.rating} out of 5 stars`);
-        stars.textContent = '★'.repeat(review.rating) + '☆'.repeat(5 - review.rating);
-        const copy = document.createElement('p');
-        copy.textContent = `“${review.review}”`;
-        top.append(identity, stars);
-        content.append(top, copy);
-        card.append(avatar, content);
+        stars.className = 'ref-review-stars';
+        stars.textContent = '★'.repeat(Number(review.rating || 5));
+
+        const quote = document.createElement('blockquote');
+        quote.className = 'ref-review-text';
+        quote.textContent = `“${review.review}”`;
+
+        const date = document.createElement('time');
+        date.className = 'ref-review-date';
+        date.textContent = review.date || 'Just now';
+
+        card.append(header, stars, quote, date);
         reviewList.prepend(card);
     };
 

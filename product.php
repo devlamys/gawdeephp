@@ -360,47 +360,84 @@ require __DIR__ . '/includes/header.php';
             </div>
         </section>
 
-        <section class="ref-reviews-faq" id="reviews">
-            <div class="ref-review-summary">
+        <section class="ref-reviews-section" id="reviews">
+            <div class="ref-reviews-header">
                 <h2>Customer Reviews</h2>
-                <div class="ref-review-score">
-                    <strong><?= number_format($displayRating, 1) ?></strong><span>★★★★★</span><small>Based on
-                        <?= $displayReviewCount ?> reviews</small></div>
-                <?php for ($stars = 5; $stars >= 1; $stars--):
-                    $barWidth = $stars === 5 ? 76 : ($stars === 4 ? 18 : ($stars === 3 ? 4 : 1)); ?>
-                        <div class="ref-review-bar"><span><?= $stars ?> ★</span><b><i
-                                    style="width:<?= $barWidth ?>%"></i></b><small><?= $barWidth ?>%</small></div>
-                <?php endfor; ?>
-                <details class="ref-write-review">
-                    <summary>Write a Review</summary>
-                    <form data-review-form data-product-id="<?= htmlspecialchars($product['id']) ?>">
-                        <div class="ref-review-rating"><?php for ($star = 5; $star >= 1; $star--): ?><input type="radio"
-                                        id="ref-rating-<?= $star ?>" name="rating" value="<?= $star ?>" <?= $star === 5 ? 'required' : '' ?>><label for="ref-rating-<?= $star ?>">★</label><?php endfor; ?></div>
-                        <input name="name" placeholder="Your name" required><input type="email" name="email"
-                            placeholder="Email address" required><textarea name="review" minlength="15" maxlength="1200"
-                            placeholder="Share your experience" required></textarea><button type="submit">Publish
-                            Review</button>
-                        <p data-review-status aria-live="polite"></p>
-                    </form>
+            </div>
+            <div class="ref-reviews-container">
+                <aside class="ref-review-summary">
+                    <div class="ref-review-score">
+                        <strong><?= number_format($displayRating, 1) ?></strong>
+                        <span>★★★★★</span>
+                        <small>Based on <?= $displayReviewCount ?> reviews</small>
+                    </div>
+                    <div class="ref-review-bars">
+                        <?php for ($stars = 5; $stars >= 1; $stars--):
+                            $barWidth = $stars === 5 ? 76 : ($stars === 4 ? 18 : ($stars === 3 ? 4 : 1)); ?>
+                                <div class="ref-review-bar">
+                                    <span><?= $stars ?> ★</span>
+                                    <b><i style="width:<?= $barWidth ?>%"></i></b>
+                                    <small><?= $barWidth ?>%</small>
+                                </div>
+                        <?php endfor; ?>
+                    </div>
+
+                    <?php $loggedInCustomer = gawdee_customer(); ?>
+                    <?php if ($loggedInCustomer !== null): ?>
+                        <details class="ref-write-review" open>
+                            <summary><i class="ph ph-note-pencil"></i> Write a Review</summary>
+                            <form data-review-form data-product-id="<?= htmlspecialchars($product['id']) ?>">
+                                <div class="ref-review-rating">
+                                    <?php for ($star = 5; $star >= 1; $star--): ?>
+                                        <input type="radio" id="ref-rating-<?= $star ?>" name="rating" value="<?= $star ?>" <?= $star === 5 ? 'required' : '' ?>>
+                                        <label for="ref-rating-<?= $star ?>">★</label>
+                                    <?php endfor; ?>
+                                </div>
+                                <input name="name" value="<?= htmlspecialchars($loggedInCustomer['name']) ?>" placeholder="Your name" required readonly style="background:#f1f5f2;cursor:not-allowed">
+                                <input type="email" name="email" value="<?= htmlspecialchars($loggedInCustomer['email']) ?>" placeholder="Email address" required readonly style="background:#f1f5f2;cursor:not-allowed">
+                                <textarea name="review" minlength="15" maxlength="1200" placeholder="Share your experience with this product..." required></textarea>
+                                <button type="submit">Submit Review <i class="ph ph-paper-plane-right"></i></button>
+                                <p data-review-status aria-live="polite"></p>
+                            </form>
+                        </details>
+                    <?php else: ?>
+                        <div class="ref-review-login-prompt">
+                            <i class="ph ph-lock-key"></i>
+                            <p>Only logged-in customers can submit reviews.</p>
+                            <a href="login.php?return=<?= rawurlencode('product.php?slug=' . $product['slug'] . '#reviews') ?>" class="ref-review-login-btn">
+                                <i class="ph ph-user"></i> Login to Write Review
+                            </a>
+                        </div>
+                    <?php endif; ?>
+                </aside>
+
+                <div class="ref-review-cards" data-review-list>
+                    <?php foreach ($reviewCards as $review): ?>
+                        <article class="ref-review-card">
+                            <div class="ref-review-card__header">
+                                <span class="ref-review-avatar"><?= htmlspecialchars(strtoupper(substr((string) $review['name'], 0, 1))) ?></span>
+                                <div class="ref-review-meta">
+                                    <strong><?= htmlspecialchars($review['name']) ?></strong>
+                                    <small><i class="ph-fill ph-seal-check"></i> Verified Buyer</small>
+                                </div>
+                            </div>
+                            <div class="ref-review-stars"><?= str_repeat('★', (int) $review['rating']) ?></div>
+                            <blockquote class="ref-review-text">“<?= htmlspecialchars($review['text']) ?>”</blockquote>
+                            <time class="ref-review-date"><?= htmlspecialchars($review['date']) ?></time>
+                        </article>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+        </section>
+
+        <section class="ref-faq" id="faqs">
+            <h2>Frequently Asked Questions</h2>
+            <?php foreach ($faqs as $index => $faq): ?>
+                <details <?= $index === 0 ? 'open' : '' ?>>
+                    <summary><?= htmlspecialchars($faq['question']) ?><i class="ph ph-caret-down"></i></summary>
+                    <p><?= htmlspecialchars($faq['answer']) ?></p>
                 </details>
-            </div>
-            <div class="ref-review-cards" data-review-list><?php foreach ($reviewCards as $review): ?>
-                        <article>
-                            <div><span><?= htmlspecialchars(strtoupper(substr((string) $review['name'], 0, 1))) ?></span>
-                                <p><strong><?= htmlspecialchars($review['name']) ?></strong><small><i
-                                            class="ph-fill ph-seal-check"></i> Verified Buyer</small></p>
-                            </div><b><?= str_repeat('★', (int) $review['rating']) ?></b>
-                            <blockquote>“<?= htmlspecialchars($review['text']) ?>”</blockquote>
-                            <time><?= htmlspecialchars($review['date']) ?></time>
-                        </article><?php endforeach; ?>
-            </div>
-            <div class="ref-faq" id="faqs">
-                <h2>Frequently Asked Questions</h2><?php foreach ($faqs as $index => $faq): ?>
-                        <details <?= $index === 0 ? 'open' : '' ?>>
-                            <summary><?= htmlspecialchars($faq['question']) ?><i class="ph ph-caret-down"></i></summary>
-                            <p><?= htmlspecialchars($faq['answer']) ?></p>
-                        </details><?php endforeach; ?>
-            </div>
+            <?php endforeach; ?>
         </section>
     </div>
 

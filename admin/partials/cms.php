@@ -50,31 +50,54 @@ $featuredStoriesCount = (int) gawdee_db()->query("SELECT COUNT(*) FROM blog_post
                             name="button_url[<?= htmlspecialchars($key) ?>]"
                             value="<?= htmlspecialchars($section['button_url']) ?>"
                             placeholder="#shop or products.php"></label>
-                    <label><span>Coupon code</span><input name="coupon_code[<?= htmlspecialchars($key) ?>]"
-                            value="<?= htmlspecialchars($section['coupon_code'] ?? ($key === 'offer' ? gawdee_setting('offer_code', 'FREEDOM10') : '')) ?>"
-                            placeholder="e.g. FREEDOM10"></label>
-                    <label class="form-span-3"><span>Video URL</span><input name="video_url[<?= htmlspecialchars($key) ?>]"
+                    <label class="form-span-2"><span>Video URL</span><input name="video_url[<?= htmlspecialchars($key) ?>]"
                             value="<?= htmlspecialchars($section['video_url']) ?>"
                             placeholder="Optional YouTube, Vimeo or uploaded video URL"></label>
 
-                    <div class="cms-media-field">
-                        <label><span>Desktop / primary image</span><input type="file"
-                                name="section_image_<?= htmlspecialchars($key) ?>"
-                                accept="image/jpeg,image/png,image/webp"></label>
-                        <input type="hidden" name="image[<?= htmlspecialchars($key) ?>]"
-                            value="<?= htmlspecialchars($section['image']) ?>">
-                        <?php if ($section['image']): ?><img src="../<?= htmlspecialchars($section['image']) ?>" alt=""
-                                loading="lazy"><small><?= htmlspecialchars($section['image']) ?></small><?php endif; ?>
-                    </div>
-                    <div class="cms-media-field">
-                        <label><span>Mobile image</span><input type="file"
-                                name="section_mobile_image_<?= htmlspecialchars($key) ?>"
-                                accept="image/jpeg,image/png,image/webp"></label>
-                        <input type="hidden" name="mobile_image[<?= htmlspecialchars($key) ?>]"
-                            value="<?= htmlspecialchars($section['mobile_image']) ?>">
-                        <?php if ($section['mobile_image']): ?><img
-                                src="../<?= htmlspecialchars($section['mobile_image']) ?>" alt=""
-                                loading="lazy"><small><?= htmlspecialchars($section['mobile_image']) ?></small><?php endif; ?>
+                    <div class="cms-media-grid form-span-3">
+                        <div class="cms-media-card">
+                            <div class="cms-media-card__header">
+                                <span><i class="ph ph-desktop"></i> Desktop / primary image</span>
+                                <small>Desktop Banner</small>
+                            </div>
+                            <label>
+                                <input type="file" name="section_image_<?= htmlspecialchars($key) ?>" accept="image/jpeg,image/png,image/webp">
+                            </label>
+                            <input type="hidden" name="image[<?= htmlspecialchars($key) ?>]" value="<?= htmlspecialchars($section['image']) ?>">
+                            <?php if ($section['image']): ?>
+                                <div class="cms-media-card__preview">
+                                    <img src="../<?= htmlspecialchars($section['image']) ?>" alt="Desktop image" loading="lazy">
+                                    <small><?= htmlspecialchars($section['image']) ?></small>
+                                </div>
+                            <?php else: ?>
+                                <div class="cms-media-card__preview is-empty">
+                                    <i class="ph ph-image"></i>
+                                    <small>No desktop image uploaded</small>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+
+                        <div class="cms-media-card">
+                            <div class="cms-media-card__header">
+                                <span><i class="ph ph-device-mobile"></i> Mobile image</span>
+                                <small>Mobile Banner</small>
+                            </div>
+                            <label>
+                                <input type="file" name="section_mobile_image_<?= htmlspecialchars($key) ?>" accept="image/jpeg,image/png,image/webp">
+                            </label>
+                            <input type="hidden" name="mobile_image[<?= htmlspecialchars($key) ?>]" value="<?= htmlspecialchars($section['mobile_image']) ?>">
+                            <?php if ($section['mobile_image']): ?>
+                                <div class="cms-media-card__preview">
+                                    <img src="../<?= htmlspecialchars($section['mobile_image']) ?>" alt="Mobile image" loading="lazy">
+                                    <small><?= htmlspecialchars($section['mobile_image']) ?></small>
+                                </div>
+                            <?php else: ?>
+                                <div class="cms-media-card__preview is-empty">
+                                    <i class="ph ph-image"></i>
+                                    <small>No mobile image uploaded</small>
+                                </div>
+                            <?php endif; ?>
+                        </div>
                     </div>
                     <?php if ($isStoriesBlocked): ?>
                         <label class="form-switch form-switch--disabled" title="No featured published stories available. Mark 'Feature on homepage' on published articles under Stories &amp; Publishing first.">

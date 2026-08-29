@@ -294,7 +294,7 @@ foreach ($homepageSections as $sectionKey => $section) {
                     $offerSection = $homepageSections['offer'];
                     $offerDesktop = $offerSection['image'] ?: 'assets/images/independence-day-offer-banner-v1.png';
                     $offerMobile = $offerSection['mobile_image'] ?: 'assets/images/independence-day-offer-banner-mobile-v1.png';
-                    $offerCoupon = trim((string) ($offerSection['coupon_code'] ?? gawdee_setting('offer_code', 'FREEDOM10'))) ?: 'FREEDOM10';
+                    $offerCoupon = gawdee_setting('offer_code', 'FREEDOM10');
                     ?>
                     <?php if (!empty($offerSection['title']) || !empty($offerSection['eyebrow']) || !empty($offerSection['subtitle'])): ?>
                         <div class="commerce-section__heading reveal">

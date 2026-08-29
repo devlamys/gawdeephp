@@ -102,23 +102,26 @@ require __DIR__ . '/includes/header.php';
                 </section>
 
                 <section class="checkout-card">
+                    <?php $offerEnabled = gawdee_setting('offer_popup_enabled', '1') === '1'; ?>
                     <div class="checkout-card__heading">
                         <span>03</span>
                         <div>
-                            <h2>Offer &amp; Payment</h2>
-                            <p>Apply discount code and choose payment method</p>
+                            <h2><?= $offerEnabled ? 'Offer &amp; Payment' : 'Payment' ?></h2>
+                            <p><?= $offerEnabled ? 'Apply discount code and choose payment method' : 'Choose payment method' ?></p>
                         </div>
                     </div>
-                    <div class="checkout-coupon">
-                        <label>
-                            <span>Have a Discount Code?</span>
-                            <div class="checkout-coupon__input">
-                                <input name="coupon_code" maxlength="30" placeholder="<?= htmlspecialchars(gawdee_setting('offer_code', 'FREEDOM10')) ?>">
-                                <button type="button" data-apply-coupon>Apply Code</button>
-                            </div>
-                            <small data-coupon-message>Use <?= htmlspecialchars(gawdee_setting('offer_code', 'FREEDOM10')) ?> for <?= (int) gawdee_setting('offer_percent', '10') ?>% off.</small>
-                        </label>
-                    </div>
+                    <?php if ($offerEnabled): ?>
+                        <div class="checkout-coupon">
+                            <label>
+                                <span>Have a Discount Code?</span>
+                                <div class="checkout-coupon__input">
+                                    <input name="coupon_code" maxlength="30" placeholder="<?= htmlspecialchars(gawdee_setting('offer_code', 'FREEDOM10')) ?>">
+                                    <button type="button" data-apply-coupon>Apply Code</button>
+                                </div>
+                                <small data-coupon-message>Use <?= htmlspecialchars(gawdee_setting('offer_code', 'FREEDOM10')) ?> for <?= (int) gawdee_setting('offer_percent', '10') ?>% off.</small>
+                            </label>
+                        </div>
+                    <?php endif; ?>
 
                     <div class="payment-options">
                         <?php if (gawdee_razorpay_configured()): ?>
