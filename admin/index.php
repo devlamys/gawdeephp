@@ -399,6 +399,10 @@ SQL);
             gawdee_set_setting('offer_code', strtoupper(trim((string) ($_POST['offer_code'] ?? 'FREEDOM10'))));
             gawdee_set_setting('offer_percent', (string) min(100, max(0, (int) ($_POST['offer_percent'] ?? 10))));
             gawdee_set_setting('offer_popup_enabled', isset($_POST['offer_popup_enabled']) ? '1' : '0');
+            gawdee_set_setting('offer_popup_title', trim((string) ($_POST['offer_popup_title'] ?? 'Independence Day Special')));
+            gawdee_set_setting('offer_popup_text', trim((string) ($_POST['offer_popup_text'] ?? 'Use code %code% at checkout')));
+            gawdee_set_setting('offer_popup_link', trim((string) ($_POST['offer_popup_link'] ?? '#shop')));
+            gawdee_set_setting('offer_popup_btn_text', trim((string) ($_POST['offer_popup_btn_text'] ?? 'Shop offer')));
             gawdee_set_setting('offer_popup_delay_ms', (string) min(10000, max(0, (int) ($_POST['offer_popup_delay_ms'] ?? 850))));
             $popupImage = admin_upload_media(
                 'offer_popup_image',
@@ -650,7 +654,8 @@ $stats = [
                                 <div>
                                     <h2>Recent orders</h2>
                                     <p>Latest checkout activity</p>
-                                </div><a class="admin-button admin-button--ghost" href="?view=orders">All orders</a>
+                                </div><a class="admin-button admin-button--ghost" href="?view=orders"><i
+                                        class="ph ph-shopping-cart"></i> All orders</a>
                             </div>
                             <?php $recentOrders = gawdee_db()->query('SELECT * FROM orders ORDER BY id DESC LIMIT 7')->fetchAll();
                             if ($recentOrders): ?>
@@ -1478,7 +1483,13 @@ $stats = [
                         <div class="admin-card__header">
                             <div>
                                 <h2>Homepage offer popup</h2>
-                                <p>Control the Independence Day artwork shown once per visitor session</p>
+                                <p>Control, customize and toggle the promotional offer popup shown to homepage visitors</p>
+                            </div>
+                            <div>
+                                <?php $isPopupEnabled = gawdee_setting('offer_popup_enabled', '1') === '1'; ?>
+                                <span class="badge <?= $isPopupEnabled ? 'badge--success' : 'badge--secondary' ?>">
+                                    <?= $isPopupEnabled ? 'ENABLED' : 'DISABLED' ?>
+                                </span>
                             </div>
                         </div>
                         <div class="admin-card__body">
@@ -1486,31 +1497,45 @@ $stats = [
                                     type="hidden" name="csrf_token"
                                     value="<?= htmlspecialchars(gawdee_csrf_token()) ?>"><input type="hidden" name="action"
                                     value="save_offer"><input type="hidden" name="existing_offer_popup_image"
-                                    value="<?= htmlspecialchars(gawdee_setting('offer_popup_image', 'assets/images/independence-offer-popup-v1.webp')) ?>"><label><span>Offer
+                                    value="<?= htmlspecialchars(gawdee_setting('offer_popup_image', 'assets/images/independence-offer-popup-v1.webp')) ?>"><label
+                                    class="form-span-2 form-switch" style="padding:10px 14px;background:#f8fbf9;border:1px solid #e1e8e3;border-radius:14px"><input type="checkbox" name="offer_popup_enabled" value="1"
+                                        <?= gawdee_setting('offer_popup_enabled', '1') === '1' ? 'checked' : '' ?>><span><strong>Enable homepage offer popup</strong> (check to activate, uncheck to disable)</span></label><label><span>Popup
+                                        Title</span><input name="offer_popup_title"
+                                        value="<?= htmlspecialchars(gawdee_setting('offer_popup_title', 'Independence Day Special')) ?>" placeholder="e.g. Independence Day Special"></label><label><span>Subtitle / Text</span><input name="offer_popup_text"
+                                        value="<?= htmlspecialchars(gawdee_setting('offer_popup_text', 'Use code %code% at checkout')) ?>" placeholder="Use code %code% at checkout"><small class="help-text">Use %code% to auto-highlight coupon code.</small></label><label><span>Offer
                                         code</span><input name="offer_code"
                                         value="<?= htmlspecialchars(gawdee_setting('offer_code', 'FREEDOM10')) ?>"></label><label><span>Discount
-                                        percent</span><input type="number" min="0" max="100" name="offer_percent"
-                                        value="<?= htmlspecialchars(gawdee_setting('offer_percent', '10')) ?>"></label><label><span>Popup
+                                        percent (%)</span><input type="number" min="0" max="100" name="offer_percent"
+                                        value="<?= htmlspecialchars(gawdee_setting('offer_percent', '10')) ?>"></label><label><span>Target
+                                        Link URL</span><input name="offer_popup_link"
+                                        value="<?= htmlspecialchars(gawdee_setting('offer_popup_link', '#shop')) ?>" placeholder="e.g. #shop or /products.php"></label><label><span>Button Label</span><input name="offer_popup_btn_text"
+                                        value="<?= htmlspecialchars(gawdee_setting('offer_popup_btn_text', 'Shop offer')) ?>" placeholder="e.g. Shop offer"></label><label><span>Popup
                                         image</span><input type="file" name="offer_popup_image"
                                         accept="image/jpeg,image/png,image/webp"><small class="help-text">JPG, PNG or WebP
                                         up to 10 MB. A vertical 4:5 image works best.</small></label><label><span>Open delay
                                         (milliseconds)</span><input type="number" min="0" max="10000" step="50"
                                         name="offer_popup_delay_ms"
-                                        value="<?= htmlspecialchars(gawdee_setting('offer_popup_delay_ms', '850')) ?>"></label><label
-                                    class="form-switch"><input type="checkbox" name="offer_popup_enabled" value="1"
-                                        <?= gawdee_setting('offer_popup_enabled', '1') === '1' ? 'checked' : '' ?>><span>Show
-                                        offer
-                                        popup on homepage</span></label>
-                                <div style="display:flex;justify-content:flex-end;align-items:end"><button
+                                        value="<?= htmlspecialchars(gawdee_setting('offer_popup_delay_ms', '850')) ?>"></label>
+                                <div class="form-span-2" style="display:flex;justify-content:flex-end;align-items:center"><button
                                         class="admin-button admin-button--primary">Save popup settings</button></div>
                                 <?php $offerPopupPreview = gawdee_setting('offer_popup_image', 'assets/images/independence-offer-popup-v1.webp');
                                 if ($offerPopupPreview !== ''): ?>
                                     <div class="form-span-2"
-                                        style="padding:14px;border:1px solid #e1e8e3;border-radius:18px;background:#f8fbf9">
-                                        <span class="help-text">CURRENT POPUP ARTWORK</span><img
-                                            src="../<?= htmlspecialchars($offerPopupPreview) ?>" alt="Current offer popup"
-                                            style="display:block;width:min(100%,230px);margin-top:10px;border-radius:16px;box-shadow:0 14px 30px rgba(9,54,33,.14)">
-                                    </div><?php endif; ?>
+                                        style="padding:16px;border:1px solid #e1e8e3;border-radius:18px;background:#f8fbf9;display:flex;gap:20px;align-items:center;flex-wrap:wrap">
+                                        <img src="../<?= htmlspecialchars($offerPopupPreview) ?>" alt="Current offer popup"
+                                            style="display:block;width:140px;border-radius:14px;box-shadow:0 10px 24px rgba(9,54,33,.14)">
+                                        <div>
+                                            <span class="help-text" style="text-transform:uppercase;font-weight:700">CURRENT POPUP PREVIEW</span>
+                                            <h4 style="margin:4px 0 2px;font-size:1.05rem;color:var(--admin-text)"><?= htmlspecialchars(gawdee_setting('offer_popup_title', 'Independence Day Special')) ?></h4>
+                                            <p style="margin:2px 0;font-size:0.9rem;color:#444">
+                                                Code: <strong><?= htmlspecialchars(gawdee_setting('offer_code', 'FREEDOM10')) ?></strong> (<?= htmlspecialchars(gawdee_setting('offer_percent', '10')) ?>% OFF)
+                                            </p>
+                                            <p style="margin:2px 0;font-size:0.85rem;color:#666">
+                                                Target Link: <code><?= htmlspecialchars(gawdee_setting('offer_popup_link', '#shop')) ?></code> | Button: <strong><?= htmlspecialchars(gawdee_setting('offer_popup_btn_text', 'Shop offer')) ?></strong>
+                                            </p>
+                                        </div>
+                                    </div>
+                                <?php endif; ?>
                             </form>
                         </div>
                     </section>

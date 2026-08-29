@@ -4226,8 +4226,19 @@ em {
     .trust-strip { display: none !important; }
     .commerce-search { max-width: none; }
     .commerce-nav-shell { display: none; }
-    .newsletter-panel { grid-template-columns: 1fr; text-align: center; padding: 40px 24px; }
-    .newsletter-panel form { max-width: none; }
+    .newsletter-section { padding-block: 28px 48px; }
+    .newsletter-panel { grid-template-columns: 1fr; text-align: center; padding: 36px 22px; gap: 20px; border-radius: var(--radius-lg); }
+    .newsletter-panel__icon i { font-size: 2.75rem; }
+    .newsletter-panel h2 { font-size: 1.55rem; line-height: 1.25; margin-bottom: 8px; word-break: break-word; overflow-wrap: break-word; }
+    .newsletter-panel p { font-size: 0.95rem; line-height: 1.5; }
+    .newsletter-panel form { max-width: 100%; flex-direction: column; gap: 12px; width: 100%; align-items: stretch; }
+    .newsletter-panel input { width: 100%; height: 50px; text-align: center; padding-inline: 16px; font-size: 0.92rem; }
+    .newsletter-panel button { width: 100%; height: 50px; justify-content: center; font-size: 0.92rem; border-radius: 999px; }
+    .ref-newsletter .container { grid-template-columns: 1fr; gap: 24px; text-align: center; }
+    .ref-newsletter h2 { font-size: 1.55rem; }
+    .ref-newsletter form { flex-direction: column; width: 100%; max-width: 100%; gap: 12px; }
+    .ref-newsletter input { width: 100%; height: 50px; text-align: center; }
+    .ref-newsletter button { width: 100%; height: 50px; }
     .hero-slider { height: 480px; min-height: 480px; }
     .hero-slide__title { font-size: 2.2rem; }
     .story-pillar-grid { grid-template-columns: 1fr; }
@@ -4261,6 +4272,13 @@ em {
 
 @media (max-width: 480px) {
     .container { width: calc(100% - 32px); }
+    .newsletter-section { padding-block: 20px 36px; }
+    .newsletter-panel { padding: 26px 16px; gap: 16px; border-radius: var(--radius-md); }
+    .newsletter-panel__icon i { font-size: 2.25rem; }
+    .newsletter-panel h2 { font-size: 1.25rem; line-height: 1.25; margin-bottom: 6px; }
+    .newsletter-panel p { font-size: 0.88rem; line-height: 1.45; }
+    .newsletter-panel input { height: 46px; font-size: 0.88rem; }
+    .newsletter-panel button { height: 46px; font-size: 0.88rem; }
     .commerce-footer__grid { grid-template-columns: 1fr; }
     .customer-auth-card { padding: 28px 20px; border-radius: var(--radius-md); }
     .customer-auth-form__row { grid-template-columns: 1fr; }

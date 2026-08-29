@@ -573,8 +573,32 @@ foreach ($homepageSections as $sectionKey => $section) {
     $offerPopupImage = gawdee_setting('offer_popup_image', 'assets/images/independence-offer-popup-v1.webp');
     $offerPopupCode = gawdee_setting('offer_code', 'FREEDOM10');
     $offerPopupPercent = gawdee_setting('offer_percent', '10');
+    $offerPopupTitle = gawdee_setting('offer_popup_title', 'Independence Day Special');
+    $offerPopupRawText = gawdee_setting('offer_popup_text', 'Use code %code% at checkout');
+    $offerPopupLink = gawdee_setting('offer_popup_link', '#shop');
+    $offerPopupBtnText = gawdee_setting('offer_popup_btn_text', 'Shop offer');
     $offerPopupDelay = min(10000, max(0, (int) gawdee_setting('offer_popup_delay_ms', '850')));
-    $offerPopupKey = substr(hash('sha256', $offerPopupImage . '|' . $offerPopupCode . '|' . $offerPopupPercent), 0, 14);
+
+    if (str_contains($offerPopupRawText, '%code%')) {
+        $offerPopupDescription = str_replace(
+            '%code%',
+            '<strong>' . htmlspecialchars($offerPopupCode) . '</strong>',
+            htmlspecialchars($offerPopupRawText, ENT_QUOTES, 'UTF-8')
+        );
+    } else {
+        $offerPopupDescription = htmlspecialchars($offerPopupRawText, ENT_QUOTES, 'UTF-8');
+    }
+
+    $offerPopupKey = substr(hash('sha256', implode('|', [
+        $offerPopupImage,
+        $offerPopupCode,
+        $offerPopupPercent,
+        $offerPopupTitle,
+        $offerPopupRawText,
+        $offerPopupLink,
+        $offerPopupBtnText,
+        $offerPopupDelay
+    ])), 0, 14);
     ?>
     <div class="offer-popup" data-offer-popup data-popup-key="<?= htmlspecialchars($offerPopupKey) ?>"
         data-popup-delay="<?= $offerPopupDelay ?>" hidden>
@@ -582,22 +606,22 @@ foreach ($homepageSections as $sectionKey => $section) {
             aria-describedby="independence-offer-description">
             <div class="offer-popup__flag" aria-hidden="true"><span></span><span></span><span></span></div>
             <button class="offer-popup__close" type="button" data-offer-popup-close
-                aria-label="Close Independence Day offer"><i class="ph ph-x"></i></button>
-            <a class="offer-popup__art" href="#shop" data-offer-popup-shop>
+                aria-label="Close offer popup"><i class="ph ph-x"></i></button>
+            <a class="offer-popup__art" href="<?= htmlspecialchars($offerPopupLink) ?>" data-offer-popup-shop>
                 <img src="<?= htmlspecialchars($offerPopupImage) ?>"
-                    alt="Happy Independence Day. Flat <?= htmlspecialchars($offerPopupPercent) ?> percent off all Gawdee products with code <?= htmlspecialchars($offerPopupCode) ?>.">
+                    alt="<?= htmlspecialchars($offerPopupTitle) ?>. Flat <?= htmlspecialchars($offerPopupPercent) ?> percent off with code <?= htmlspecialchars($offerPopupCode) ?>.">
             </a>
             <div class="offer-popup__actions">
                 <div class="offer-popup__copy">
-                    <span id="independence-offer-title">Independence Day Special</span>
-                    <p id="independence-offer-description">Use code
-                        <strong><?= htmlspecialchars($offerPopupCode) ?></strong> at checkout
-                    </p>
+                    <span id="independence-offer-title"><?= htmlspecialchars($offerPopupTitle) ?></span>
+                    <p id="independence-offer-description"><?= $offerPopupDescription ?></p>
                 </div>
-                <button type="button" class="offer-popup__code" data-copy-offer="<?= htmlspecialchars($offerPopupCode) ?>"
-                    aria-label="Copy offer code <?= htmlspecialchars($offerPopupCode) ?>"><strong><?= htmlspecialchars($offerPopupCode) ?></strong><span><i
-                            class="ph ph-copy"></i> Copy code</span></button>
-                <a class="offer-popup__shop" href="#shop" data-offer-popup-shop>Shop offer <i
+                <?php if (!empty($offerPopupCode)): ?>
+                    <button type="button" class="offer-popup__code" data-copy-offer="<?= htmlspecialchars($offerPopupCode) ?>"
+                        aria-label="Copy offer code <?= htmlspecialchars($offerPopupCode) ?>"><strong><?= htmlspecialchars($offerPopupCode) ?></strong><span><i
+                                class="ph ph-copy"></i> Copy code</span></button>
+                <?php endif; ?>
+                <a class="offer-popup__shop" href="<?= htmlspecialchars($offerPopupLink) ?>" data-offer-popup-shop><?= htmlspecialchars($offerPopupBtnText) ?> <i
                         class="ph ph-arrow-right"></i></a>
             </div>
         </section>
