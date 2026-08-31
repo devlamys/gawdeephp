@@ -80,7 +80,7 @@ require __DIR__ . '/includes/header.php';
     </div>
     <div class="customer-auth-panel">
         <div class="customer-auth-card">
-            <a class="customer-auth-back" href="index.php"><i class="ph ph-arrow-left"></i> Back to shop</a>
+            <a class="customer-auth-back" href="index"><i class="ph ph-arrow-left"></i> Back to shop</a>
             <span class="eyebrow">Create account</span>
             <h2>Start your order dashboard</h2>
             <p>Your account will securely connect future orders placed while signed in.</p>
@@ -114,7 +114,7 @@ require __DIR__ . '/includes/header.php';
                         class="ph ph-arrow-right"></i></button>
             </form>
             <p class="customer-auth-switch">Already registered? <a
-                    href="login.php?return=<?= rawurlencode($returnTo) ?>">Sign in here</a></p>
+                    href="login?return=<?= rawurlencode($returnTo) ?>">Sign in here</a></p>
         </div>
     </div>
 </section>

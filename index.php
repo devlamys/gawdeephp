@@ -157,7 +157,7 @@ foreach ($homepageSections as $sectionKey => $section) {
                         </div>
                         <div class="commerce-section__actions">
                             <a class="text-link"
-                                href="<?= htmlspecialchars($homepageSections['shop']['button_url'] ?: 'products.php') ?>"><?= htmlspecialchars($homepageSections['shop']['button_label'] ?: 'View all products') ?>
+                                href="<?= htmlspecialchars($homepageSections['shop']['button_url'] ?: 'products') ?>"><?= htmlspecialchars($homepageSections['shop']['button_label'] ?: 'View all products') ?>
                                 <i class="ph ph-arrow-right"></i></a>
                             <div class="section-rail-controls home-slider-controls" aria-label="Bestseller slider controls">
                                 <button type="button" data-scroll-rail="#home-product-rail" data-scroll-direction="-1"
@@ -174,7 +174,7 @@ foreach ($homepageSections as $sectionKey => $section) {
                             <article class="compact-product-card reveal" data-delay="<?= $index * 45 ?>"
                                 data-category="<?= htmlspecialchars($product['category_key']) ?>"
                                 data-search-name="<?= htmlspecialchars(strtolower($product['full_name'] . ' ' . $product['category'])) ?>">
-                                <a class="compact-product-card__media" href="product.php?slug=<?= urlencode($product['slug']) ?>">
+                                <a class="compact-product-card__media" href="product?slug=<?= urlencode($product['slug']) ?>">
                                     <span
                                         class="compact-product-card__badge <?= $index % 3 === 2 ? 'is-blue' : ($index % 2 === 0 ? 'is-orange' : '') ?>"><?= $index === 5 ? 'New arrival' : ($index % 2 === 0 ? 'Best seller' : 'Popular') ?></span>
                                     <img src="<?= htmlspecialchars($product['image']) ?>"
@@ -182,7 +182,7 @@ foreach ($homepageSections as $sectionKey => $section) {
                                 </a>
                                 <div class="compact-product-card__body">
                                     <h3><a
-                                            href="product.php?slug=<?= urlencode($product['slug']) ?>"><?= htmlspecialchars($product['name']) ?></a>
+                                            href="product?slug=<?= urlencode($product['slug']) ?>"><?= htmlspecialchars($product['name']) ?></a>
                                     </h3>
                                     <span class="compact-product-card__weight"><?= htmlspecialchars($product['weight']) ?></span>
                                     <div class="compact-product-card__price">
@@ -222,7 +222,7 @@ foreach ($homepageSections as $sectionKey => $section) {
                     <div class="category-grid">
                         <?php foreach ($categories as $index => $category): ?>
                             <a class="category-card reveal" data-delay="<?= $index * 35 ?>"
-                                href="products.php?category=<?= rawurlencode((string) $category['filter']) ?>"
+                                href="products?category=<?= rawurlencode((string) $category['filter']) ?>"
                                 data-category-link="<?= htmlspecialchars($category['filter']) ?>">
                                 <span class="category-card__visual">
                                     <?php if (!empty($category['image'])): ?>
@@ -488,9 +488,9 @@ foreach ($homepageSections as $sectionKey => $section) {
                                 </div>
                                 <blockquote>“<?= htmlspecialchars($testimonial['quote']) ?>”</blockquote>
                                 <footer>
-                                    <a href="product.php?slug=<?= urlencode($testimonial['slug']) ?>">Read Full Story</a>
+                                    <a href="product?slug=<?= urlencode($testimonial['slug']) ?>">Read Full Story</a>
                                     <a class="testimonial-reference-arrow"
-                                        href="product.php?slug=<?= urlencode($testimonial['slug']) ?>"
+                                        href="product?slug=<?= urlencode($testimonial['slug']) ?>"
                                         aria-label="Read <?= htmlspecialchars($testimonial['name']) ?>'s story"><i
                                             class="ph ph-caret-right"></i></a>
                                 </footer>
@@ -526,7 +526,7 @@ foreach ($homepageSections as $sectionKey => $section) {
                                     <span><?= htmlspecialchars($story['tag']) ?></span>
                                     <h3><?= htmlspecialchars($story['title']) ?></h3>
                                     <p><?= htmlspecialchars($story['excerpt']) ?></p>
-                                    <a href="<?= htmlspecialchars($story['url'] ?? 'blog.php') ?>">Read Story <i
+                                    <a href="<?= htmlspecialchars($story['url'] ?? 'blog') ?>">Read Story <i
                                             class="ph ph-arrow-right"></i></a>
                                 </div>
                             </article>
@@ -534,7 +534,7 @@ foreach ($homepageSections as $sectionKey => $section) {
                     </div>
                     <div class="blog-reference-footer reveal">
                         <a class="button button--secondary"
-                            href="<?= htmlspecialchars($homepageSections['stories']['button_url'] ?: 'blog.php') ?>"><?= htmlspecialchars($homepageSections['stories']['button_label'] ?: 'View All Stories') ?>
+                            href="<?= htmlspecialchars($homepageSections['stories']['button_url'] ?: 'blog') ?>"><?= htmlspecialchars($homepageSections['stories']['button_label'] ?: 'View All Stories') ?>
                             <i class="ph ph-arrow-right"></i></a>
                     </div>
                 </div>

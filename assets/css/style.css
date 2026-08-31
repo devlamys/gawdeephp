@@ -343,21 +343,100 @@ em {
 .commerce-nav a:hover { color: var(--gawdee-white); }
 .commerce-nav a:hover::after { right: 0; }
 
-/* Mobile Menu */
+/* Mobile Menu Toggle Button */
+.mobile-menu-toggle {
+    width: 42px;
+    height: 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--gawdee-cream, #FAF6EE);
+    font-size: 1.3rem;
+    cursor: pointer;
+    transition: all .25s ease;
+    flex-shrink: 0;
+}
+.mobile-menu-toggle:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: var(--gawdee-white, #ffffff);
+}
+.mobile-menu-toggle[aria-expanded="true"] {
+    background: var(--gawdee-accent, #D9B86C);
+    border-color: var(--gawdee-accent, #D9B86C);
+    color: var(--gawdee-dark, #031F16);
+    box-shadow: 0 4px 16px rgba(217, 184, 108, 0.4);
+    transform: scale(1.05);
+}
+
+/* Mobile Navigation Overlay Drawer */
 .commerce-mobile-nav {
-    display: none; position: fixed; inset: 0; top: var(--header-height); z-index: 99;
-    background: var(--gawdee-dark); color: var(--gawdee-cream); padding: 32px 24px;
-    flex-direction: column; gap: 20px; transform: translateY(-100%);
-    opacity: 0; visibility: hidden; transition: transform .35s var(--ease-out), opacity .35s ease, visibility .35s ease;
+    position: fixed;
+    top: var(--header-height, 84px);
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 9999;
+    background: #031F16;
+    color: var(--gawdee-cream, #FAF6EE);
+    padding: 24px 20px 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    transform: translateY(-12px);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: transform .35s var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1)), opacity .35s ease, visibility .35s ease;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7);
 }
+
 .commerce-mobile-nav.is-open {
-    transform: translateY(0); opacity: 1; visibility: visible; display: flex;
+    transform: translateY(0);
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
 }
+
+/* Mobile Navigation Link Cards with Background Colors */
 .commerce-mobile-nav a {
-    display: flex; align-items: center; justify-content: space-between; font-family: "Lora", serif;
-    font-size: 1.35rem; font-weight: 600; padding-block: 12px; border-bottom: 1px solid var(--gawdee-line);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-family: "Manrope", "DM Sans", sans-serif;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--gawdee-cream, #FAF6EE);
+    padding: 16px 20px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    text-decoration: none;
+    transition: all .25s ease;
 }
-.commerce-mobile-nav a i { color: var(--gawdee-accent); font-size: 1.2rem; }
+
+.commerce-mobile-nav a:hover,
+.commerce-mobile-nav a:active,
+.commerce-mobile-nav a:focus {
+    background: rgba(217, 184, 108, 0.22);
+    border-color: var(--gawdee-accent, #D9B86C);
+    color: var(--gawdee-white, #ffffff);
+    transform: translateX(4px);
+}
+
+.commerce-mobile-nav a i {
+    color: var(--gawdee-accent, #D9B86C);
+    font-size: 1.2rem;
+    transition: transform .25s ease;
+}
+
+.commerce-mobile-nav a:hover i {
+    transform: translateX(4px);
+}
 
 /* --------------------------------------------------------------------------
    Non-Stop Autoplay Looping Video Hero Section

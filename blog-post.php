@@ -16,7 +16,7 @@ if (!$post) {
     $ogType = 'article';
     $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
     $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
-    $canonicalUrl = $scheme . '://' . $host . '/blog-post.php?slug=' . urlencode($post['slug']);
+    $canonicalUrl = $scheme . '://' . $host . '/blog-post?slug=' . urlencode($post['slug']);
     if (!empty($post['cover_image'])) {
         $ogImage = str_starts_with($post['cover_image'], 'http') ? $post['cover_image'] : ($scheme . '://' . $host . '/' . ltrim($post['cover_image'], '/'));
     }
@@ -48,7 +48,7 @@ require __DIR__ . '/includes/header.php';
 <article class="journal-article section">
     <div class="container container--narrow">
         <header class="journal-article__header reveal">
-            <a class="journal-article__back" href="blog.php"><i class="ph ph-arrow-left"></i> Back to Journal</a>
+            <a class="journal-article__back" href="blog"><i class="ph ph-arrow-left"></i> Back to Journal</a>
             <span class="eyebrow"><i class="ph ph-tag"></i> <?= htmlspecialchars($post['category'] ?: 'Gawdee Journal') ?></span>
             <h1><?= htmlspecialchars($post['title']) ?></h1>
             <?php if ($post['excerpt']): ?><p class="journal-article__excerpt"><?= htmlspecialchars($post['excerpt']) ?></p><?php endif; ?>
@@ -71,7 +71,7 @@ require __DIR__ . '/includes/header.php';
                 <span class="eyebrow"><i class="ph ph-plant"></i> Mindful Food</span>
                 <h3>Thoughtful choices start with good information.</h3>
             </div>
-            <a class="button button--primary" href="index.php#shop">Explore Gawdee Products <i class="ph ph-arrow-right"></i></a>
+            <a class="button button--primary" href="index#shop">Explore Gawdee Products <i class="ph ph-arrow-right"></i></a>
         </footer>
     </div>
 </article>
@@ -81,7 +81,7 @@ require __DIR__ . '/includes/header.php';
         <span class="eyebrow">404</span>
         <h1>Story not found.</h1>
         <p>The article may have moved or is still being prepared.</p>
-        <a class="button button--primary" href="blog.php">Back to Journal</a>
+        <a class="button button--primary" href="blog">Back to Journal</a>
     </div>
 </section>
 <?php endif; ?>

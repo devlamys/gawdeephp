@@ -114,7 +114,7 @@
     searchInput?.addEventListener('keydown', event => {
         if (event.key !== 'Enter') return;
         if (!productGrid) {
-            window.location.href = `index.php?search=${encodeURIComponent(searchInput.value.trim())}#shop`;
+            window.location.href = `products?search=${encodeURIComponent(searchInput.value.trim())}`;
         } else {
             closeSearch();
         }
@@ -838,7 +838,7 @@
             if (button.disabled) return;
             const quantity = Number(qtyDisplay?.textContent || 1);
             addToCart(button, quantity);
-            window.setTimeout(() => { window.location.href = 'checkout.php'; }, reduceMotion ? 0 : 220);
+            window.setTimeout(() => { window.location.href = 'checkout'; }, reduceMotion ? 0 : 220);
         });
     });
 

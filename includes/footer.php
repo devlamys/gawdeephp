@@ -4,7 +4,7 @@
 <footer class="commerce-footer" id="site-footer">
     <div class="container commerce-footer__grid">
         <div class="commerce-footer__brand">
-            <a href="index.php" aria-label="Gawdee home"><img src="assets/images/logo.png"
+            <a href="index" aria-label="Gawdee home"><img src="assets/images/logo.png"
                     alt="Gawdee — The Soul of Wellness"></a>
             <p>Bringing natural goodness to your daily life. Pure. Authentic. Organic food Thoughtfully crafted in
                 India.</p>
@@ -19,9 +19,9 @@
         </div>
         <div class="commerce-footer__links">
             <h2>Quick Links</h2>
-            <a href="products.php">Our Products</a>
-            <a href="index.php#offers">Special Offers</a>
-            <a href="blog.php">Wellness Journal</a>
+            <a href="products">Our Products</a>
+            <a href="index#offers">Special Offers</a>
+            <a href="blog">Wellness Journal</a>
             <a href="mailto:<?= htmlspecialchars(gawdee_setting('store_email', 'info@gawdee.com')) ?>">Contact Us</a>
         </div>
         <div class="commerce-footer__links">
@@ -34,11 +34,11 @@
         </div>
         <div class="commerce-footer__links">
             <h2>Categories</h2>
-            <a href="products.php?category=ghee">Ghee</a>
-            <a href="products.php?category=honey">Honey</a>
-            <a href="products.php?category=wellness">Drops</a>
-            <a href="products.php?category=nutrition">Mix Me</a>
-            <a href="products.php?category=sugar">Sugar</a>
+            <a href="products?category=ghee">Ghee</a>
+            <a href="products?category=honey">Honey</a>
+            <a href="products?category=wellness">Drops</a>
+            <a href="products?category=nutrition">Mix Me</a>
+            <a href="products?category=sugar">Sugar</a>
         </div>
         <div class="commerce-footer__signup">
             <h2>Stay Updated</h2>
@@ -81,7 +81,7 @@
                     $aiOfferPercent = gawdee_setting('offer_percent', '10');
                     $aiOfferTitle   = gawdee_setting('offer_popup_title', 'Independence Day Special');
                     $aiOfferImage   = gawdee_setting('offer_popup_image', 'assets/images/hero-slide-independence-v5.webp');
-                    $aiOfferLink    = gawdee_setting('offer_popup_link', 'index.php#offers');
+                    $aiOfferLink    = gawdee_setting('offer_popup_link', 'index#offers');
                     ?>
                     <article class="ai-offer-card" aria-label="Latest offer">
                         <a class="ai-offer-card__media" href="<?= htmlspecialchars($aiOfferLink) ?>" aria-label="View offer">

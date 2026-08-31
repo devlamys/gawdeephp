@@ -24,7 +24,7 @@ require __DIR__ . '/includes/header.php';
             <div class="journal-grid">
                 <?php foreach ($posts as $index => $post): ?>
                     <article class="journal-card reveal" data-delay="<?= ($index % 3) * 60 ?>">
-                        <a class="journal-card__visual" href="blog-post.php?slug=<?= rawurlencode($post['slug']) ?>">
+                        <a class="journal-card__visual" href="blog-post?slug=<?= rawurlencode($post['slug']) ?>">
                             <?php if ($post['featured_image']): ?>
                                 <img src="<?= htmlspecialchars($post['featured_image']) ?>" alt="<?= htmlspecialchars($post['title']) ?>" loading="lazy">
                             <?php else: ?>
@@ -39,9 +39,9 @@ require __DIR__ . '/includes/header.php';
                                 <span>·</span>
                                 <span><?= htmlspecialchars($post['author'] ?: 'Gawdee Editorial') ?></span>
                             </div>
-                            <h2><a href="blog-post.php?slug=<?= rawurlencode($post['slug']) ?>"><?= htmlspecialchars($post['title']) ?></a></h2>
+                            <h2><a href="blog-post?slug=<?= rawurlencode($post['slug']) ?>"><?= htmlspecialchars($post['title']) ?></a></h2>
                             <p><?= htmlspecialchars($post['excerpt']) ?></p>
-                            <a class="journal-card__link" href="blog-post.php?slug=<?= rawurlencode($post['slug']) ?>">Read Story <i class="ph ph-arrow-right"></i></a>
+                            <a class="journal-card__link" href="blog-post?slug=<?= rawurlencode($post['slug']) ?>">Read Story <i class="ph ph-arrow-right"></i></a>
                         </div>
                     </article>
                 <?php endforeach; ?>
@@ -51,7 +51,7 @@ require __DIR__ . '/includes/header.php';
                 <i class="ph ph-article"></i>
                 <h2>Fresh stories are on the way</h2>
                 <p>The Gawdee journal is being prepared with care by our editorial team.</p>
-                <a class="button button--primary" href="index.php">Return to Shop</a>
+                <a class="button button--primary" href="index">Return to Shop</a>
             </div>
         <?php endif; ?>
     </div>

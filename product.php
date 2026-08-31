@@ -31,7 +31,7 @@ $ogType = 'og:product';
 $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
 $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
 $ogImage = (!empty($product['image']) && str_starts_with($product['image'], 'http')) ? $product['image'] : ($scheme . '://' . $host . '/' . ltrim((string) ($product['image'] ?? 'assets/images/logo.png'), '/'));
-$canonicalUrl = $scheme . '://' . $host . '/product.php?slug=' . urlencode($product['slug']);
+$canonicalUrl = $scheme . '://' . $host . '/product?slug=' . urlencode($product['slug']);
 
 $jsonLdExtra = [
     '@context' => 'https://schema.org/',

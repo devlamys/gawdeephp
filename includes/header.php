@@ -79,7 +79,7 @@ $isReferenceProductPage = str_contains($bodyClass, 'product-page--reference');
         "url": <?= json_encode($siteUrl, JSON_UNESCAPED_SLASHES) ?>,
         "potentialAction": {
             "@type": "SearchAction",
-            "target": <?= json_encode($siteUrl . '/products.php?search={search_term_string}', JSON_UNESCAPED_SLASHES) ?>,
+            "target": <?= json_encode($siteUrl . '/products?search={search_term_string}', JSON_UNESCAPED_SLASHES) ?>,
             "query-input": "required name=search_term_string"
         }
     }
@@ -115,7 +115,7 @@ $isReferenceProductPage = str_contains($bodyClass, 'product-page--reference');
                 <i class="ph ph-list" aria-hidden="true"></i>
             </button>
 
-            <a class="commerce-logo" href="index.php" aria-label="Gawdee home">
+            <a class="commerce-logo" href="index" aria-label="Gawdee home">
                 <img src="assets/images/logo.png" alt="Gawdee — The Soul of Wellness">
             </a>
 
@@ -130,7 +130,7 @@ $isReferenceProductPage = str_contains($bodyClass, 'product-page--reference');
             </div>
 
             <div class="commerce-actions">
-                <a class="commerce-action desktop-only" href="<?= $headerCustomer ? 'account.php' : 'login.php' ?>">
+                <a class="commerce-action desktop-only" href="<?= $headerCustomer ? 'account' : 'login' ?>">
                     <i class="ph <?= $headerCustomer ? 'ph-user-circle-check' : 'ph-user' ?>"
                         aria-hidden="true"></i><span><?= $headerCustomer ? htmlspecialchars(explode(' ', trim((string) $headerCustomer['name']))[0]) : 'Account' ?></span>
                 </a>
@@ -148,27 +148,27 @@ $isReferenceProductPage = str_contains($bodyClass, 'product-page--reference');
 
         <?php if (empty($hideCommerceNav)): ?>
             <div class="container commerce-nav-shell">
-                <a class="category-menu-button" href="products.php" aria-label="Browse all categories">
+                <a class="category-menu-button" href="products" aria-label="Browse all categories">
                     <i class="ph ph-squares-four" aria-hidden="true"></i> All Categories
                 </a>
                 <nav class="commerce-nav" aria-label="Product categories">
-                    <a href="products.php?category=ghee" data-nav-filter="ghee">Ghee</a>
-                    <a href="products.php?category=honey" data-nav-filter="honey">Honey</a>
-                    <a href="products.php?category=wellness" data-nav-filter="wellness">Drops</a>
-                    <a href="products.php?category=nutrition" data-nav-filter="nutrition">Mix Me</a>
-                    <a href="products.php?category=sugar" data-nav-filter="sugar">Sugar</a>
-                    <a href="index.php#offers">Offers <small>HOT</small></a>
-                    <a href="blog.php">Blog</a>
+                    <a href="products?category=ghee" data-nav-filter="ghee">Ghee</a>
+                    <a href="products?category=honey" data-nav-filter="honey">Honey</a>
+                    <a href="products?category=wellness" data-nav-filter="wellness">Drops</a>
+                    <a href="products?category=nutrition" data-nav-filter="nutrition">Mix Me</a>
+                    <a href="products?category=sugar" data-nav-filter="sugar">Sugar</a>
+                    <a href="index#offers">Offers <small>HOT</small></a>
+                    <a href="blog">Blog</a>
                 </nav>
             </div>
         <?php endif; ?>
 
         <nav class="mobile-nav commerce-mobile-nav" data-mobile-menu aria-label="Mobile navigation">
-            <a href="products.php">All products <i class="ph ph-arrow-right"></i></a>
-            <a href="index.php#categories">Shop by category <i class="ph ph-arrow-right"></i></a>
-            <a href="index.php#offers">Special offers <i class="ph ph-arrow-right"></i></a>
-            <a href="blog.php">Wellness stories <i class="ph ph-arrow-right"></i></a>
-            <a href="<?= $headerCustomer ? 'account.php' : 'login.php' ?>"><?= $headerCustomer ? 'My account & orders' : 'Sign in / register' ?>
+            <a href="products">All products <i class="ph ph-arrow-right"></i></a>
+            <a href="index#categories">Shop by category <i class="ph ph-arrow-right"></i></a>
+            <a href="index#offers">Special offers <i class="ph ph-arrow-right"></i></a>
+            <a href="blog">Wellness stories <i class="ph ph-arrow-right"></i></a>
+            <a href="<?= $headerCustomer ? 'account' : 'login' ?>"><?= $headerCustomer ? 'My account & orders' : 'Sign in / register' ?>
                 <i class="ph ph-arrow-right"></i></a>
         </nav>
     </header>

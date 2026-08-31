@@ -2,9 +2,23 @@ Options -Indexes
 
 <IfModule mod_rewrite.c>
     RewriteEngine On
+
+    # Redirect external requests for *.php (except api and cron) to clean extensionless URLs
+    RewriteCond %{THE_REQUEST} \s/([^.\s]+)\.php[\s?] [NC]
+    RewriteCond %{REQUEST_URI} !^/(?:api|cron)/ [NC]
+    RewriteRule ^ /%1 [R=301,L]
+
+    # Special route for sitemap.xml
     RewriteRule ^sitemap\.xml$ sitemap.php [L,NC]
+
+    # Block direct access to storage and includes
     RewriteRule ^(?:storage|includes)/ - [F,L,NC]
     RewriteRule (^|/)\. - [F,L]
+
+    # Internally route clean extensionless URLs to corresponding .php file if it exists
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME}\.php -f
+    RewriteRule ^([^/]+)/?$ $1.php [L,QSA]
 </IfModule>
 
 <IfModule mod_headers.c>

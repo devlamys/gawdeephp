@@ -34,13 +34,13 @@ echo '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
         <priority>1.0</priority>
     </url>
     <url>
-        <loc><?= htmlspecialchars($baseUrl . '/products.php') ?></loc>
+        <loc><?= htmlspecialchars($baseUrl . '/products') ?></loc>
         <lastmod><?= $today ?></lastmod>
         <changefreq>daily</changefreq>
         <priority>0.9</priority>
     </url>
     <url>
-        <loc><?= htmlspecialchars($baseUrl . '/blog.php') ?></loc>
+        <loc><?= htmlspecialchars($baseUrl . '/blog') ?></loc>
         <lastmod><?= $today ?></lastmod>
         <changefreq>daily</changefreq>
         <priority>0.8</priority>
@@ -52,7 +52,7 @@ echo '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
     foreach ($categories as $cat):
     ?>
     <url>
-        <loc><?= htmlspecialchars($baseUrl . '/products.php?category=' . $cat) ?></loc>
+        <loc><?= htmlspecialchars($baseUrl . '/products?category=' . $cat) ?></loc>
         <lastmod><?= $today ?></lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.8</priority>
@@ -63,7 +63,7 @@ echo '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
     <?php foreach ($products as $product): ?>
     <?php if (empty($product['is_active'])) continue; ?>
     <url>
-        <loc><?= htmlspecialchars($baseUrl . '/product.php?slug=' . urlencode((string) $product['slug'])) ?></loc>
+        <loc><?= htmlspecialchars($baseUrl . '/product?slug=' . urlencode((string) $product['slug'])) ?></loc>
         <lastmod><?= $today ?></lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.9</priority>
@@ -84,7 +84,7 @@ echo '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
     <!-- Journal Article Pages -->
     <?php foreach ($blogPosts as $post): ?>
     <url>
-        <loc><?= htmlspecialchars($baseUrl . '/blog-post.php?slug=' . urlencode((string) $post['slug'])) ?></loc>
+        <loc><?= htmlspecialchars($baseUrl . '/blog-post?slug=' . urlencode((string) $post['slug'])) ?></loc>
         <lastmod><?= date('Y-m-d', strtotime((string) ($post['updated_at'] ?? $post['created_at'] ?? $today))) ?></lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.7</priority>

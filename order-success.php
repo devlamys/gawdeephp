@@ -85,11 +85,11 @@ require __DIR__ . '/includes/header.php';
 
             <div class="order-success-actions">
                 <?php if ($order && $signedInCustomer): ?>
-                    <a class="button button--primary" href="account-order.php?order=<?= rawurlencode((string) $order['order_number']) ?>">Track Shipment <i class="ph ph-map-pin"></i></a>
+                    <a class="button button--primary" href="account-order?order=<?= rawurlencode((string) $order['order_number']) ?>">Track Shipment <i class="ph ph-map-pin"></i></a>
                 <?php else: ?>
-                    <a class="button button--primary" href="index.php#shop">Continue Shopping <i class="ph ph-arrow-right"></i></a>
+                    <a class="button button--primary" href="index#shop">Continue Shopping <i class="ph ph-arrow-right"></i></a>
                 <?php endif; ?>
-                <a class="button button--cream" href="<?= $signedInCustomer ? 'account.php' : 'register.php' ?>"><?= $signedInCustomer ? 'My Account' : 'Create Tracking Account' ?></a>
+                <a class="button button--cream" href="<?= $signedInCustomer ? 'account' : 'register' ?>"><?= $signedInCustomer ? 'My Account' : 'Create Tracking Account' ?></a>
             </div>
         </div>
     </div>

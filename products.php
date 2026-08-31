@@ -57,7 +57,7 @@ require __DIR__ . '/includes/header.php';
         <div class="product-grid catalog-product-grid" data-product-grid data-initial-category="<?= htmlspecialchars($activeCategory) ?>">
             <?php foreach ($products as $index => $catalogProduct): ?>
                 <article class="product-card catalog-product-card reveal" data-delay="<?= ($index % 4) * 40 ?>" data-category="<?= htmlspecialchars($catalogProduct['category_key']) ?>" data-search-name="<?= htmlspecialchars(strtolower($catalogProduct['full_name'] . ' ' . $catalogProduct['category'] . ' ' . $catalogProduct['tag'])) ?>">
-                    <a class="product-card__media" href="product.php?slug=<?= rawurlencode((string) $catalogProduct['slug']) ?>" style="--product-accent:<?= htmlspecialchars($catalogProduct['accent']) ?>">
+                    <a class="product-card__media" href="product?slug=<?= rawurlencode((string) $catalogProduct['slug']) ?>" style="--product-accent:<?= htmlspecialchars($catalogProduct['accent']) ?>">
                         <?php if (!empty($catalogProduct['tag'])): ?>
                             <span class="product-card__tag"><?= htmlspecialchars($catalogProduct['tag']) ?></span>
                         <?php endif; ?>
@@ -72,7 +72,7 @@ require __DIR__ . '/includes/header.php';
                             <span><?= htmlspecialchars($catalogProduct['weight']) ?></span>
                         </div>
                         <h3>
-                            <a href="product.php?slug=<?= rawurlencode((string) $catalogProduct['slug']) ?>"><?= htmlspecialchars($catalogProduct['name']) ?></a>
+                            <a href="product?slug=<?= rawurlencode((string) $catalogProduct['slug']) ?>"><?= htmlspecialchars($catalogProduct['name']) ?></a>
                         </h3>
                         <p class="catalog-product-card__copy"><?= htmlspecialchars($catalogProduct['description']) ?></p>
                         <div class="catalog-product-card__rating">

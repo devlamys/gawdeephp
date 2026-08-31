@@ -94,7 +94,7 @@ require __DIR__ . '/includes/header.php';
                 </div>
             </div>
 
-            <a class="customer-auth-back" href="index.php">
+            <a class="customer-auth-back" href="index">
                 <i class="ph ph-arrow-left"></i> Back to shop
             </a>
 
@@ -143,7 +143,7 @@ require __DIR__ . '/includes/header.php';
             </form>
 
             <p class="customer-auth-switch">
-                New to Gawdee? <a href="register.php?return=<?= rawurlencode($returnTo) ?>">Create your account</a>
+                New to Gawdee? <a href="register?return=<?= rawurlencode($returnTo) ?>">Create your account</a>
             </p>
 
             <div class="customer-auth-note">
