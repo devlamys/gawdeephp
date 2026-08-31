@@ -3,9 +3,9 @@ Options -Indexes
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
-    # Redirect external requests for *.php (except api and cron) to clean extensionless URLs
+    # Redirect external requests for *.php (except admin, api and cron) to clean extensionless URLs
     RewriteCond %{THE_REQUEST} \s/([^.\s]+)\.php[\s?] [NC]
-    RewriteCond %{REQUEST_URI} !^/(?:api|cron)/ [NC]
+    RewriteCond %{REQUEST_URI} !^/(?:admin|api|cron)/ [NC]
     RewriteRule ^ /%1 [R=301,L]
 
     # Special route for sitemap.xml
@@ -15,10 +15,10 @@ Options -Indexes
     RewriteRule ^(?:storage|includes)/ - [F,L,NC]
     RewriteRule (^|/)\. - [F,L]
 
-    # Internally route clean extensionless URLs to corresponding .php file if it exists
+    # Internally route clean extensionless URLs to corresponding .php file if it exists (supports single and multi-level paths)
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_FILENAME}\.php -f
-    RewriteRule ^([^/]+)/?$ $1.php [L,QSA]
+    RewriteRule ^(.+)$ $1.php [L,QSA]
 </IfModule>
 
 <IfModule mod_headers.c>

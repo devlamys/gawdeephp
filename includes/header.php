@@ -157,6 +157,7 @@ $isReferenceProductPage = str_contains($bodyClass, 'product-page--reference');
                     <a href="products?category=wellness" data-nav-filter="wellness">Drops</a>
                     <a href="products?category=nutrition" data-nav-filter="nutrition">Mix Me</a>
                     <a href="products?category=sugar" data-nav-filter="sugar">Sugar</a>
+                    <a href="reels">Reels <small class="nav-badge-hot">NEW</small></a>
                     <a href="index#offers">Offers <small>HOT</small></a>
                     <a href="blog">Blog</a>
                 </nav>
@@ -165,6 +166,7 @@ $isReferenceProductPage = str_contains($bodyClass, 'product-page--reference');
 
         <nav class="mobile-nav commerce-mobile-nav" data-mobile-menu aria-label="Mobile navigation">
             <a href="products">All products <i class="ph ph-arrow-right"></i></a>
+            <a href="reels">Watch Reels &amp; Videos <i class="ph ph-arrow-right"></i></a>
             <a href="index#categories">Shop by category <i class="ph ph-arrow-right"></i></a>
             <a href="index#offers">Special offers <i class="ph ph-arrow-right"></i></a>
             <a href="blog">Wellness stories <i class="ph ph-arrow-right"></i></a>

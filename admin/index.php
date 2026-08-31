@@ -41,9 +41,9 @@ function admin_upload_media(string $field, string $folder, string $existing = ''
         }
         throw new RuntimeException('The media upload did not complete (Upload error code ' . (int) $_FILES[$field]['error'] . ').');
     }
-    $maximumBytes = in_array('video', $allowedKinds, true) ? 100 * 1024 * 1024 : 10 * 1024 * 1024;
+    $maximumBytes = in_array('video', $allowedKinds, true) ? 500 * 1024 * 1024 : 10 * 1024 * 1024;
     if ((int) $_FILES[$field]['size'] > $maximumBytes) {
-        throw new RuntimeException(in_array('video', $allowedKinds, true) ? 'Videos must be smaller than 100 MB.' : 'Images must be smaller than 10 MB.');
+        throw new RuntimeException(in_array('video', $allowedKinds, true) ? 'Videos must be smaller than 500 MB.' : 'Images must be smaller than 10 MB.');
     }
     $mime = @(new finfo(FILEINFO_MIME_TYPE))->file($_FILES[$field]['tmp_name']) ?: '';
     $ext = strtolower(pathinfo($_FILES[$field]['name'] ?? '', PATHINFO_EXTENSION));
@@ -313,16 +313,17 @@ SQL);
 
         if ($action === 'save_homepage_media') {
             $id = (int) ($_POST['id'] ?? 0);
-            $mediaType = in_array($_POST['media_type'] ?? '', ['image', 'video', 'external_video'], true) ? (string) $_POST['media_type'] : 'image';
+            $mediaType = in_array($_POST['media_type'] ?? '', ['video', 'external_video'], true) ? (string) $_POST['media_type'] : 'video';
             $filePath = trim((string) ($_POST['existing_file_path'] ?? ''));
             if ($mediaType !== 'external_video') {
-                $filePath = admin_upload_media('media_file', 'homepage', $filePath, [$mediaType]);
+                $filePath = admin_upload_media('media_file', 'videos', $filePath, ['video']);
             }
             $posterPath = admin_upload_media('poster_file', 'homepage', trim((string) ($_POST['existing_poster_path'] ?? '')), ['image']);
             $externalUrl = trim((string) ($_POST['external_url'] ?? ''));
             if ($filePath === '' && $externalUrl === '') {
-                throw new RuntimeException('Upload a media file or enter an external video URL.');
+                throw new RuntimeException('Upload a video file or enter an external video URL.');
             }
+            $isFeaturedHomepage = isset($_POST['is_featured_homepage']) ? 1 : 0;
             $values = [
                 gawdee_slug((string) ($_POST['section_key'] ?? 'reels')) ?: 'reels',
                 $mediaType,
@@ -336,11 +337,12 @@ SQL);
                 trim((string) ($_POST['product_slug'] ?? '')),
                 (int) ($_POST['sort_order'] ?? 0),
                 isset($_POST['is_active']) ? 1 : 0,
+                $isFeaturedHomepage,
             ];
             if ($id > 0) {
-                gawdee_db()->prepare('UPDATE homepage_media SET section_key=?, media_type=?, title=?, subtitle=?, file_path=?, poster_path=?, external_url=?, link_url=?, alt_text=?, product_slug=?, sort_order=?, is_active=?, updated_at=CURRENT_TIMESTAMP WHERE id=?')->execute([...$values, $id]);
+                gawdee_db()->prepare('UPDATE homepage_media SET section_key=?, media_type=?, title=?, subtitle=?, file_path=?, poster_path=?, external_url=?, link_url=?, alt_text=?, product_slug=?, sort_order=?, is_active=?, is_featured_homepage=?, updated_at=CURRENT_TIMESTAMP WHERE id=?')->execute([...$values, $id]);
             } else {
-                gawdee_db()->prepare('INSERT INTO homepage_media (section_key, media_type, title, subtitle, file_path, poster_path, external_url, link_url, alt_text, product_slug, sort_order, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')->execute($values);
+                gawdee_db()->prepare('INSERT INTO homepage_media (section_key, media_type, title, subtitle, file_path, poster_path, external_url, link_url, alt_text, product_slug, sort_order, is_active, is_featured_homepage) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')->execute($values);
             }
             admin_redirect('media', 'Homepage media card saved.');
         }

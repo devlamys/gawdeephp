@@ -105,7 +105,7 @@ foreach (array_merge($gallery, $aPlusImages) as $mediaItem) {
     ];
 }
 $displayGallery = array_slice(array_values($displayGallery), 0, 5);
-$storyMedia = array_slice($aPlusImages ?: $gallery, 0, 4);
+$storyMedia = gawdee_product_videos((string) $product['slug'], 4);
 $nutritionFacts = $product['category_key'] === 'ghee'
     ? [['Energy', '897 kcal'], ['Total Fat', '99.7 g'], ['Saturated Fat', '62.5 g'], ['Trans Fat', '0 g'], ['Cholesterol', '220 mg'], ['Vitamin A', '700 mcg']]
     : [['Pack size', (string) $product['weight']], ['Ingredients', (string) max(1, count($ingredients)) . ' listed'], ['Product type', (string) $product['category']], ['Serving advice', 'See product pack'], ['Storage', 'Cool & dry place']];
@@ -341,18 +341,37 @@ require __DIR__ . '/includes/header.php';
             </div>
         </section>
 
-        <?php if ($storyMedia): ?>
+        <?php if (!empty($storyMedia)): ?>
                 <section class="ref-watch">
                     <header>
-                        <h2>Watch & Discover</h2><a href="#product-story">View All Stories <i class="ph ph-arrow-right"></i></a>
+                        <h2>Watch &amp; Discover</h2>
+                        <a href="reels.php?product=<?= rawurlencode($product['slug']) ?>">View All Stories &amp; Videos <i class="ph ph-arrow-right"></i></a>
                     </header>
                     <div class="ref-watch__grid">
-                        <?php foreach ($storyMedia as $mediaIndex => $media): ?>
-                                <a href="<?= htmlspecialchars($media['src']) ?>" target="_blank" rel="noopener"><img
-                                        src="<?= htmlspecialchars($media['src']) ?>"
-                                        alt="<?= htmlspecialchars((string) ($media['title'] ?? $product['name'])) ?>"
-                                        loading="lazy"><span><?= htmlspecialchars((string) ($media['title'] ?? ['The Journey of Purity', 'Traditional Method Explained', 'From Our Farms to Your Home', 'Ways to Enjoy Gawdee'][$mediaIndex] ?? 'Discover Gawdee')) ?></span><small><i
-                                            class="ph-fill ph-play-circle"></i> 0:<?= 45 + ($mediaIndex * 4) ?></small></a>
+                        <?php foreach ($storyMedia as $mediaIndex => $media):
+                            $vSrc = $media['file_path'] ?: $media['external_url'];
+                            $pSrc = $media['poster_path'] ?: ($product['image'] ?? 'assets/images/logo.png');
+                            ?>
+                            <div class="ref-watch__card"
+                                 data-reel-trigger
+                                 data-video-src="<?= htmlspecialchars($vSrc) ?>"
+                                 data-video-type="<?= htmlspecialchars($media['media_type']) ?>"
+                                 data-video-title="<?= htmlspecialchars($media['title'] ?: $product['name']) ?>"
+                                 data-video-subtitle="<?= htmlspecialchars($media['subtitle']) ?>"
+                                 data-video-poster="<?= htmlspecialchars($pSrc) ?>"
+                                 data-product-id="<?= htmlspecialchars($product['id']) ?>"
+                                 data-product-name="<?= htmlspecialchars($product['full_name']) ?>"
+                                 data-product-price="<?= htmlspecialchars((string)$product['price']) ?>"
+                                 data-product-image="<?= htmlspecialchars($product['image']) ?>"
+                                 data-product-url="product.php?slug=<?= rawurlencode($product['slug']) ?>">
+                                <img src="<?= htmlspecialchars($pSrc) ?>"
+                                     alt="<?= htmlspecialchars((string) ($media['title'] ?: $product['name'])) ?>"
+                                     loading="lazy">
+                                <div class="ref-watch__card-overlay">
+                                    <span><?= htmlspecialchars((string) ($media['title'] ?: ['The Journey of Purity', 'Traditional Method Explained', 'From Our Farms to Your Home', 'Ways to Enjoy Gawdee'][$mediaIndex] ?? 'Discover Gawdee')) ?></span>
+                                    <small><i class="ph-fill ph-play-circle"></i> Watch Reel</small>
+                                </div>
+                            </div>
                         <?php endforeach; ?>
                     </div>
                 </section><?php endif; ?>
