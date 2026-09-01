@@ -42,6 +42,7 @@ function admin_upload_media(string $field, string $folder, string $existing = ''
         throw new RuntimeException('The media upload did not complete (Upload error code ' . (int) $_FILES[$field]['error'] . ').');
     }
     $maximumBytes = in_array('video', $allowedKinds, true) ? 500 * 1024 * 1024 : 10 * 1024 * 1024;
+    $maximumBytes = in_array('video', $allowedKinds, true) ? 500 * 1024 * 1024 : 10 * 1024 * 1024;
     if ((int) $_FILES[$field]['size'] > $maximumBytes) {
         throw new RuntimeException(in_array('video', $allowedKinds, true) ? 'Videos must be smaller than 500 MB.' : 'Images must be smaller than 10 MB.');
     }
@@ -134,7 +135,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     }
                     $slug = gawdee_slug($vData['slug'] ?? $fullName);
                     $id = preg_replace('/[^a-z0-9-]/', '', strtolower(trim((string) ($vData['id'] ?? $slug))));
-                    if ($id === '') continue;
+                    if ($id === '')
+                        continue;
 
                     $existingImg = trim((string) ($vData['existing_image'] ?? $_POST['existing_image'] ?? 'assets/images/logo.png'));
                     $uploadedImg = admin_upload_media("variant_image_{$index}", 'products', $existingImg, ['image']);
@@ -370,7 +372,7 @@ SQL);
 
         if ($action === 'save_homepage_media') {
             $id = (int) ($_POST['id'] ?? 0);
-            $mediaType = in_array($_POST['media_type'] ?? '', ['image', 'video', 'external_video'], true) ? (string) $_POST['media_type'] : 'image';
+            $mediaType = in_array($_POST['media_type'] ?? '', ['video', 'external_video'], true) ? (string) $_POST['media_type'] : 'video';
             $filePath = trim((string) ($_POST['existing_file_path'] ?? ''));
             if ($mediaType !== 'external_video') {
                 $uploadFolder = ($mediaType === 'video') ? 'videos' : 'homepage';
@@ -379,7 +381,7 @@ SQL);
             $posterPath = admin_upload_media('poster_file', 'homepage', trim((string) ($_POST['existing_poster_path'] ?? '')), ['image']);
             $externalUrl = trim((string) ($_POST['external_url'] ?? ''));
             if ($filePath === '' && $externalUrl === '') {
-                throw new RuntimeException('Upload a media file or enter an external video URL.');
+                throw new RuntimeException('Upload a video file or enter an external video URL.');
             }
             $isFeaturedHomepage = isset($_POST['is_featured_homepage']) ? 1 : 0;
             $redirectView = in_array((string) ($_POST['redirect_view'] ?? ''), ['reels', 'media'], true) ? (string) $_POST['redirect_view'] : 'media';
@@ -675,8 +677,8 @@ $stats = [
             <a class="admin-logo" href="../index.php"><img src="../assets/images/logo.png" alt="Gawdee"></a>
             <nav class="admin-nav" aria-label="Admin navigation">
                 <?php foreach ($navItems as [$key, $icon, $label]): ?><a
-                            class="<?= $view === $key ? 'is-active' : '' ?>" href="?view=<?= $key ?>"><i
-                                class="ph <?= $icon ?>"></i><?= $label ?></a><?php endforeach; ?>
+                        class="<?= $view === $key ? 'is-active' : '' ?>" href="?view=<?= $key ?>"><i
+                            class="ph <?= $icon ?>"></i><?= $label ?></a><?php endforeach; ?>
             </nav>
             <div class="admin-sidebar__footer">
                 <strong><?= htmlspecialchars($admin['name']) ?></strong><span><?= htmlspecialchars($admin['email']) ?></span><a
@@ -699,827 +701,828 @@ $stats = [
             </header>
             <div class="admin-content">
                 <?php if ($flash): ?>
-                        <div
-                            class="admin-alert admin-flash <?= $flash['type'] === 'error' ? 'admin-alert--error' : 'admin-alert--success' ?>">
-                            <i
-                                class="ph <?= $flash['type'] === 'error' ? 'ph-warning-circle' : 'ph-check-circle' ?>"></i><?= htmlspecialchars($flash['message']) ?>
-                        </div><?php endif; ?>
+                    <div
+                        class="admin-alert admin-flash <?= $flash['type'] === 'error' ? 'admin-alert--error' : 'admin-alert--success' ?>">
+                        <i
+                            class="ph <?= $flash['type'] === 'error' ? 'ph-warning-circle' : 'ph-check-circle' ?>"></i><?= htmlspecialchars($flash['message']) ?>
+                    </div><?php endif; ?>
 
                 <?php if ($view === 'dashboard'): ?>
-                        <div class="admin-grid admin-grid--stats">
-                            <article class="stat-card"><i class="ph ph-receipt"></i><span>Total
-                                    orders</span><strong><?= $stats['orders'] ?></strong></article>
-                            <article class="stat-card"><i class="ph ph-currency-inr"></i><span>Paid
-                                    revenue</span><strong>₹<?= number_format($stats['revenue']) ?></strong></article>
-                            <article class="stat-card"><i class="ph ph-calendar-check"></i><span>Orders
-                                    today</span><strong><?= $stats['today'] ?></strong></article>
-                            <article class="stat-card"><i class="ph ph-warning-circle"></i><span>Needs
-                                    attention</span><strong><?= $stats['attention'] ?></strong></article>
-                        </div>
-                        <div class="admin-grid" style="grid-template-columns:minmax(0,1.4fr) minmax(280px,.6fr)">
-                            <section class="admin-card">
-                                <div class="admin-card__header">
-                                    <div>
-                                        <h2>Recent orders</h2>
-                                        <p>Latest checkout activity</p>
-                                    </div><a class="admin-button admin-button--ghost" href="?view=orders"><i
-                                            class="ph ph-shopping-cart"></i> All orders</a>
-                                </div>
-                                <?php $recentOrders = gawdee_db()->query('SELECT * FROM orders ORDER BY id DESC LIMIT 7')->fetchAll();
-                                if ($recentOrders): ?>
-                                        <div class="admin-table-wrap">
-                                            <table class="admin-table">
-                                                <thead>
-                                                    <tr>
-                                                        <th>Order</th>
-                                                        <th>Customer</th>
-                                                        <th>Total</th>
-                                                        <th>Status</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody><?php foreach ($recentOrders as $order): ?>
-                                                            <tr>
-                                                                <td><strong><?= htmlspecialchars($order['order_number']) ?></strong><br><small><?= htmlspecialchars($order['created_at']) ?></small>
-                                                                </td>
-                                                                <td><?= htmlspecialchars($order['customer_name']) ?></td>
-                                                                <td>₹<?= number_format((int) $order['total']) ?></td>
-                                                                <td><span
-                                                                        class="status-pill status-pill--<?= htmlspecialchars($order['status']) ?>"><?= htmlspecialchars($order['status']) ?></span>
-                                                                </td>
-                                                            </tr><?php endforeach; ?>
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                <?php else: ?>
-                                        <div class="empty-state"><i class="ph ph-basket"></i>
-                                            <h3>No orders yet</h3>
-                                            <p>Completed checkouts will appear here.</p>
-                                        </div><?php endif; ?>
-                            </section>
-                            <section class="admin-card">
-                                <div class="admin-card__header">
-                                    <div>
-                                        <h2>Launch checklist</h2>
-                                        <p>Integration readiness</p>
-                                    </div>
-                                </div>
-                                <div class="admin-card__body" style="display:grid;gap:12px">
-                                    <?php foreach ([['Razorpay', gawdee_razorpay_configured()], ['DTDC', gawdee_dtdc_configured()], ['AI provider', gawdee_ai_configured()], ['Hero banners', count(gawdee_banners()) > 0]] as [$label, $ready]): ?>
-                                            <div style="display:flex;align-items:center;justify-content:space-between;font-size:.72rem">
-                                                <span><?= $label ?></span><span
-                                                    class="status-pill <?= $ready ? '' : 'status-pill--pending' ?>"><i
-                                                        class="ph <?= $ready ? 'ph-check' : 'ph-clock' ?>"></i><?= $ready ? 'Ready' : 'Setup needed' ?></span>
-                                            </div><?php endforeach; ?>
-                                    <a class="admin-button admin-button--secondary" href="?view=integrations">Configure
-                                        integrations</a>
-                                </div>
-                            </section>
-                        </div>
-
-                <?php elseif ($view === 'products'): ?>
-                        <?php require __DIR__ . '/partials/products.php'; ?>
-
-                <?php elseif ($view === 'banners'): ?>
-                        <?php $allBanners = gawdee_banners(true);
-                        $bannerEditId = (int) ($_GET['edit'] ?? 0);
-                        $editBanner = null;
-                        foreach ($allBanners as $candidate) {
-                            if ((int) $candidate['id'] === $bannerEditId)
-                                $editBanner = $candidate;
-                        } ?>
-                        <div class="admin-section-title">
-                            <div>
-                                <h2>Hero banner manager</h2>
-                                <p>Upload desktop and mobile slides, change links and drag order with sort numbers</p>
-                            </div><a class="admin-button admin-button--primary" href="?view=banners&edit=-1"><i
-                                    class="ph ph-plus"></i> Add banner</a>
-                        </div>
-                        <?php if (isset($_GET['edit'])):
-                            $b = $editBanner ?? ['id' => 0, 'title' => '', 'desktop_image' => '', 'mobile_image' => '', 'link_url' => '#shop', 'alt_text' => '', 'sort_order' => count($allBanners) * 10 + 10, 'is_active' => 1]; ?>
-                                <section class="admin-card" style="margin-bottom:20px">
-                                    <div class="admin-card__header">
-                                        <div>
-                                            <h2><?= $editBanner ? 'Edit banner' : 'New banner' ?></h2>
-                                            <p>Recommended desktop ratio 16:6 and mobile ratio 4:5</p>
-                                        </div><a href="?view=banners" class="admin-action-icon"><i class="ph ph-x"></i></a>
-                                    </div>
-                                    <div class="admin-card__body">
-                                        <form method="post" enctype="multipart/form-data" class="admin-form form-grid"><input
-                                                type="hidden" name="csrf_token"
-                                                value="<?= htmlspecialchars(gawdee_csrf_token()) ?>"><input type="hidden" name="action"
-                                                value="save_banner"><input type="hidden" name="id" value="<?= (int) $b['id'] ?>"><input
-                                                type="hidden" name="existing_desktop"
-                                                value="<?= htmlspecialchars($b['desktop_image']) ?>"><input type="hidden"
-                                                name="existing_mobile"
-                                                value="<?= htmlspecialchars($b['mobile_image']) ?>"><label><span>Banner
-                                                    title</span><input name="title" required
-                                                    value="<?= htmlspecialchars($b['title']) ?>"></label><label><span>Destination
-                                                    link</span><input name="link_url"
-                                                    value="<?= htmlspecialchars($b['link_url']) ?>"></label><label><span>Desktop
-                                                    image</span><input type="file" name="desktop_image"
-                                                    accept="image/jpeg,image/png,image/webp"><small
-                                                    class="help-text"><?= htmlspecialchars($b['desktop_image']) ?></small></label><label><span>Mobile
-                                                    image</span><input type="file" name="mobile_image"
-                                                    accept="image/jpeg,image/png,image/webp"><small
-                                                    class="help-text"><?= htmlspecialchars($b['mobile_image']) ?></small></label><label
-                                                class="form-span-2"><span>Accessible alt text</span><input name="alt_text"
-                                                    value="<?= htmlspecialchars($b['alt_text']) ?>"></label><label><span>Sort
-                                                    order</span><input type="number" name="sort_order"
-                                                    value="<?= (int) $b['sort_order'] ?>"></label><label class="form-switch"><input
-                                                    type="checkbox" name="is_active" <?= (int) $b['is_active'] ? 'checked' : '' ?>><span>Active slide</span></label>
-                                            <div class="form-span-2" style="display:flex;justify-content:flex-end"><button
-                                                    class="admin-button admin-button--primary">Save banner</button></div>
-                                        </form>
-                                    </div>
-                                </section><?php endif; ?>
-                        <div class="banner-grid"><?php foreach ($allBanners as $banner): ?>
-                                    <article class="banner-card"><img src="../<?= htmlspecialchars($banner['desktop_image']) ?>" alt="">
-                                        <div class="banner-card__body">
-                                            <h3><?= htmlspecialchars($banner['title']) ?></h3>
-                                            <p>Order <?= (int) $banner['sort_order'] ?> ·
-                                                <?= $banner['is_active'] ? 'Active' : 'Hidden' ?>
-                                            </p>
-                                            <div class="admin-actions"><a class="admin-button admin-button--secondary"
-                                                    href="?view=banners&edit=<?= (int) $banner['id'] ?>"><i
-                                                        class="ph ph-pencil-simple"></i> Edit</a>
-                                                <form method="post" onsubmit="return confirm('Remove this banner from the CMS?')"><input
-                                                        type="hidden" name="csrf_token"
-                                                        value="<?= htmlspecialchars(gawdee_csrf_token()) ?>"><input type="hidden"
-                                                        name="action" value="delete_banner"><input type="hidden" name="id"
-                                                        value="<?= (int) $banner['id'] ?>"><button
-                                                        class="admin-button admin-button--danger"><i class="ph ph-trash"></i></button>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </article><?php endforeach; ?>
-                        </div>
-
-                <?php elseif ($view === 'banners_two'): ?>
-                        <?php $allBannersTwo = gawdee_hero_banners_two(true);
-                        $bTwoEditId = (int) ($_GET['edit'] ?? 0);
-                        $editBTwo = null;
-                        foreach ($allBannersTwo as $candidate) {
-                            if ((int) $candidate['id'] === $bTwoEditId)
-                                $editBTwo = $candidate;
-                        } ?>
-                        <div class="admin-section-title">
-                            <div>
-                                <h2>Hero banner 2 manager</h2>
-                                <p>Upload video slides (MP4/WebM/MOV) or paste direct video URLs. Max upload limit:
-                                    <?= htmlspecialchars(ini_get('upload_max_filesize') ?: '40M') ?>
-                                </p>
-                            </div><a class="admin-button admin-button--primary" href="?view=banners_two&edit=-1"><i
-                                    class="ph ph-plus"></i> Add video banner</a>
-                        </div>
-                        <?php if (isset($_GET['edit'])):
-                            $b2 = $editBTwo ?? ['id' => 0, 'title' => '', 'headline' => '', 'eyebrow' => '', 'subtitle' => '', 'desktop_video' => '', 'mobile_video' => '', 'duration' => 1, 'link_url' => '#shop', 'alt_text' => '', 'sort_order' => count($allBannersTwo) * 10 + 10, 'is_active' => 1]; ?>
-                                <section class="admin-card" style="margin-bottom:20px">
-                                    <div class="admin-card__header">
-                                        <div>
-                                            <h2><?= $editBTwo ? 'Edit video banner' : 'New video banner' ?></h2>
-                                            <p>Multiple short video slides with dynamic eyebrow, headline and subtitle updates</p>
-                                        </div><a href="?view=banners_two" class="admin-action-icon"><i class="ph ph-x"></i></a>
-                                    </div>
-                                    <div class="admin-card__body">
-                                        <form method="post" enctype="multipart/form-data" class="admin-form form-grid"><input
-                                                type="hidden" name="csrf_token"
-                                                value="<?= htmlspecialchars(gawdee_csrf_token()) ?>"><input type="hidden" name="action"
-                                                value="save_banner_two"><input type="hidden" name="id"
-                                                value="<?= (int) $b2['id'] ?>"><input type="hidden" name="existing_desktop_video"
-                                                value="<?= htmlspecialchars($b2['desktop_video']) ?>"><input type="hidden"
-                                                name="existing_mobile_video" value="<?= htmlspecialchars($b2['mobile_video']) ?>">
-                                            <label><span>Banner title (Internal name)</span><input name="title" required
-                                                    value="<?= htmlspecialchars($b2['title']) ?>"></label>
-                                            <label><span>Eyebrow tag</span><input name="eyebrow"
-                                                    value="<?= htmlspecialchars($b2['eyebrow'] ?? '') ?>"></label>
-                                            <label class="form-span-2"><span>Headline (Main text displayed on slide)</span><input
-                                                    name="headline" value="<?= htmlspecialchars($b2['headline']) ?>"></label>
-                                            <label class="form-span-2"><span>Subtitle / Description</span><input name="subtitle"
-                                                    value="<?= htmlspecialchars($b2['subtitle'] ?? '') ?>"></label>
-                                            <div class="cms-media-field"><label><span>Desktop video file (Upload
-                                                        MP4/WebM/MOV)</span><input type="file" name="desktop_video"
-                                                        accept="video/mp4,video/webm,video/quicktime,video/*,image/*"></label>
-                                                <div style="margin-top:6px"><input type="text" name="desktop_video_url"
-                                                        placeholder="Or enter direct video URL (e.g. https://...)"
-                                                        value="<?= htmlspecialchars(preg_match('/^https?:\/\//i', $b2['desktop_video']) ? $b2['desktop_video'] : '') ?>"
-                                                        style="font-size:0.85rem"></div><?php if (!empty($b2['desktop_video'])): ?>
-                                                        <div style="margin-top:8px"><video
-                                                                src="<?= htmlspecialchars(admin_media_url($b2['desktop_video'])) ?>" controls
-                                                                muted playsinline
-                                                                style="width:100%;max-height:160px;border-radius:10px;background:#031f16;object-fit:cover"></video><small
-                                                                class="help-text"><?= htmlspecialchars($b2['desktop_video']) ?></small></div>
-                                                <?php endif; ?>
-                                            </div>
-                                            <div class="cms-media-field"><label><span>Mobile video file (Upload
-                                                        MP4/WebM/MOV)</span><input type="file" name="mobile_video"
-                                                        accept="video/mp4,video/webm,video/quicktime,video/*,image/*"></label>
-                                                <div style="margin-top:6px"><input type="text" name="mobile_video_url"
-                                                        placeholder="Or enter direct video URL (e.g. https://...)"
-                                                        value="<?= htmlspecialchars(preg_match('/^https?:\/\//i', $b2['mobile_video']) ? $b2['mobile_video'] : '') ?>"
-                                                        style="font-size:0.85rem"></div><?php if (!empty($b2['mobile_video'])): ?>
-                                                        <div style="margin-top:8px"><video
-                                                                src="<?= htmlspecialchars(admin_media_url($b2['mobile_video'])) ?>" controls
-                                                                muted playsinline
-                                                                style="width:100%;max-height:160px;border-radius:10px;background:#031f16;object-fit:cover"></video><small
-                                                                class="help-text"><?= htmlspecialchars($b2['mobile_video']) ?></small></div>
-                                                <?php endif; ?>
-                                            </div><label><span>Duration (Seconds, min 1)</span><input type="number" name="duration"
-                                                    min="1" max="60"
-                                                    value="<?= (int) ($b2['duration'] ?? 1) ?>"></label><label><span>Destination
-                                                    link</span><input name="link_url"
-                                                    value="<?= htmlspecialchars($b2['link_url']) ?>"></label><label
-                                                class="form-span-2"><span>Accessible alt text</span><input name="alt_text"
-                                                    value="<?= htmlspecialchars($b2['alt_text']) ?>"></label><label><span>Sort
-                                                    order</span><input type="number" name="sort_order"
-                                                    value="<?= (int) $b2['sort_order'] ?>"></label><label class="form-switch"><input
-                                                    type="checkbox" name="is_active" <?= (int) $b2['is_active'] ? 'checked' : '' ?>><span>Active slide</span></label>
-                                            <div class="form-span-2" style="display:flex;justify-content:flex-end"><button
-                                                    class="admin-button admin-button--primary">Save video banner</button></div>
-                                        </form>
-                                    </div>
-                                </section>
-                        <?php endif; ?>
-                        <div class="banner-grid"><?php foreach ($allBannersTwo as $banner): ?>
-                                    <article class="banner-card"><?php if (!empty($banner['desktop_video'])): ?><video
-                                                    src="<?= htmlspecialchars(admin_media_url($banner['desktop_video'])) ?>" controls muted
-                                                    playsinline
-                                                    style="width:100%;height:160px;object-fit:cover;background:#031f16"></video><?php else: ?>
-                                                <div
-                                                    style="height:160px;background:#031f16;display:flex;align-items:center;justify-content:center;color:#fff;flex-direction:column;gap:6px">
-                                                    <i class="ph ph-film-strip" style="font-size:2rem"></i><span
-                                                        style="font-size:0.8rem;opacity:0.7">No video uploaded</span>
-                                                </div><?php endif; ?>
-                                        <div class="banner-card__body">
-                                            <span class="help-text"
-                                                style="color:#0a7540;font-weight:600;font-size:0.75rem"><?= htmlspecialchars($banner['eyebrow'] ?: '') ?></span>
-                                            <h3 style="margin:2px 0"><?= htmlspecialchars($banner['headline'] ?: $banner['title']) ?>
-                                            </h3>
-                                            <p style="font-size:0.8rem;color:#555;margin:2px 0;line-height:1.3">
-                                                <?= htmlspecialchars($banner['subtitle'] ?: '') ?>
-                                            </p>
-                                            <p style="font-size:0.75rem;opacity:0.7;margin-top:4px">Duration:
-                                                <?= (int) $banner['duration'] ?>s · Order <?= (int) $banner['sort_order'] ?> ·
-                                                <?= $banner['is_active'] ? 'Active' : 'Hidden' ?>
-                                            </p>
-                                            <div class="admin-actions"><a class="admin-button admin-button--secondary"
-                                                    href="?view=banners_two&edit=<?= (int) $banner['id'] ?>"><i
-                                                        class="ph ph-pencil-simple"></i> Edit</a>
-                                                <form method="post" onsubmit="return confirm('Remove this video banner?')"><input
-                                                        type="hidden" name="csrf_token"
-                                                        value="<?= htmlspecialchars(gawdee_csrf_token()) ?>"><input type="hidden"
-                                                        name="action" value="delete_banner_two"><input type="hidden" name="id"
-                                                        value="<?= (int) $banner['id'] ?>"><button
-                                                        class="admin-button admin-button--danger"><i class="ph ph-trash"></i></button>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </article><?php endforeach; ?>
-                        </div>
-
-                <?php elseif ($view === 'cms'): ?>
-                        <?php require __DIR__ . '/partials/cms.php'; ?>
-
-                <?php elseif ($view === 'categories'): ?>
-                        <?php require __DIR__ . '/partials/categories.php'; ?>
-
-                <?php elseif ($view === 'testimonials'): ?>
-                        <?php require __DIR__ . '/partials/testimonials.php'; ?>
-
-                <?php elseif ($view === 'reels'): ?>
-                        <?php require __DIR__ . '/partials/reels.php'; ?>
-
-                <?php elseif ($view === 'media'): ?>
-                        <?php require __DIR__ . '/partials/media.php'; ?>
-
-                <?php elseif ($view === 'orders'): ?>
-                        <?php require __DIR__ . '/partials/orders.php'; ?>
-                        <?php if (false): ?>
-                                <?php $orders = gawdee_db()->query('SELECT * FROM orders ORDER BY id DESC')->fetchAll();
-                                $detailOrder = null;
-                                $detailItems = [];
-                                if ((int) ($_GET['order'] ?? 0) > 0) {
-                                    $detailStatement = gawdee_db()->prepare('SELECT * FROM orders WHERE id=?');
-                                    $detailStatement->execute([(int) $_GET['order']]);
-                                    $detailOrder = $detailStatement->fetch() ?: null;
-                                    if ($detailOrder) {
-                                        $detailItemsStatement = gawdee_db()->prepare('SELECT * FROM order_items WHERE order_id=?');
-                                        $detailItemsStatement->execute([$detailOrder['id']]);
-                                        $detailItems = $detailItemsStatement->fetchAll();
-                                    }
-                                } ?>
-                                <div class="admin-section-title">
-                                    <div>
-                                        <h2>Orders & fulfilment</h2>
-                                        <p>Payment, packing and DTDC shipment workflow</p>
-                                    </div>
-                                </div>
-                                <?php if ($detailOrder): ?>
-                                        <section class="admin-card" style="margin-bottom:20px">
-                                            <div class="admin-card__header">
-                                                <div>
-                                                    <h2><?= htmlspecialchars($detailOrder['order_number']) ?></h2>
-                                                    <p><?= htmlspecialchars($detailOrder['customer_name'] . ' · ' . $detailOrder['email'] . ' · ' . $detailOrder['phone']) ?>
-                                                    </p>
-                                                </div><a class="admin-action-icon" href="?view=orders"><i class="ph ph-x"></i></a>
-                                            </div>
-                                            <div class="admin-card__body">
-                                                <div class="form-grid">
-                                                    <div>
-                                                        <p class="help-text">DELIVERY ADDRESS</p><strong
-                                                            style="font-size:.75rem"><?= htmlspecialchars($detailOrder['address1'] . ($detailOrder['address2'] ? ', ' . $detailOrder['address2'] : '') . ', ' . $detailOrder['city'] . ', ' . $detailOrder['state'] . ' ' . $detailOrder['pincode']) ?></strong>
-                                                    </div>
-                                                    <div>
-                                                        <p class="help-text">PAYMENT & TOTAL</p><strong
-                                                            style="font-size:.75rem"><?= htmlspecialchars(strtoupper($detailOrder['payment_method']) . ' · ' . $detailOrder['payment_status']) ?>
-                                                            · ₹<?= number_format((int) $detailOrder['total']) ?></strong>
-                                                    </div>
-                                                </div>
-                                                <div class="admin-table-wrap" style="margin-top:18px">
-                                                    <table class="admin-table">
-                                                        <thead>
-                                                            <tr>
-                                                                <th>Item</th>
-                                                                <th>Quantity</th>
-                                                                <th>Unit price</th>
-                                                                <th>Total</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody><?php foreach ($detailItems as $item): ?>
-                                                                    <tr>
-                                                                        <td>
-                                                                            <div class="admin-table__product"><img
-                                                                                    src="../<?= htmlspecialchars($item['image']) ?>"
-                                                                                    alt=""><strong><?= htmlspecialchars($item['product_name']) ?></strong>
-                                                                            </div>
-                                                                        </td>
-                                                                        <td><?= (int) $item['quantity'] ?></td>
-                                                                        <td>₹<?= number_format((int) $item['unit_price']) ?></td>
-                                                                        <td>₹<?= number_format((int) $item['unit_price'] * (int) $item['quantity']) ?>
-                                                                        </td>
-                                                                    </tr><?php endforeach; ?>
-                                                        </tbody>
-                                                    </table>
-                                                </div>
-                                            </div>
-                                        </section><?php endif; ?>
-                                <section class="admin-card"><?php if ($orders): ?>
-                                            <div class="admin-table-wrap">
-                                                <table class="admin-table">
-                                                    <thead>
-                                                        <tr>
-                                                            <th>Order</th>
-                                                            <th>Customer</th>
-                                                            <th>Payment</th>
-                                                            <th>Total</th>
-                                                            <th>Shipment</th>
-                                                            <th>Workflow</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody><?php foreach ($orders as $order): ?>
-                                                                <tr>
-                                                                    <td><strong><?= htmlspecialchars($order['order_number']) ?></strong><br><small><?= htmlspecialchars($order['created_at']) ?></small>
-                                                                    </td>
-                                                                    <td><?= htmlspecialchars($order['customer_name']) ?><br><small><?= htmlspecialchars($order['phone']) ?></small>
-                                                                    </td>
-                                                                    <td><span
-                                                                            class="status-pill status-pill--<?= htmlspecialchars($order['payment_status']) ?>"><?= htmlspecialchars($order['payment_method'] . ' · ' . $order['payment_status']) ?></span>
-                                                                    </td>
-                                                                    <td>₹<?= number_format((int) $order['total']) ?></td>
-                                                                    <td><?php if ($order['dtdc_reference']): ?><strong><?= htmlspecialchars($order['dtdc_reference']) ?></strong><br><?php if ($order['dtdc_tracking_url']): ?><a
-                                                                                            href="<?= htmlspecialchars($order['dtdc_tracking_url']) ?>"
-                                                                                            target="_blank">Track <i
-                                                                                                class="ph ph-arrow-up-right"></i></a><?php endif; ?><?php else: ?><span
-                                                                                    class="status-pill status-pill--draft"><?= htmlspecialchars($order['shipment_status']) ?></span><?php endif; ?>
-                                                                    </td>
-                                                                    <td>
-                                                                        <div class="admin-actions"><a class="admin-action-icon"
-                                                                                href="?view=orders&order=<?= (int) $order['id'] ?>"
-                                                                                title="Order details"><i class="ph ph-eye"></i></a>
-                                                                            <form method="post" style="display:flex;gap:6px"><input type="hidden"
-                                                                                    name="csrf_token"
-                                                                                    value="<?= htmlspecialchars(gawdee_csrf_token()) ?>"><input
-                                                                                    type="hidden" name="action" value="update_order"><input
-                                                                                    type="hidden" name="id" value="<?= (int) $order['id'] ?>"><select
-                                                                                    name="status"
-                                                                                    style="padding:7px;border:1px solid #dfe7e1;border-radius:9px"><?php foreach (['pending', 'processing', 'packed', 'shipped', 'delivered', 'cancelled', 'refunded'] as $status): ?>
-                                                                                            <option <?= $order['status'] === $status ? 'selected' : '' ?>>
-                                                                                                <?= $status ?>
-                                                                                            </option><?php endforeach; ?>
-                                                                                </select><button class="admin-action-icon"><i
-                                                                                        class="ph ph-check"></i></button></form>
-                                                                            <?php if (!$order['dtdc_reference']): ?>
-                                                                                    <form method="post"><input type="hidden" name="csrf_token"
-                                                                                            value="<?= htmlspecialchars(gawdee_csrf_token()) ?>"><input
-                                                                                            type="hidden" name="action" value="create_shipment"><input
-                                                                                            type="hidden" name="id" value="<?= (int) $order['id'] ?>"><button
-                                                                                            class="admin-button admin-button--secondary"><i
-                                                                                                class="ph ph-truck"></i> Book DTDC</button></form>
-                                                                            <?php endif; ?>
-                                                                        </div>
-                                                                    </td>
-                                                                </tr><?php endforeach; ?>
-                                                    </tbody>
-                                                </table>
-                                            </div><?php else: ?>
-                                            <div class="empty-state"><i class="ph ph-receipt"></i>
-                                                <h3>No orders yet</h3>
-                                                <p>New Razorpay and cash-on-delivery orders will appear here.</p>
-                                            </div><?php endif; ?>
-                                </section>
-
-                        <?php endif; ?>
-                <?php elseif ($view === 'blog'): ?>
-                        <?php require __DIR__ . '/partials/blog.php'; ?>
-                        <?php if (false): ?>
-                                <?php $posts = gawdee_db()->query('SELECT * FROM blog_posts ORDER BY id DESC')->fetchAll();
-                                $postEditId = (int) ($_GET['edit'] ?? 0);
-                                $editPost = null;
-                                foreach ($posts as $candidate)
-                                    if ((int) $candidate['id'] === $postEditId)
-                                        $editPost = $candidate; ?>
-                                <div class="admin-section-title">
-                                    <div>
-                                        <h2>Stories & publishing</h2>
-                                        <p>Write manually or let the selected AI provider create a responsible first draft</p>
-                                    </div>
-                                    <div class="admin-actions"><a class="admin-button admin-button--secondary" href="?view=ai"><i
-                                                class="ph ph-sparkle"></i> Generate with AI</a><a
-                                            class="admin-button admin-button--primary" href="?view=blog&edit=-1"><i
-                                                class="ph ph-plus"></i> New post</a></div>
-                                </div>
-                                <?php if (isset($_GET['edit'])):
-                                    $bp = $editPost ?? ['id' => 0, 'title' => '', 'slug' => '', 'excerpt' => '', 'content' => '', 'status' => 'draft', 'meta_description' => '']; ?>
-                                        <section class="admin-card" style="margin-bottom:20px">
-                                            <div class="admin-card__header">
-                                                <div>
-                                                    <h2><?= $editPost ? 'Edit article' : 'New article' ?></h2>
-                                                    <p>Safe HTML formatting is preserved</p>
-                                                </div><a href="?view=blog" class="admin-action-icon"><i class="ph ph-x"></i></a>
-                                            </div>
-                                            <div class="admin-card__body">
-                                                <form method="post" class="admin-form form-grid"><input type="hidden" name="csrf_token"
-                                                        value="<?= htmlspecialchars(gawdee_csrf_token()) ?>"><input type="hidden" name="action"
-                                                        value="save_blog"><input type="hidden" name="id"
-                                                        value="<?= (int) $bp['id'] ?>"><label><span>Title</span><input name="title" required
-                                                            value="<?= htmlspecialchars($bp['title']) ?>"></label><label><span>Slug</span><input
-                                                            name="slug" value="<?= htmlspecialchars($bp['slug']) ?>"></label><label
-                                                        class="form-span-2"><span>Excerpt</span><textarea name="excerpt"
-                                                            style="min-height:75px"><?= htmlspecialchars($bp['excerpt']) ?></textarea></label><label
-                                                        class="form-span-2"><span>Article HTML</span><textarea name="content"
-                                                            style="min-height:310px"
-                                                            required><?= htmlspecialchars($bp['content']) ?></textarea></label><label><span>Meta
-                                                            description</span><textarea name="meta_description"
-                                                            style="min-height:80px"><?= htmlspecialchars($bp['meta_description']) ?></textarea></label><label><span>Status</span><select
-                                                            name="status">
-                                                            <option value="draft" <?= $bp['status'] === 'draft' ? 'selected' : '' ?>>Draft</option>
-                                                            <option value="published" <?= $bp['status'] === 'published' ? 'selected' : '' ?>>
-                                                                Published
-                                                            </option>
-                                                        </select></label>
-                                                    <div class="form-span-2" style="display:flex;justify-content:flex-end"><button
-                                                            class="admin-button admin-button--primary">Save article</button></div>
-                                                </form>
-                                            </div>
-                                        </section><?php endif; ?>
-                                <section class="admin-card"><?php if ($posts): ?>
-                                            <div class="admin-table-wrap">
-                                                <table class="admin-table">
-                                                    <thead>
-                                                        <tr>
-                                                            <th>Article</th>
-                                                            <th>Source</th>
-                                                            <th>Status</th>
-                                                            <th>Created</th>
-                                                            <th>Actions</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody><?php foreach ($posts as $post): ?>
-                                                                <tr>
-                                                                    <td><strong><?= htmlspecialchars($post['title']) ?></strong><br><small>/blog-post.php?slug=<?= htmlspecialchars($post['slug']) ?></small>
-                                                                    </td>
-                                                                    <td><?= htmlspecialchars($post['source'] . ($post['ai_provider'] ? ' · ' . $post['ai_provider'] : '')) ?>
-                                                                    </td>
-                                                                    <td><span
-                                                                            class="status-pill status-pill--<?= htmlspecialchars($post['status']) ?>"><?= htmlspecialchars($post['status']) ?></span>
-                                                                    </td>
-                                                                    <td><?= htmlspecialchars($post['created_at']) ?></td>
-                                                                    <td>
-                                                                        <div class="admin-actions"><a class="admin-action-icon"
-                                                                                href="?view=blog&edit=<?= (int) $post['id'] ?>"><i
-                                                                                    class="ph ph-pencil-simple"></i></a>
-                                                                            <form method="post"><input type="hidden" name="csrf_token"
-                                                                                    value="<?= htmlspecialchars(gawdee_csrf_token()) ?>"><input
-                                                                                    type="hidden" name="action" value="toggle_blog"><input type="hidden"
-                                                                                    name="id" value="<?= (int) $post['id'] ?>"><button
-                                                                                    class="admin-action-icon"><i
-                                                                                        class="ph <?= $post['status'] === 'published' ? 'ph-eye-slash' : 'ph-paper-plane-tilt' ?>"></i></button>
-                                                                            </form>
-                                                                        </div>
-                                                                    </td>
-                                                                </tr><?php endforeach; ?>
-                                                    </tbody>
-                                                </table>
-                                            </div><?php else: ?>
-                                            <div class="empty-state"><i class="ph ph-article"></i>
-                                                <h3>No stories yet</h3>
-                                                <p>Create a manual post or generate a draft in AI Studio.</p>
-                                            </div><?php endif; ?>
-                                </section>
-
-                        <?php endif; ?>
-                <?php elseif ($view === 'ai'): ?>
-                        <div class="admin-section-title">
-                            <div>
-                                <h2>AI studio</h2>
-                                <p>Choose Groq or OpenAI for homepage chat and scheduled blog generation</p>
-                            </div>
-                        </div>
-                        <div class="integration-grid">
-                            <section class="integration-card">
-                                <div class="integration-card__title"><i class="ph ph-sparkle"></i>
-                                    <div>
-                                        <h3>Provider & API keys</h3>
-                                        <p>Secrets are encrypted at rest and never rendered back</p>
-                                    </div>
-                                </div>
-                                <form method="post" class="admin-form"><input type="hidden" name="csrf_token"
-                                        value="<?= htmlspecialchars(gawdee_csrf_token()) ?>"><input type="hidden" name="action"
-                                        value="save_ai"><label><span>Active AI mode</span><select name="ai_provider">
-                                            <option value="groq" <?= gawdee_setting('ai_provider') === 'groq' ? 'selected' : '' ?>>
-                                                Groq
-                                            </option>
-                                            <option value="openai" <?= gawdee_setting('ai_provider') === 'openai' ? 'selected' : '' ?>>
-                                                OpenAI / ChatGPT models</option>
-                                        </select></label><label><span>Groq API key</span><input type="password"
-                                            name="groq_api_key" autocomplete="new-password"
-                                            placeholder="Leave blank to keep stored key">
-                                        <div class="secret-state"><i class="ph ph-lock"></i>
-                                            <?= gawdee_setting('groq_api_key') !== '' ? 'Key configured' : 'Not configured' ?>
-                                        </div>
-                                    </label><label><span>Groq model</span><input name="groq_model"
-                                            value="<?= htmlspecialchars(gawdee_setting('groq_model')) ?>"></label><label><span>OpenAI
-                                            API key</span><input type="password" name="openai_api_key"
-                                            autocomplete="new-password" placeholder="Leave blank to keep stored key">
-                                        <div class="secret-state"><i class="ph ph-lock"></i>
-                                            <?= gawdee_setting('openai_api_key') !== '' ? 'Key configured' : 'Not configured' ?>
-                                        </div>
-                                    </label><label><span>OpenAI model</span><input name="openai_model"
-                                            value="<?= htmlspecialchars(gawdee_setting('openai_model')) ?>"></label><label
-                                        class="form-switch"><input type="checkbox" name="ai_chat_enabled"
-                                            <?= gawdee_setting('ai_chat_enabled') === '1' ? 'checked' : '' ?>><span>Enable homepage
-                                            AI
-                                            assistant</span></label><label class="form-switch"><input type="checkbox"
-                                            name="ai_auto_blog_enabled" <?= gawdee_setting('ai_auto_blog_enabled') === '1' ? 'checked' : '' ?>><span>Enable
-                                            scheduled auto-blog</span></label><label><span>Frequency in days</span><input
-                                            type="number" min="1" name="ai_blog_frequency_days"
-                                            value="<?= htmlspecialchars(gawdee_setting('ai_blog_frequency_days', '7')) ?>"></label><label><span>Approved
-                                            topic pool</span><textarea
-                                            name="ai_blog_topics"><?= htmlspecialchars(gawdee_setting('ai_blog_topics')) ?></textarea></label><label><span>Scheduler
-                                            token</span><input type="password" name="ai_cron_token" autocomplete="new-password"
-                                            placeholder="Set a long random token or leave unchanged">
-                                        <div class="secret-state"><i class="ph ph-lock"></i>
-                                            <?= gawdee_setting('ai_cron_token') !== '' ? 'Token configured' : 'Set a token before scheduling' ?>
-                                        </div>
-                                    </label><button class="admin-button admin-button--primary">Save AI settings</button></form>
-                            </section>
-                            <section class="integration-card">
-                                <div class="integration-card__title"><i class="ph ph-magic-wand"></i>
-                                    <div>
-                                        <h3>Create an article</h3>
-                                        <p>Generate a safe editorial draft or publish immediately</p>
-                                    </div>
-                                </div>
-                                <form method="post" class="admin-form"><input type="hidden" name="csrf_token"
-                                        value="<?= htmlspecialchars(gawdee_csrf_token()) ?>"><input type="hidden" name="action"
-                                        value="generate_blog"><label><span>Specific topic</span><textarea name="topic" required
-                                            placeholder="Example: A practical guide to choosing traditional ghee for everyday Indian cooking"></textarea></label><label><span>Publishing
-                                            mode</span><select name="publish_now">
-                                            <option value="0">Create as draft for review</option>
-                                            <option value="1">Generate and publish</option>
-                                        </select></label><button class="admin-button admin-button--primary"><i
-                                            class="ph ph-sparkle"></i> Generate article</button></form>
-                                <div style="margin-top:24px">
-                                    <p class="help-text">Call this from cron or Windows Task Scheduler using the same secret
-                                        token you entered:</p>
-                                    <div class="code-box">
-                                        <?= htmlspecialchars(gawdee_base_url() . '/cron/auto-blog.php?token=YOUR_CRON_TOKEN') ?>
-                                    </div>
-                                </div>
-                            </section>
-                        </div>
-
-                <?php elseif ($view === 'integrations'): ?>
-                        <section class="integration-mode-card <?= gawdee_dtdc_configured() ? 'is-online' : 'is-offline' ?>">
-                            <div><span class="integration-mode-card__icon"><i class="ph ph-truck"></i></span>
-                                <div><strong>DTDC
-                                        <?= gawdee_dtdc_configured() ? 'online' : 'offline — manual fulfilment active' ?></strong>
-                                    <p>Orders are always saved in Admin. Turning DTDC off only disables courier booking; it
-                                        never hides or rejects an order.</p>
-                                </div>
-                            </div>
-                            <form method="post"><input type="hidden" name="csrf_token"
-                                    value="<?= htmlspecialchars(gawdee_csrf_token()) ?>"><input type="hidden" name="action"
-                                    value="toggle_dtdc"><button
-                                    class="admin-button <?= gawdee_setting('dtdc_enabled', '0') === '1' ? 'admin-button--danger' : 'admin-button--primary' ?>"><?= gawdee_setting('dtdc_enabled', '0') === '1' ? 'Turn DTDC off' : 'Enable DTDC tools' ?></button>
-                            </form>
-                        </section>
-                        <div class="admin-section-title">
-                            <div>
-                                <h2>Commerce integrations</h2>
-                                <p>Production credentials stay on the server and are encrypted</p>
-                            </div>
-                        </div>
-                        <form method="post" class="admin-form"><input type="hidden" name="csrf_token"
-                                value="<?= htmlspecialchars(gawdee_csrf_token()) ?>"><input type="hidden" name="action"
-                                value="save_integrations">
-                            <div class="integration-grid">
-                                <section class="integration-card">
-                                    <div class="integration-card__title"><i class="ph ph-credit-card"></i>
-                                        <div>
-                                            <h3>Razorpay</h3>
-                                            <p>Orders API, Checkout signature verification and webhooks</p>
-                                        </div>
-                                    </div>
-                                    <div class="admin-form"><label><span>Key ID</span><input name="razorpay_key_id"
-                                                value="<?= htmlspecialchars(gawdee_setting('razorpay_key_id')) ?>"></label><label><span>Key
-                                                Secret</span><input type="password" name="razorpay_key_secret"
-                                                placeholder="Leave blank to keep stored secret">
-                                            <div class="secret-state"><i class="ph ph-lock"></i>
-                                                <?= gawdee_setting('razorpay_key_secret') !== '' ? 'Secret configured' : 'Not configured' ?>
-                                            </div>
-                                        </label><label><span>Webhook Secret</span><input type="password"
-                                                name="razorpay_webhook_secret" placeholder="Leave blank to keep stored secret">
-                                            <div class="secret-state"><i class="ph ph-lock"></i>
-                                                <?= gawdee_setting('razorpay_webhook_secret') !== '' ? 'Secret configured' : 'Not configured' ?>
-                                            </div>
-                                        </label>
-                                        <div><span class="help-text">Webhook URL</span>
-                                            <div class="code-box">
-                                                <?= htmlspecialchars(gawdee_base_url() . '/api/razorpay-webhook.php') ?>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </section>
-                                <section class="integration-card">
-                                    <div class="integration-card__title"><i class="ph ph-truck"></i>
-                                        <div>
-                                            <h3>DTDC merchant adapter</h3>
-                                            <p>Uses the endpoint and request schema issued with your DTDC account</p>
-                                        </div>
-                                    </div>
-                                    <div class="admin-form form-grid"><label class="form-span-2"><span>Booking
-                                                endpoint</span><input type="url" name="dtdc_booking_endpoint"
-                                                value="<?= htmlspecialchars(gawdee_setting('dtdc_booking_endpoint')) ?>"
-                                                placeholder="https://merchant-issued-endpoint"></label><label
-                                            class="form-span-2"><span>Tracking URL template</span><input
-                                                name="dtdc_tracking_endpoint"
-                                                value="<?= htmlspecialchars(gawdee_setting('dtdc_tracking_endpoint')) ?>"
-                                                placeholder="https://tracking.example/{awb}"></label><label><span>Customer
-                                                code</span><input name="dtdc_customer_code"
-                                                value="<?= htmlspecialchars(gawdee_setting('dtdc_customer_code')) ?>"></label><label><span>Pickup
-                                                pincode</span><input name="dtdc_pickup_pincode"
-                                                value="<?= htmlspecialchars(gawdee_setting('dtdc_pickup_pincode')) ?>"></label><label><span>Service
-                                                type</span><input name="dtdc_service_type"
-                                                value="<?= htmlspecialchars(gawdee_setting('dtdc_service_type')) ?>"></label><label><span>API
-                                                token</span><input type="password" name="dtdc_api_token"
-                                                placeholder="Keep stored token">
-                                            <div class="secret-state">
-                                                <?= gawdee_setting('dtdc_api_token') !== '' ? 'Token configured' : 'Not configured' ?>
-                                            </div>
-                                        </label><label><span>Auth header</span><input name="dtdc_auth_header"
-                                                value="<?= htmlspecialchars(gawdee_setting('dtdc_auth_header', 'Authorization')) ?>"></label><label><span>Auth
-                                                prefix</span><input name="dtdc_auth_prefix"
-                                                value="<?= htmlspecialchars(gawdee_setting('dtdc_auth_prefix', 'Bearer')) ?>"></label><label><span>Basic
-                                                auth username</span><input type="password" name="dtdc_username"
-                                                placeholder="Optional / keep stored"></label><label><span>Basic auth
-                                                password</span><input type="password" name="dtdc_password"
-                                                placeholder="Optional / keep stored"></label><label
-                                            class="form-span-2"><span>Optional JSON payload template</span><textarea
-                                                name="dtdc_payload_template"
-                                                placeholder='{"reference":"{{order_number}}","pincode":"{{pincode}}"}'><?= htmlspecialchars(gawdee_setting('dtdc_payload_template')) ?></textarea>
-                                            <p class="help-text">Placeholders: {{order_number}}, {{customer_name}}, {{phone}},
-                                                {{email}}, {{address1}}, {{address2}}, {{city}}, {{state}}, {{pincode}},
-                                                {{amount}}, {{payment_method}}, {{items_json}}.</p>
-                                        </label></div>
-                                </section>
-                            </div>
-                            <div style="display:flex;justify-content:flex-end"><button
-                                    class="admin-button admin-button--primary">Save integrations <i
-                                        class="ph ph-check"></i></button></div>
-                        </form>
-
-                <?php elseif ($view === 'settings'): ?>
-                        <div class="admin-section-title">
-                            <div>
-                                <h2>Store settings</h2>
-                                <p>Contact, delivery, announcement and checkout preferences</p>
-                            </div>
-                        </div>
+                    <div class="admin-grid admin-grid--stats">
+                        <article class="stat-card"><i class="ph ph-receipt"></i><span>Total
+                                orders</span><strong><?= $stats['orders'] ?></strong></article>
+                        <article class="stat-card"><i class="ph ph-currency-inr"></i><span>Paid
+                                revenue</span><strong>₹<?= number_format($stats['revenue']) ?></strong></article>
+                        <article class="stat-card"><i class="ph ph-calendar-check"></i><span>Orders
+                                today</span><strong><?= $stats['today'] ?></strong></article>
+                        <article class="stat-card"><i class="ph ph-warning-circle"></i><span>Needs
+                                attention</span><strong><?= $stats['attention'] ?></strong></article>
+                    </div>
+                    <div class="admin-grid" style="grid-template-columns:minmax(0,1.4fr) minmax(280px,.6fr)">
                         <section class="admin-card">
-                            <div class="admin-card__body">
-                                <form method="post" class="admin-form form-grid"><input type="hidden" name="csrf_token"
-                                        value="<?= htmlspecialchars(gawdee_csrf_token()) ?>"><input type="hidden" name="action"
-                                        value="save_store"><label><span>Store name</span><input name="store_name"
-                                            value="<?= htmlspecialchars(gawdee_setting('store_name')) ?>"></label><label><span>Store
-                                            email</span><input type="email" name="store_email"
-                                            value="<?= htmlspecialchars(gawdee_setting('store_email')) ?>"></label><label><span>Store
-                                            phone</span><input name="store_phone"
-                                            value="<?= htmlspecialchars(gawdee_setting('store_phone')) ?>"></label><label><span>WhatsApp
-                                            number</span><input name="whatsapp_number"
-                                            value="<?= htmlspecialchars(gawdee_setting('whatsapp_number', '917055207030')) ?>"></label><label><span>Free
-                                            shipping threshold ₹</span><input type="number" min="0"
-                                            name="free_shipping_threshold"
-                                            value="<?= htmlspecialchars(gawdee_setting('free_shipping_threshold')) ?>"></label><label><span>Shipping
-                                            fee ₹</span><input type="number" min="0" name="shipping_fee"
-                                            value="<?= htmlspecialchars(gawdee_setting('shipping_fee')) ?>"></label><label
-                                        class="form-span-2"><span>Announcement strip</span><input name="promo_text"
-                                            value="<?= htmlspecialchars(gawdee_setting('promo_text', 'Independence Day Specials — Flat 10% OFF on all orders | Use Code: FREEDOM10')) ?>"></label><label
-                                        class="form-switch"><input type="checkbox" name="cod_enabled" value="1"
-                                            <?= gawdee_setting('cod_enabled') === '1' ? 'checked' : '' ?>><span>Enable cash on
-                                            delivery</span></label>
-                                    <div style="display:flex;justify-content:flex-end;align-items:end"><button
-                                            class="admin-button admin-button--primary">Save store settings</button></div>
-                                </form>
-                            </div>
-                        </section>
-                        <section class="admin-card" style="margin-top:18px">
                             <div class="admin-card__header">
                                 <div>
-                                    <h2>Homepage offer popup</h2>
-                                    <p>Control, customize and toggle the promotional offer popup shown to homepage visitors</p>
+                                    <h2>Recent orders</h2>
+                                    <p>Latest checkout activity</p>
+                                </div><a class="admin-button admin-button--ghost" href="?view=orders"><i
+                                        class="ph ph-shopping-cart"></i> All orders</a>
+                            </div>
+                            <?php $recentOrders = gawdee_db()->query('SELECT * FROM orders ORDER BY id DESC LIMIT 7')->fetchAll();
+                            if ($recentOrders): ?>
+                                <div class="admin-table-wrap">
+                                    <table class="admin-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Order</th>
+                                                <th>Customer</th>
+                                                <th>Total</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody><?php foreach ($recentOrders as $order): ?>
+                                                <tr>
+                                                    <td><strong><?= htmlspecialchars($order['order_number']) ?></strong><br><small><?= htmlspecialchars($order['created_at']) ?></small>
+                                                    </td>
+                                                    <td><?= htmlspecialchars($order['customer_name']) ?></td>
+                                                    <td>₹<?= number_format((int) $order['total']) ?></td>
+                                                    <td><span
+                                                            class="status-pill status-pill--<?= htmlspecialchars($order['status']) ?>"><?= htmlspecialchars($order['status']) ?></span>
+                                                    </td>
+                                                </tr><?php endforeach; ?>
+                                        </tbody>
+                                    </table>
                                 </div>
+                            <?php else: ?>
+                                <div class="empty-state"><i class="ph ph-basket"></i>
+                                    <h3>No orders yet</h3>
+                                    <p>Completed checkouts will appear here.</p>
+                                </div><?php endif; ?>
+                        </section>
+                        <section class="admin-card">
+                            <div class="admin-card__header">
                                 <div>
-                                    <?php $isPopupEnabled = gawdee_setting('offer_popup_enabled', '1') === '1'; ?>
-                                    <span class="badge <?= $isPopupEnabled ? 'badge--success' : 'badge--secondary' ?>">
-                                        <?= $isPopupEnabled ? 'ENABLED' : 'DISABLED' ?>
-                                    </span>
+                                    <h2>Launch checklist</h2>
+                                    <p>Integration readiness</p>
                                 </div>
+                            </div>
+                            <div class="admin-card__body" style="display:grid;gap:12px">
+                                <?php foreach ([['Razorpay', gawdee_razorpay_configured()], ['DTDC', gawdee_dtdc_configured()], ['AI provider', gawdee_ai_configured()], ['Hero banners', count(gawdee_banners()) > 0]] as [$label, $ready]): ?>
+                                    <div style="display:flex;align-items:center;justify-content:space-between;font-size:.72rem">
+                                        <span><?= $label ?></span><span
+                                            class="status-pill <?= $ready ? '' : 'status-pill--pending' ?>"><i
+                                                class="ph <?= $ready ? 'ph-check' : 'ph-clock' ?>"></i><?= $ready ? 'Ready' : 'Setup needed' ?></span>
+                                    </div><?php endforeach; ?>
+                                <a class="admin-button admin-button--secondary" href="?view=integrations">Configure
+                                    integrations</a>
+                            </div>
+                        </section>
+                    </div>
+
+                <?php elseif ($view === 'products'): ?>
+                    <?php require __DIR__ . '/partials/products.php'; ?>
+
+                <?php elseif ($view === 'banners'): ?>
+                    <?php $allBanners = gawdee_banners(true);
+                    $bannerEditId = (int) ($_GET['edit'] ?? 0);
+                    $editBanner = null;
+                    foreach ($allBanners as $candidate) {
+                        if ((int) $candidate['id'] === $bannerEditId)
+                            $editBanner = $candidate;
+                    } ?>
+                    <div class="admin-section-title">
+                        <div>
+                            <h2>Hero banner manager</h2>
+                            <p>Upload desktop and mobile slides, change links and drag order with sort numbers</p>
+                        </div><a class="admin-button admin-button--primary" href="?view=banners&edit=-1"><i
+                                class="ph ph-plus"></i> Add banner</a>
+                    </div>
+                    <?php if (isset($_GET['edit'])):
+                        $b = $editBanner ?? ['id' => 0, 'title' => '', 'desktop_image' => '', 'mobile_image' => '', 'link_url' => '#shop', 'alt_text' => '', 'sort_order' => count($allBanners) * 10 + 10, 'is_active' => 1]; ?>
+                        <section class="admin-card" style="margin-bottom:20px">
+                            <div class="admin-card__header">
+                                <div>
+                                    <h2><?= $editBanner ? 'Edit banner' : 'New banner' ?></h2>
+                                    <p>Recommended desktop ratio 16:6 and mobile ratio 4:5</p>
+                                </div><a href="?view=banners" class="admin-action-icon"><i class="ph ph-x"></i></a>
                             </div>
                             <div class="admin-card__body">
                                 <form method="post" enctype="multipart/form-data" class="admin-form form-grid"><input
                                         type="hidden" name="csrf_token"
                                         value="<?= htmlspecialchars(gawdee_csrf_token()) ?>"><input type="hidden" name="action"
-                                        value="save_offer"><input type="hidden" name="existing_offer_popup_image"
-                                        value="<?= htmlspecialchars(gawdee_setting('offer_popup_image', 'assets/images/independence-offer-popup-v1.webp')) ?>"><label
-                                        class="form-span-2 form-switch"
-                                        style="padding:10px 14px;background:#f8fbf9;border:1px solid #e1e8e3;border-radius:14px"><input
-                                            type="checkbox" name="offer_popup_enabled" value="1"
-                                            <?= gawdee_setting('offer_popup_enabled', '1') === '1' ? 'checked' : '' ?>><span><strong>Enable homepage offer popup</strong> (check to activate, uncheck to
-                                            disable)</span></label><label><span>Popup
-                                            Title</span><input name="offer_popup_title"
-                                            value="<?= htmlspecialchars(gawdee_setting('offer_popup_title', 'Independence Day Special')) ?>"
-                                            placeholder="e.g. Independence Day Special"></label><label><span>Subtitle /
-                                            Text</span><input name="offer_popup_text"
-                                            value="<?= htmlspecialchars(gawdee_setting('offer_popup_text', 'Use code %code% at checkout')) ?>"
-                                            placeholder="Use code %code% at checkout"><small class="help-text">Use %code% to
-                                            auto-highlight coupon code.</small></label><label><span>Offer
-                                            code</span><input name="offer_code"
-                                            value="<?= htmlspecialchars(gawdee_setting('offer_code', 'FREEDOM10')) ?>"></label><label><span>Discount
-                                            percent (%)</span><input type="number" min="0" max="100" name="offer_percent"
-                                            value="<?= htmlspecialchars(gawdee_setting('offer_percent', '10')) ?>"></label><label><span>Target
-                                            Link URL</span><input name="offer_popup_link"
-                                            value="<?= htmlspecialchars(gawdee_setting('offer_popup_link', '#shop')) ?>"
-                                            placeholder="e.g. #shop or /products.php"></label><label><span>Button
-                                            Label</span><input name="offer_popup_btn_text"
-                                            value="<?= htmlspecialchars(gawdee_setting('offer_popup_btn_text', 'Shop offer')) ?>"
-                                            placeholder="e.g. Shop offer"></label><label><span>Popup
-                                            image</span><input type="file" name="offer_popup_image"
-                                            accept="image/jpeg,image/png,image/webp"><small class="help-text">JPG, PNG or WebP
-                                            up to 10 MB. A vertical 4:5 image works best.</small></label><label><span>Open delay
-                                            (milliseconds)</span><input type="number" min="0" max="10000" step="50"
-                                            name="offer_popup_delay_ms"
-                                            value="<?= htmlspecialchars(gawdee_setting('offer_popup_delay_ms', '850')) ?>"></label>
-                                    <div class="form-span-2" style="display:flex;justify-content:flex-end;align-items:center">
-                                        <button class="admin-button admin-button--primary">Save popup settings</button></div>
-                                    <?php $offerPopupPreview = gawdee_setting('offer_popup_image', 'assets/images/independence-offer-popup-v1.webp');
-                                    if ($offerPopupPreview !== ''): ?>
-                                            <div class="form-span-2"
-                                                style="padding:16px;border:1px solid #e1e8e3;border-radius:18px;background:#f8fbf9;display:flex;gap:20px;align-items:center;flex-wrap:wrap">
-                                                <img src="../<?= htmlspecialchars($offerPopupPreview) ?>" alt="Current offer popup"
-                                                    style="display:block;width:140px;border-radius:14px;box-shadow:0 10px 24px rgba(9,54,33,.14)">
-                                                <div>
-                                                    <span class="help-text" style="text-transform:uppercase;font-weight:700">CURRENT
-                                                        POPUP PREVIEW</span>
-                                                    <h4 style="margin:4px 0 2px;font-size:1.05rem;color:var(--admin-text)">
-                                                        <?= htmlspecialchars(gawdee_setting('offer_popup_title', 'Independence Day Special')) ?>
-                                                    </h4>
-                                                    <p style="margin:2px 0;font-size:0.9rem;color:#444">
-                                                        Code:
-                                                        <strong><?= htmlspecialchars(gawdee_setting('offer_code', 'FREEDOM10')) ?></strong>
-                                                        (<?= htmlspecialchars(gawdee_setting('offer_percent', '10')) ?>% OFF)
-                                                    </p>
-                                                    <p style="margin:2px 0;font-size:0.85rem;color:#666">
-                                                        Target Link:
-                                                        <code><?= htmlspecialchars(gawdee_setting('offer_popup_link', '#shop')) ?></code>
-                                                        | Button:
-                                                        <strong><?= htmlspecialchars(gawdee_setting('offer_popup_btn_text', 'Shop offer')) ?></strong>
-                                                    </p>
-                                                </div>
-                                            </div>
-                                    <?php endif; ?>
+                                        value="save_banner"><input type="hidden" name="id" value="<?= (int) $b['id'] ?>"><input
+                                        type="hidden" name="existing_desktop"
+                                        value="<?= htmlspecialchars($b['desktop_image']) ?>"><input type="hidden"
+                                        name="existing_mobile"
+                                        value="<?= htmlspecialchars($b['mobile_image']) ?>"><label><span>Banner
+                                            title</span><input name="title" required
+                                            value="<?= htmlspecialchars($b['title']) ?>"></label><label><span>Destination
+                                            link</span><input name="link_url"
+                                            value="<?= htmlspecialchars($b['link_url']) ?>"></label><label><span>Desktop
+                                            image</span><input type="file" name="desktop_image"
+                                            accept="image/jpeg,image/png,image/webp"><small
+                                            class="help-text"><?= htmlspecialchars($b['desktop_image']) ?></small></label><label><span>Mobile
+                                            image</span><input type="file" name="mobile_image"
+                                            accept="image/jpeg,image/png,image/webp"><small
+                                            class="help-text"><?= htmlspecialchars($b['mobile_image']) ?></small></label><label
+                                        class="form-span-2"><span>Accessible alt text</span><input name="alt_text"
+                                            value="<?= htmlspecialchars($b['alt_text']) ?>"></label><label><span>Sort
+                                            order</span><input type="number" name="sort_order"
+                                            value="<?= (int) $b['sort_order'] ?>"></label><label class="form-switch"><input
+                                            type="checkbox" name="is_active" <?= (int) $b['is_active'] ? 'checked' : '' ?>><span>Active slide</span></label>
+                                    <div class="form-span-2" style="display:flex;justify-content:flex-end"><button
+                                            class="admin-button admin-button--primary">Save banner</button></div>
+                                </form>
+                            </div>
+                        </section><?php endif; ?>
+                    <div class="banner-grid"><?php foreach ($allBanners as $banner): ?>
+                            <article class="banner-card"><img src="../<?= htmlspecialchars($banner['desktop_image']) ?>" alt="">
+                                <div class="banner-card__body">
+                                    <h3><?= htmlspecialchars($banner['title']) ?></h3>
+                                    <p>Order <?= (int) $banner['sort_order'] ?> ·
+                                        <?= $banner['is_active'] ? 'Active' : 'Hidden' ?>
+                                    </p>
+                                    <div class="admin-actions"><a class="admin-button admin-button--secondary"
+                                            href="?view=banners&edit=<?= (int) $banner['id'] ?>"><i
+                                                class="ph ph-pencil-simple"></i> Edit</a>
+                                        <form method="post" onsubmit="return confirm('Remove this banner from the CMS?')"><input
+                                                type="hidden" name="csrf_token"
+                                                value="<?= htmlspecialchars(gawdee_csrf_token()) ?>"><input type="hidden"
+                                                name="action" value="delete_banner"><input type="hidden" name="id"
+                                                value="<?= (int) $banner['id'] ?>"><button
+                                                class="admin-button admin-button--danger"><i class="ph ph-trash"></i></button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </article><?php endforeach; ?>
+                    </div>
+
+                <?php elseif ($view === 'banners_two'): ?>
+                    <?php $allBannersTwo = gawdee_hero_banners_two(true);
+                    $bTwoEditId = (int) ($_GET['edit'] ?? 0);
+                    $editBTwo = null;
+                    foreach ($allBannersTwo as $candidate) {
+                        if ((int) $candidate['id'] === $bTwoEditId)
+                            $editBTwo = $candidate;
+                    } ?>
+                    <div class="admin-section-title">
+                        <div>
+                            <h2>Hero banner 2 manager</h2>
+                            <p>Upload video slides (MP4/WebM/MOV) or paste direct video URLs. Max upload limit:
+                                <?= htmlspecialchars(ini_get('upload_max_filesize') ?: '40M') ?>
+                            </p>
+                        </div><a class="admin-button admin-button--primary" href="?view=banners_two&edit=-1"><i
+                                class="ph ph-plus"></i> Add video banner</a>
+                    </div>
+                    <?php if (isset($_GET['edit'])):
+                        $b2 = $editBTwo ?? ['id' => 0, 'title' => '', 'headline' => '', 'eyebrow' => '', 'subtitle' => '', 'desktop_video' => '', 'mobile_video' => '', 'duration' => 1, 'link_url' => '#shop', 'alt_text' => '', 'sort_order' => count($allBannersTwo) * 10 + 10, 'is_active' => 1]; ?>
+                        <section class="admin-card" style="margin-bottom:20px">
+                            <div class="admin-card__header">
+                                <div>
+                                    <h2><?= $editBTwo ? 'Edit video banner' : 'New video banner' ?></h2>
+                                    <p>Multiple short video slides with dynamic eyebrow, headline and subtitle updates</p>
+                                </div><a href="?view=banners_two" class="admin-action-icon"><i class="ph ph-x"></i></a>
+                            </div>
+                            <div class="admin-card__body">
+                                <form method="post" enctype="multipart/form-data" class="admin-form form-grid"><input
+                                        type="hidden" name="csrf_token"
+                                        value="<?= htmlspecialchars(gawdee_csrf_token()) ?>"><input type="hidden" name="action"
+                                        value="save_banner_two"><input type="hidden" name="id"
+                                        value="<?= (int) $b2['id'] ?>"><input type="hidden" name="existing_desktop_video"
+                                        value="<?= htmlspecialchars($b2['desktop_video']) ?>"><input type="hidden"
+                                        name="existing_mobile_video" value="<?= htmlspecialchars($b2['mobile_video']) ?>">
+                                    <label><span>Banner title (Internal name)</span><input name="title" required
+                                            value="<?= htmlspecialchars($b2['title']) ?>"></label>
+                                    <label><span>Eyebrow tag</span><input name="eyebrow"
+                                            value="<?= htmlspecialchars($b2['eyebrow'] ?? '') ?>"></label>
+                                    <label class="form-span-2"><span>Headline (Main text displayed on slide)</span><input
+                                            name="headline" value="<?= htmlspecialchars($b2['headline']) ?>"></label>
+                                    <label class="form-span-2"><span>Subtitle / Description</span><input name="subtitle"
+                                            value="<?= htmlspecialchars($b2['subtitle'] ?? '') ?>"></label>
+                                    <div class="cms-media-field"><label><span>Desktop video file (Upload
+                                                MP4/WebM/MOV)</span><input type="file" name="desktop_video"
+                                                accept="video/mp4,video/webm,video/quicktime,video/*,image/*"></label>
+                                        <div style="margin-top:6px"><input type="text" name="desktop_video_url"
+                                                placeholder="Or enter direct video URL (e.g. https://...)"
+                                                value="<?= htmlspecialchars(preg_match('/^https?:\/\//i', $b2['desktop_video']) ? $b2['desktop_video'] : '') ?>"
+                                                style="font-size:0.85rem"></div><?php if (!empty($b2['desktop_video'])): ?>
+                                            <div style="margin-top:8px"><video
+                                                    src="<?= htmlspecialchars(admin_media_url($b2['desktop_video'])) ?>" controls
+                                                    muted playsinline
+                                                    style="width:100%;max-height:160px;border-radius:10px;background:#031f16;object-fit:cover"></video><small
+                                                    class="help-text"><?= htmlspecialchars($b2['desktop_video']) ?></small></div>
+                                        <?php endif; ?>
+                                    </div>
+                                    <div class="cms-media-field"><label><span>Mobile video file (Upload
+                                                MP4/WebM/MOV)</span><input type="file" name="mobile_video"
+                                                accept="video/mp4,video/webm,video/quicktime,video/*,image/*"></label>
+                                        <div style="margin-top:6px"><input type="text" name="mobile_video_url"
+                                                placeholder="Or enter direct video URL (e.g. https://...)"
+                                                value="<?= htmlspecialchars(preg_match('/^https?:\/\//i', $b2['mobile_video']) ? $b2['mobile_video'] : '') ?>"
+                                                style="font-size:0.85rem"></div><?php if (!empty($b2['mobile_video'])): ?>
+                                            <div style="margin-top:8px"><video
+                                                    src="<?= htmlspecialchars(admin_media_url($b2['mobile_video'])) ?>" controls
+                                                    muted playsinline
+                                                    style="width:100%;max-height:160px;border-radius:10px;background:#031f16;object-fit:cover"></video><small
+                                                    class="help-text"><?= htmlspecialchars($b2['mobile_video']) ?></small></div>
+                                        <?php endif; ?>
+                                    </div><label><span>Duration (Seconds, min 1)</span><input type="number" name="duration"
+                                            min="1" max="60"
+                                            value="<?= (int) ($b2['duration'] ?? 1) ?>"></label><label><span>Destination
+                                            link</span><input name="link_url"
+                                            value="<?= htmlspecialchars($b2['link_url']) ?>"></label><label
+                                        class="form-span-2"><span>Accessible alt text</span><input name="alt_text"
+                                            value="<?= htmlspecialchars($b2['alt_text']) ?>"></label><label><span>Sort
+                                            order</span><input type="number" name="sort_order"
+                                            value="<?= (int) $b2['sort_order'] ?>"></label><label class="form-switch"><input
+                                            type="checkbox" name="is_active" <?= (int) $b2['is_active'] ? 'checked' : '' ?>><span>Active slide</span></label>
+                                    <div class="form-span-2" style="display:flex;justify-content:flex-end"><button
+                                            class="admin-button admin-button--primary">Save video banner</button></div>
                                 </form>
                             </div>
                         </section>
+                    <?php endif; ?>
+                    <div class="banner-grid"><?php foreach ($allBannersTwo as $banner): ?>
+                            <article class="banner-card"><?php if (!empty($banner['desktop_video'])): ?><video
+                                        src="<?= htmlspecialchars(admin_media_url($banner['desktop_video'])) ?>" controls muted
+                                        playsinline
+                                        style="width:100%;height:160px;object-fit:cover;background:#031f16"></video><?php else: ?>
+                                    <div
+                                        style="height:160px;background:#031f16;display:flex;align-items:center;justify-content:center;color:#fff;flex-direction:column;gap:6px">
+                                        <i class="ph ph-film-strip" style="font-size:2rem"></i><span
+                                            style="font-size:0.8rem;opacity:0.7">No video uploaded</span>
+                                    </div><?php endif; ?>
+                                <div class="banner-card__body">
+                                    <span class="help-text"
+                                        style="color:#0a7540;font-weight:600;font-size:0.75rem"><?= htmlspecialchars($banner['eyebrow'] ?: '') ?></span>
+                                    <h3 style="margin:2px 0"><?= htmlspecialchars($banner['headline'] ?: $banner['title']) ?>
+                                    </h3>
+                                    <p style="font-size:0.8rem;color:#555;margin:2px 0;line-height:1.3">
+                                        <?= htmlspecialchars($banner['subtitle'] ?: '') ?>
+                                    </p>
+                                    <p style="font-size:0.75rem;opacity:0.7;margin-top:4px">Duration:
+                                        <?= (int) $banner['duration'] ?>s · Order <?= (int) $banner['sort_order'] ?> ·
+                                        <?= $banner['is_active'] ? 'Active' : 'Hidden' ?>
+                                    </p>
+                                    <div class="admin-actions"><a class="admin-button admin-button--secondary"
+                                            href="?view=banners_two&edit=<?= (int) $banner['id'] ?>"><i
+                                                class="ph ph-pencil-simple"></i> Edit</a>
+                                        <form method="post" onsubmit="return confirm('Remove this video banner?')"><input
+                                                type="hidden" name="csrf_token"
+                                                value="<?= htmlspecialchars(gawdee_csrf_token()) ?>"><input type="hidden"
+                                                name="action" value="delete_banner_two"><input type="hidden" name="id"
+                                                value="<?= (int) $banner['id'] ?>"><button
+                                                class="admin-button admin-button--danger"><i class="ph ph-trash"></i></button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </article><?php endforeach; ?>
+                    </div>
+
+                <?php elseif ($view === 'cms'): ?>
+                    <?php require __DIR__ . '/partials/cms.php'; ?>
+
+                <?php elseif ($view === 'categories'): ?>
+                    <?php require __DIR__ . '/partials/categories.php'; ?>
+
+                <?php elseif ($view === 'testimonials'): ?>
+                    <?php require __DIR__ . '/partials/testimonials.php'; ?>
+
+                <?php elseif ($view === 'reels'): ?>
+                    <?php require __DIR__ . '/partials/reels.php'; ?>
+
+                <?php elseif ($view === 'media'): ?>
+                    <?php require __DIR__ . '/partials/media.php'; ?>
+
+                <?php elseif ($view === 'orders'): ?>
+                    <?php require __DIR__ . '/partials/orders.php'; ?>
+                    <?php if (false): ?>
+                        <?php $orders = gawdee_db()->query('SELECT * FROM orders ORDER BY id DESC')->fetchAll();
+                        $detailOrder = null;
+                        $detailItems = [];
+                        if ((int) ($_GET['order'] ?? 0) > 0) {
+                            $detailStatement = gawdee_db()->prepare('SELECT * FROM orders WHERE id=?');
+                            $detailStatement->execute([(int) $_GET['order']]);
+                            $detailOrder = $detailStatement->fetch() ?: null;
+                            if ($detailOrder) {
+                                $detailItemsStatement = gawdee_db()->prepare('SELECT * FROM order_items WHERE order_id=?');
+                                $detailItemsStatement->execute([$detailOrder['id']]);
+                                $detailItems = $detailItemsStatement->fetchAll();
+                            }
+                        } ?>
+                        <div class="admin-section-title">
+                            <div>
+                                <h2>Orders & fulfilment</h2>
+                                <p>Payment, packing and DTDC shipment workflow</p>
+                            </div>
+                        </div>
+                        <?php if ($detailOrder): ?>
+                            <section class="admin-card" style="margin-bottom:20px">
+                                <div class="admin-card__header">
+                                    <div>
+                                        <h2><?= htmlspecialchars($detailOrder['order_number']) ?></h2>
+                                        <p><?= htmlspecialchars($detailOrder['customer_name'] . ' · ' . $detailOrder['email'] . ' · ' . $detailOrder['phone']) ?>
+                                        </p>
+                                    </div><a class="admin-action-icon" href="?view=orders"><i class="ph ph-x"></i></a>
+                                </div>
+                                <div class="admin-card__body">
+                                    <div class="form-grid">
+                                        <div>
+                                            <p class="help-text">DELIVERY ADDRESS</p><strong
+                                                style="font-size:.75rem"><?= htmlspecialchars($detailOrder['address1'] . ($detailOrder['address2'] ? ', ' . $detailOrder['address2'] : '') . ', ' . $detailOrder['city'] . ', ' . $detailOrder['state'] . ' ' . $detailOrder['pincode']) ?></strong>
+                                        </div>
+                                        <div>
+                                            <p class="help-text">PAYMENT & TOTAL</p><strong
+                                                style="font-size:.75rem"><?= htmlspecialchars(strtoupper($detailOrder['payment_method']) . ' · ' . $detailOrder['payment_status']) ?>
+                                                · ₹<?= number_format((int) $detailOrder['total']) ?></strong>
+                                        </div>
+                                    </div>
+                                    <div class="admin-table-wrap" style="margin-top:18px">
+                                        <table class="admin-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Item</th>
+                                                    <th>Quantity</th>
+                                                    <th>Unit price</th>
+                                                    <th>Total</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody><?php foreach ($detailItems as $item): ?>
+                                                    <tr>
+                                                        <td>
+                                                            <div class="admin-table__product"><img
+                                                                    src="../<?= htmlspecialchars($item['image']) ?>"
+                                                                    alt=""><strong><?= htmlspecialchars($item['product_name']) ?></strong>
+                                                            </div>
+                                                        </td>
+                                                        <td><?= (int) $item['quantity'] ?></td>
+                                                        <td>₹<?= number_format((int) $item['unit_price']) ?></td>
+                                                        <td>₹<?= number_format((int) $item['unit_price'] * (int) $item['quantity']) ?>
+                                                        </td>
+                                                    </tr><?php endforeach; ?>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </section><?php endif; ?>
+                        <section class="admin-card"><?php if ($orders): ?>
+                                <div class="admin-table-wrap">
+                                    <table class="admin-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Order</th>
+                                                <th>Customer</th>
+                                                <th>Payment</th>
+                                                <th>Total</th>
+                                                <th>Shipment</th>
+                                                <th>Workflow</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody><?php foreach ($orders as $order): ?>
+                                                <tr>
+                                                    <td><strong><?= htmlspecialchars($order['order_number']) ?></strong><br><small><?= htmlspecialchars($order['created_at']) ?></small>
+                                                    </td>
+                                                    <td><?= htmlspecialchars($order['customer_name']) ?><br><small><?= htmlspecialchars($order['phone']) ?></small>
+                                                    </td>
+                                                    <td><span
+                                                            class="status-pill status-pill--<?= htmlspecialchars($order['payment_status']) ?>"><?= htmlspecialchars($order['payment_method'] . ' · ' . $order['payment_status']) ?></span>
+                                                    </td>
+                                                    <td>₹<?= number_format((int) $order['total']) ?></td>
+                                                    <td><?php if ($order['dtdc_reference']): ?><strong><?= htmlspecialchars($order['dtdc_reference']) ?></strong><br><?php if ($order['dtdc_tracking_url']): ?><a
+                                                                    href="<?= htmlspecialchars($order['dtdc_tracking_url']) ?>"
+                                                                    target="_blank">Track <i
+                                                                        class="ph ph-arrow-up-right"></i></a><?php endif; ?><?php else: ?><span
+                                                                class="status-pill status-pill--draft"><?= htmlspecialchars($order['shipment_status']) ?></span><?php endif; ?>
+                                                    </td>
+                                                    <td>
+                                                        <div class="admin-actions"><a class="admin-action-icon"
+                                                                href="?view=orders&order=<?= (int) $order['id'] ?>"
+                                                                title="Order details"><i class="ph ph-eye"></i></a>
+                                                            <form method="post" style="display:flex;gap:6px"><input type="hidden"
+                                                                    name="csrf_token"
+                                                                    value="<?= htmlspecialchars(gawdee_csrf_token()) ?>"><input
+                                                                    type="hidden" name="action" value="update_order"><input
+                                                                    type="hidden" name="id" value="<?= (int) $order['id'] ?>"><select
+                                                                    name="status"
+                                                                    style="padding:7px;border:1px solid #dfe7e1;border-radius:9px"><?php foreach (['pending', 'processing', 'packed', 'shipped', 'delivered', 'cancelled', 'refunded'] as $status): ?>
+                                                                        <option <?= $order['status'] === $status ? 'selected' : '' ?>>
+                                                                            <?= $status ?>
+                                                                        </option><?php endforeach; ?>
+                                                                </select><button class="admin-action-icon"><i
+                                                                        class="ph ph-check"></i></button></form>
+                                                            <?php if (!$order['dtdc_reference']): ?>
+                                                                <form method="post"><input type="hidden" name="csrf_token"
+                                                                        value="<?= htmlspecialchars(gawdee_csrf_token()) ?>"><input
+                                                                        type="hidden" name="action" value="create_shipment"><input
+                                                                        type="hidden" name="id" value="<?= (int) $order['id'] ?>"><button
+                                                                        class="admin-button admin-button--secondary"><i
+                                                                            class="ph ph-truck"></i> Book DTDC</button></form>
+                                                            <?php endif; ?>
+                                                        </div>
+                                                    </td>
+                                                </tr><?php endforeach; ?>
+                                        </tbody>
+                                    </table>
+                                </div><?php else: ?>
+                                <div class="empty-state"><i class="ph ph-receipt"></i>
+                                    <h3>No orders yet</h3>
+                                    <p>New Razorpay and cash-on-delivery orders will appear here.</p>
+                                </div><?php endif; ?>
+                        </section>
+
+                    <?php endif; ?>
+                <?php elseif ($view === 'blog'): ?>
+                    <?php require __DIR__ . '/partials/blog.php'; ?>
+                    <?php if (false): ?>
+                        <?php $posts = gawdee_db()->query('SELECT * FROM blog_posts ORDER BY id DESC')->fetchAll();
+                        $postEditId = (int) ($_GET['edit'] ?? 0);
+                        $editPost = null;
+                        foreach ($posts as $candidate)
+                            if ((int) $candidate['id'] === $postEditId)
+                                $editPost = $candidate; ?>
+                        <div class="admin-section-title">
+                            <div>
+                                <h2>Stories & publishing</h2>
+                                <p>Write manually or let the selected AI provider create a responsible first draft</p>
+                            </div>
+                            <div class="admin-actions"><a class="admin-button admin-button--secondary" href="?view=ai"><i
+                                        class="ph ph-sparkle"></i> Generate with AI</a><a
+                                    class="admin-button admin-button--primary" href="?view=blog&edit=-1"><i
+                                        class="ph ph-plus"></i> New post</a></div>
+                        </div>
+                        <?php if (isset($_GET['edit'])):
+                            $bp = $editPost ?? ['id' => 0, 'title' => '', 'slug' => '', 'excerpt' => '', 'content' => '', 'status' => 'draft', 'meta_description' => '']; ?>
+                            <section class="admin-card" style="margin-bottom:20px">
+                                <div class="admin-card__header">
+                                    <div>
+                                        <h2><?= $editPost ? 'Edit article' : 'New article' ?></h2>
+                                        <p>Safe HTML formatting is preserved</p>
+                                    </div><a href="?view=blog" class="admin-action-icon"><i class="ph ph-x"></i></a>
+                                </div>
+                                <div class="admin-card__body">
+                                    <form method="post" class="admin-form form-grid"><input type="hidden" name="csrf_token"
+                                            value="<?= htmlspecialchars(gawdee_csrf_token()) ?>"><input type="hidden" name="action"
+                                            value="save_blog"><input type="hidden" name="id"
+                                            value="<?= (int) $bp['id'] ?>"><label><span>Title</span><input name="title" required
+                                                value="<?= htmlspecialchars($bp['title']) ?>"></label><label><span>Slug</span><input
+                                                name="slug" value="<?= htmlspecialchars($bp['slug']) ?>"></label><label
+                                            class="form-span-2"><span>Excerpt</span><textarea name="excerpt"
+                                                style="min-height:75px"><?= htmlspecialchars($bp['excerpt']) ?></textarea></label><label
+                                            class="form-span-2"><span>Article HTML</span><textarea name="content"
+                                                style="min-height:310px"
+                                                required><?= htmlspecialchars($bp['content']) ?></textarea></label><label><span>Meta
+                                                description</span><textarea name="meta_description"
+                                                style="min-height:80px"><?= htmlspecialchars($bp['meta_description']) ?></textarea></label><label><span>Status</span><select
+                                                name="status">
+                                                <option value="draft" <?= $bp['status'] === 'draft' ? 'selected' : '' ?>>Draft</option>
+                                                <option value="published" <?= $bp['status'] === 'published' ? 'selected' : '' ?>>
+                                                    Published
+                                                </option>
+                                            </select></label>
+                                        <div class="form-span-2" style="display:flex;justify-content:flex-end"><button
+                                                class="admin-button admin-button--primary">Save article</button></div>
+                                    </form>
+                                </div>
+                            </section><?php endif; ?>
+                        <section class="admin-card"><?php if ($posts): ?>
+                                <div class="admin-table-wrap">
+                                    <table class="admin-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Article</th>
+                                                <th>Source</th>
+                                                <th>Status</th>
+                                                <th>Created</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody><?php foreach ($posts as $post): ?>
+                                                <tr>
+                                                    <td><strong><?= htmlspecialchars($post['title']) ?></strong><br><small>/blog-post.php?slug=<?= htmlspecialchars($post['slug']) ?></small>
+                                                    </td>
+                                                    <td><?= htmlspecialchars($post['source'] . ($post['ai_provider'] ? ' · ' . $post['ai_provider'] : '')) ?>
+                                                    </td>
+                                                    <td><span
+                                                            class="status-pill status-pill--<?= htmlspecialchars($post['status']) ?>"><?= htmlspecialchars($post['status']) ?></span>
+                                                    </td>
+                                                    <td><?= htmlspecialchars($post['created_at']) ?></td>
+                                                    <td>
+                                                        <div class="admin-actions"><a class="admin-action-icon"
+                                                                href="?view=blog&edit=<?= (int) $post['id'] ?>"><i
+                                                                    class="ph ph-pencil-simple"></i></a>
+                                                            <form method="post"><input type="hidden" name="csrf_token"
+                                                                    value="<?= htmlspecialchars(gawdee_csrf_token()) ?>"><input
+                                                                    type="hidden" name="action" value="toggle_blog"><input type="hidden"
+                                                                    name="id" value="<?= (int) $post['id'] ?>"><button
+                                                                    class="admin-action-icon"><i
+                                                                        class="ph <?= $post['status'] === 'published' ? 'ph-eye-slash' : 'ph-paper-plane-tilt' ?>"></i></button>
+                                                            </form>
+                                                        </div>
+                                                    </td>
+                                                </tr><?php endforeach; ?>
+                                        </tbody>
+                                    </table>
+                                </div><?php else: ?>
+                                <div class="empty-state"><i class="ph ph-article"></i>
+                                    <h3>No stories yet</h3>
+                                    <p>Create a manual post or generate a draft in AI Studio.</p>
+                                </div><?php endif; ?>
+                        </section>
+
+                    <?php endif; ?>
+                <?php elseif ($view === 'ai'): ?>
+                    <div class="admin-section-title">
+                        <div>
+                            <h2>AI studio</h2>
+                            <p>Choose Groq or OpenAI for homepage chat and scheduled blog generation</p>
+                        </div>
+                    </div>
+                    <div class="integration-grid">
+                        <section class="integration-card">
+                            <div class="integration-card__title"><i class="ph ph-sparkle"></i>
+                                <div>
+                                    <h3>Provider & API keys</h3>
+                                    <p>Secrets are encrypted at rest and never rendered back</p>
+                                </div>
+                            </div>
+                            <form method="post" class="admin-form"><input type="hidden" name="csrf_token"
+                                    value="<?= htmlspecialchars(gawdee_csrf_token()) ?>"><input type="hidden" name="action"
+                                    value="save_ai"><label><span>Active AI mode</span><select name="ai_provider">
+                                        <option value="groq" <?= gawdee_setting('ai_provider') === 'groq' ? 'selected' : '' ?>>
+                                            Groq
+                                        </option>
+                                        <option value="openai" <?= gawdee_setting('ai_provider') === 'openai' ? 'selected' : '' ?>>
+                                            OpenAI / ChatGPT models</option>
+                                    </select></label><label><span>Groq API key</span><input type="password"
+                                        name="groq_api_key" autocomplete="new-password"
+                                        placeholder="Leave blank to keep stored key">
+                                    <div class="secret-state"><i class="ph ph-lock"></i>
+                                        <?= gawdee_setting('groq_api_key') !== '' ? 'Key configured' : 'Not configured' ?>
+                                    </div>
+                                </label><label><span>Groq model</span><input name="groq_model"
+                                        value="<?= htmlspecialchars(gawdee_setting('groq_model')) ?>"></label><label><span>OpenAI
+                                        API key</span><input type="password" name="openai_api_key"
+                                        autocomplete="new-password" placeholder="Leave blank to keep stored key">
+                                    <div class="secret-state"><i class="ph ph-lock"></i>
+                                        <?= gawdee_setting('openai_api_key') !== '' ? 'Key configured' : 'Not configured' ?>
+                                    </div>
+                                </label><label><span>OpenAI model</span><input name="openai_model"
+                                        value="<?= htmlspecialchars(gawdee_setting('openai_model')) ?>"></label><label
+                                    class="form-switch"><input type="checkbox" name="ai_chat_enabled"
+                                        <?= gawdee_setting('ai_chat_enabled') === '1' ? 'checked' : '' ?>><span>Enable homepage
+                                        AI
+                                        assistant</span></label><label class="form-switch"><input type="checkbox"
+                                        name="ai_auto_blog_enabled" <?= gawdee_setting('ai_auto_blog_enabled') === '1' ? 'checked' : '' ?>><span>Enable
+                                        scheduled auto-blog</span></label><label><span>Frequency in days</span><input
+                                        type="number" min="1" name="ai_blog_frequency_days"
+                                        value="<?= htmlspecialchars(gawdee_setting('ai_blog_frequency_days', '7')) ?>"></label><label><span>Approved
+                                        topic pool</span><textarea
+                                        name="ai_blog_topics"><?= htmlspecialchars(gawdee_setting('ai_blog_topics')) ?></textarea></label><label><span>Scheduler
+                                        token</span><input type="password" name="ai_cron_token" autocomplete="new-password"
+                                        placeholder="Set a long random token or leave unchanged">
+                                    <div class="secret-state"><i class="ph ph-lock"></i>
+                                        <?= gawdee_setting('ai_cron_token') !== '' ? 'Token configured' : 'Set a token before scheduling' ?>
+                                    </div>
+                                </label><button class="admin-button admin-button--primary">Save AI settings</button></form>
+                        </section>
+                        <section class="integration-card">
+                            <div class="integration-card__title"><i class="ph ph-magic-wand"></i>
+                                <div>
+                                    <h3>Create an article</h3>
+                                    <p>Generate a safe editorial draft or publish immediately</p>
+                                </div>
+                            </div>
+                            <form method="post" class="admin-form"><input type="hidden" name="csrf_token"
+                                    value="<?= htmlspecialchars(gawdee_csrf_token()) ?>"><input type="hidden" name="action"
+                                    value="generate_blog"><label><span>Specific topic</span><textarea name="topic" required
+                                        placeholder="Example: A practical guide to choosing traditional ghee for everyday Indian cooking"></textarea></label><label><span>Publishing
+                                        mode</span><select name="publish_now">
+                                        <option value="0">Create as draft for review</option>
+                                        <option value="1">Generate and publish</option>
+                                    </select></label><button class="admin-button admin-button--primary"><i
+                                        class="ph ph-sparkle"></i> Generate article</button></form>
+                            <div style="margin-top:24px">
+                                <p class="help-text">Call this from cron or Windows Task Scheduler using the same secret
+                                    token you entered:</p>
+                                <div class="code-box">
+                                    <?= htmlspecialchars(gawdee_base_url() . '/cron/auto-blog.php?token=YOUR_CRON_TOKEN') ?>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+
+                <?php elseif ($view === 'integrations'): ?>
+                    <section class="integration-mode-card <?= gawdee_dtdc_configured() ? 'is-online' : 'is-offline' ?>">
+                        <div><span class="integration-mode-card__icon"><i class="ph ph-truck"></i></span>
+                            <div><strong>DTDC
+                                    <?= gawdee_dtdc_configured() ? 'online' : 'offline — manual fulfilment active' ?></strong>
+                                <p>Orders are always saved in Admin. Turning DTDC off only disables courier booking; it
+                                    never hides or rejects an order.</p>
+                            </div>
+                        </div>
+                        <form method="post"><input type="hidden" name="csrf_token"
+                                value="<?= htmlspecialchars(gawdee_csrf_token()) ?>"><input type="hidden" name="action"
+                                value="toggle_dtdc"><button
+                                class="admin-button <?= gawdee_setting('dtdc_enabled', '0') === '1' ? 'admin-button--danger' : 'admin-button--primary' ?>"><?= gawdee_setting('dtdc_enabled', '0') === '1' ? 'Turn DTDC off' : 'Enable DTDC tools' ?></button>
+                        </form>
+                    </section>
+                    <div class="admin-section-title">
+                        <div>
+                            <h2>Commerce integrations</h2>
+                            <p>Production credentials stay on the server and are encrypted</p>
+                        </div>
+                    </div>
+                    <form method="post" class="admin-form"><input type="hidden" name="csrf_token"
+                            value="<?= htmlspecialchars(gawdee_csrf_token()) ?>"><input type="hidden" name="action"
+                            value="save_integrations">
+                        <div class="integration-grid">
+                            <section class="integration-card">
+                                <div class="integration-card__title"><i class="ph ph-credit-card"></i>
+                                    <div>
+                                        <h3>Razorpay</h3>
+                                        <p>Orders API, Checkout signature verification and webhooks</p>
+                                    </div>
+                                </div>
+                                <div class="admin-form"><label><span>Key ID</span><input name="razorpay_key_id"
+                                            value="<?= htmlspecialchars(gawdee_setting('razorpay_key_id')) ?>"></label><label><span>Key
+                                            Secret</span><input type="password" name="razorpay_key_secret"
+                                            placeholder="Leave blank to keep stored secret">
+                                        <div class="secret-state"><i class="ph ph-lock"></i>
+                                            <?= gawdee_setting('razorpay_key_secret') !== '' ? 'Secret configured' : 'Not configured' ?>
+                                        </div>
+                                    </label><label><span>Webhook Secret</span><input type="password"
+                                            name="razorpay_webhook_secret" placeholder="Leave blank to keep stored secret">
+                                        <div class="secret-state"><i class="ph ph-lock"></i>
+                                            <?= gawdee_setting('razorpay_webhook_secret') !== '' ? 'Secret configured' : 'Not configured' ?>
+                                        </div>
+                                    </label>
+                                    <div><span class="help-text">Webhook URL</span>
+                                        <div class="code-box">
+                                            <?= htmlspecialchars(gawdee_base_url() . '/api/razorpay-webhook.php') ?>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+                            <section class="integration-card">
+                                <div class="integration-card__title"><i class="ph ph-truck"></i>
+                                    <div>
+                                        <h3>DTDC merchant adapter</h3>
+                                        <p>Uses the endpoint and request schema issued with your DTDC account</p>
+                                    </div>
+                                </div>
+                                <div class="admin-form form-grid"><label class="form-span-2"><span>Booking
+                                            endpoint</span><input type="url" name="dtdc_booking_endpoint"
+                                            value="<?= htmlspecialchars(gawdee_setting('dtdc_booking_endpoint')) ?>"
+                                            placeholder="https://merchant-issued-endpoint"></label><label
+                                        class="form-span-2"><span>Tracking URL template</span><input
+                                            name="dtdc_tracking_endpoint"
+                                            value="<?= htmlspecialchars(gawdee_setting('dtdc_tracking_endpoint')) ?>"
+                                            placeholder="https://tracking.example/{awb}"></label><label><span>Customer
+                                            code</span><input name="dtdc_customer_code"
+                                            value="<?= htmlspecialchars(gawdee_setting('dtdc_customer_code')) ?>"></label><label><span>Pickup
+                                            pincode</span><input name="dtdc_pickup_pincode"
+                                            value="<?= htmlspecialchars(gawdee_setting('dtdc_pickup_pincode')) ?>"></label><label><span>Service
+                                            type</span><input name="dtdc_service_type"
+                                            value="<?= htmlspecialchars(gawdee_setting('dtdc_service_type')) ?>"></label><label><span>API
+                                            token</span><input type="password" name="dtdc_api_token"
+                                            placeholder="Keep stored token">
+                                        <div class="secret-state">
+                                            <?= gawdee_setting('dtdc_api_token') !== '' ? 'Token configured' : 'Not configured' ?>
+                                        </div>
+                                    </label><label><span>Auth header</span><input name="dtdc_auth_header"
+                                            value="<?= htmlspecialchars(gawdee_setting('dtdc_auth_header', 'Authorization')) ?>"></label><label><span>Auth
+                                            prefix</span><input name="dtdc_auth_prefix"
+                                            value="<?= htmlspecialchars(gawdee_setting('dtdc_auth_prefix', 'Bearer')) ?>"></label><label><span>Basic
+                                            auth username</span><input type="password" name="dtdc_username"
+                                            placeholder="Optional / keep stored"></label><label><span>Basic auth
+                                            password</span><input type="password" name="dtdc_password"
+                                            placeholder="Optional / keep stored"></label><label
+                                        class="form-span-2"><span>Optional JSON payload template</span><textarea
+                                            name="dtdc_payload_template"
+                                            placeholder='{"reference":"{{order_number}}","pincode":"{{pincode}}"}'><?= htmlspecialchars(gawdee_setting('dtdc_payload_template')) ?></textarea>
+                                        <p class="help-text">Placeholders: {{order_number}}, {{customer_name}}, {{phone}},
+                                            {{email}}, {{address1}}, {{address2}}, {{city}}, {{state}}, {{pincode}},
+                                            {{amount}}, {{payment_method}}, {{items_json}}.</p>
+                                    </label></div>
+                            </section>
+                        </div>
+                        <div style="display:flex;justify-content:flex-end"><button
+                                class="admin-button admin-button--primary">Save integrations <i
+                                    class="ph ph-check"></i></button></div>
+                    </form>
+
+                <?php elseif ($view === 'settings'): ?>
+                    <div class="admin-section-title">
+                        <div>
+                            <h2>Store settings</h2>
+                            <p>Contact, delivery, announcement and checkout preferences</p>
+                        </div>
+                    </div>
+                    <section class="admin-card">
+                        <div class="admin-card__body">
+                            <form method="post" class="admin-form form-grid"><input type="hidden" name="csrf_token"
+                                    value="<?= htmlspecialchars(gawdee_csrf_token()) ?>"><input type="hidden" name="action"
+                                    value="save_store"><label><span>Store name</span><input name="store_name"
+                                        value="<?= htmlspecialchars(gawdee_setting('store_name')) ?>"></label><label><span>Store
+                                        email</span><input type="email" name="store_email"
+                                        value="<?= htmlspecialchars(gawdee_setting('store_email')) ?>"></label><label><span>Store
+                                        phone</span><input name="store_phone"
+                                        value="<?= htmlspecialchars(gawdee_setting('store_phone')) ?>"></label><label><span>WhatsApp
+                                        number</span><input name="whatsapp_number"
+                                        value="<?= htmlspecialchars(gawdee_setting('whatsapp_number', '917055207030')) ?>"></label><label><span>Free
+                                        shipping threshold ₹</span><input type="number" min="0"
+                                        name="free_shipping_threshold"
+                                        value="<?= htmlspecialchars(gawdee_setting('free_shipping_threshold')) ?>"></label><label><span>Shipping
+                                        fee ₹</span><input type="number" min="0" name="shipping_fee"
+                                        value="<?= htmlspecialchars(gawdee_setting('shipping_fee')) ?>"></label><label
+                                    class="form-span-2"><span>Announcement strip</span><input name="promo_text"
+                                        value="<?= htmlspecialchars(gawdee_setting('promo_text', 'Independence Day Specials — Flat 10% OFF on all orders | Use Code: FREEDOM10')) ?>"></label><label
+                                    class="form-switch"><input type="checkbox" name="cod_enabled" value="1"
+                                        <?= gawdee_setting('cod_enabled') === '1' ? 'checked' : '' ?>><span>Enable cash on
+                                        delivery</span></label>
+                                <div style="display:flex;justify-content:flex-end;align-items:end"><button
+                                        class="admin-button admin-button--primary">Save store settings</button></div>
+                            </form>
+                        </div>
+                    </section>
+                    <section class="admin-card" style="margin-top:18px">
+                        <div class="admin-card__header">
+                            <div>
+                                <h2>Homepage offer popup</h2>
+                                <p>Control, customize and toggle the promotional offer popup shown to homepage visitors</p>
+                            </div>
+                            <div>
+                                <?php $isPopupEnabled = gawdee_setting('offer_popup_enabled', '1') === '1'; ?>
+                                <span class="badge <?= $isPopupEnabled ? 'badge--success' : 'badge--secondary' ?>">
+                                    <?= $isPopupEnabled ? 'ENABLED' : 'DISABLED' ?>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="admin-card__body">
+                            <form method="post" enctype="multipart/form-data" class="admin-form form-grid"><input
+                                    type="hidden" name="csrf_token"
+                                    value="<?= htmlspecialchars(gawdee_csrf_token()) ?>"><input type="hidden" name="action"
+                                    value="save_offer"><input type="hidden" name="existing_offer_popup_image"
+                                    value="<?= htmlspecialchars(gawdee_setting('offer_popup_image', 'assets/images/independence-offer-popup-v1.webp')) ?>"><label
+                                    class="form-span-2 form-switch"
+                                    style="padding:10px 14px;background:#f8fbf9;border:1px solid #e1e8e3;border-radius:14px"><input
+                                        type="checkbox" name="offer_popup_enabled" value="1"
+                                        <?= gawdee_setting('offer_popup_enabled', '1') === '1' ? 'checked' : '' ?>><span><strong>Enable homepage offer popup</strong> (check to activate, uncheck to
+                                        disable)</span></label><label><span>Popup
+                                        Title</span><input name="offer_popup_title"
+                                        value="<?= htmlspecialchars(gawdee_setting('offer_popup_title', 'Independence Day Special')) ?>"
+                                        placeholder="e.g. Independence Day Special"></label><label><span>Subtitle /
+                                        Text</span><input name="offer_popup_text"
+                                        value="<?= htmlspecialchars(gawdee_setting('offer_popup_text', 'Use code %code% at checkout')) ?>"
+                                        placeholder="Use code %code% at checkout"><small class="help-text">Use %code% to
+                                        auto-highlight coupon code.</small></label><label><span>Offer
+                                        code</span><input name="offer_code"
+                                        value="<?= htmlspecialchars(gawdee_setting('offer_code', 'FREEDOM10')) ?>"></label><label><span>Discount
+                                        percent (%)</span><input type="number" min="0" max="100" name="offer_percent"
+                                        value="<?= htmlspecialchars(gawdee_setting('offer_percent', '10')) ?>"></label><label><span>Target
+                                        Link URL</span><input name="offer_popup_link"
+                                        value="<?= htmlspecialchars(gawdee_setting('offer_popup_link', '#shop')) ?>"
+                                        placeholder="e.g. #shop or /products.php"></label><label><span>Button
+                                        Label</span><input name="offer_popup_btn_text"
+                                        value="<?= htmlspecialchars(gawdee_setting('offer_popup_btn_text', 'Shop offer')) ?>"
+                                        placeholder="e.g. Shop offer"></label><label><span>Popup
+                                        image</span><input type="file" name="offer_popup_image"
+                                        accept="image/jpeg,image/png,image/webp"><small class="help-text">JPG, PNG or WebP
+                                        up to 10 MB. A vertical 4:5 image works best.</small></label><label><span>Open delay
+                                        (milliseconds)</span><input type="number" min="0" max="10000" step="50"
+                                        name="offer_popup_delay_ms"
+                                        value="<?= htmlspecialchars(gawdee_setting('offer_popup_delay_ms', '850')) ?>"></label>
+                                <div class="form-span-2" style="display:flex;justify-content:flex-end;align-items:center">
+                                    <button class="admin-button admin-button--primary">Save popup settings</button>
+                                </div>
+                                <?php $offerPopupPreview = gawdee_setting('offer_popup_image', 'assets/images/independence-offer-popup-v1.webp');
+                                if ($offerPopupPreview !== ''): ?>
+                                    <div class="form-span-2"
+                                        style="padding:16px;border:1px solid #e1e8e3;border-radius:18px;background:#f8fbf9;display:flex;gap:20px;align-items:center;flex-wrap:wrap">
+                                        <img src="../<?= htmlspecialchars($offerPopupPreview) ?>" alt="Current offer popup"
+                                            style="display:block;width:140px;border-radius:14px;box-shadow:0 10px 24px rgba(9,54,33,.14)">
+                                        <div>
+                                            <span class="help-text" style="text-transform:uppercase;font-weight:700">CURRENT
+                                                POPUP PREVIEW</span>
+                                            <h4 style="margin:4px 0 2px;font-size:1.05rem;color:var(--admin-text)">
+                                                <?= htmlspecialchars(gawdee_setting('offer_popup_title', 'Independence Day Special')) ?>
+                                            </h4>
+                                            <p style="margin:2px 0;font-size:0.9rem;color:#444">
+                                                Code:
+                                                <strong><?= htmlspecialchars(gawdee_setting('offer_code', 'FREEDOM10')) ?></strong>
+                                                (<?= htmlspecialchars(gawdee_setting('offer_percent', '10')) ?>% OFF)
+                                            </p>
+                                            <p style="margin:2px 0;font-size:0.85rem;color:#666">
+                                                Target Link:
+                                                <code><?= htmlspecialchars(gawdee_setting('offer_popup_link', '#shop')) ?></code>
+                                                | Button:
+                                                <strong><?= htmlspecialchars(gawdee_setting('offer_popup_btn_text', 'Shop offer')) ?></strong>
+                                            </p>
+                                        </div>
+                                    </div>
+                                <?php endif; ?>
+                            </form>
+                        </div>
+                    </section>
                 <?php endif; ?>
             </div>
         </main>

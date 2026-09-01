@@ -461,7 +461,7 @@ foreach ($homepageSections as $sectionKey => $section) {
                         <?php endforeach; ?>
                     </div>
                 </div>
-            </section>
+            </section>ion>
             <?php
             break;
 
