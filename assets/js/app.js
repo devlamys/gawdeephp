@@ -688,15 +688,7 @@
         startAutoplay();
     });
 
-    qsa('[data-wishlist]').forEach(button => {
-        button.addEventListener('click', () => {
-            const isSaved = button.classList.toggle('is-saved');
-            button.setAttribute('aria-pressed', String(isSaved));
-            const icon = qs('i', button);
-            icon?.classList.toggle('ph-fill', isSaved);
-            showToast(isSaved ? 'Saved to your wishlist' : 'Removed from your wishlist');
-        });
-    });
+
 
     // Instant Variant Switcher
     qsa('[data-variant-switch]').forEach(chip => {
@@ -763,6 +755,75 @@
 
             showToast(`Selected ${weight} pack`);
         });
+    });
+
+    // Card-level Instant Variant Switcher
+    document.addEventListener('click', (e) => {
+        const pill = e.target.closest('[data-card-variant-switch]');
+        if (!pill) return;
+        e.preventDefault();
+        e.stopPropagation();
+
+        const card = pill.closest('.product-card, .compact-product-card');
+        if (!card) return;
+
+        const slug = pill.dataset.slug;
+        const id = pill.dataset.id;
+        const name = pill.dataset.name;
+        const weight = pill.dataset.weight;
+        const price = pill.dataset.price;
+        const priceFormatted = pill.dataset.priceFormatted;
+        const originalPriceFormatted = pill.dataset.originalPriceFormatted;
+        const discount = pill.dataset.discount;
+        const image = pill.dataset.image;
+
+        card.querySelectorAll('[data-card-variant-switch]').forEach(p => p.classList.remove('is-active'));
+        pill.classList.add('is-active');
+
+        card.querySelectorAll('a[href*="product"]').forEach(link => {
+            try {
+                const url = new URL(link.getAttribute('href'), window.location.href);
+                url.searchParams.set('slug', slug);
+                link.setAttribute('href', url.pathname.substring(url.pathname.lastIndexOf('/') + 1) + url.search);
+            } catch (_) {
+                link.setAttribute('href', `product.php?slug=${encodeURIComponent(slug)}`);
+            }
+        });
+
+        const img = card.querySelector('.product-card__media img, .compact-product-card__media img');
+        if (img && image) {
+            img.src = image;
+            img.alt = name;
+        }
+
+        const weightEl = card.querySelector('.compact-product-card__weight, .product-card__meta span:last-child');
+        if (weightEl) {
+            weightEl.textContent = weight;
+        }
+
+        const priceStrong = card.querySelector('.product-card__price strong, .compact-product-card__price strong, .product-card__buy strong');
+        if (priceStrong && priceFormatted) {
+            priceStrong.textContent = priceFormatted;
+        }
+        const priceS = card.querySelector('.product-card__price s, .compact-product-card__price s, .product-card__buy s');
+        if (priceS && originalPriceFormatted) {
+            priceS.textContent = originalPriceFormatted;
+        }
+
+        const discountEl = card.querySelector('.product-card__discount');
+        if (discountEl && discount) {
+            discountEl.textContent = `${discount}% OFF`;
+        }
+
+        const addBtn = card.querySelector('[data-add-to-cart]');
+        if (addBtn) {
+            addBtn.dataset.id = id;
+            addBtn.dataset.name = name;
+            addBtn.dataset.price = price;
+            if (image) addBtn.dataset.image = image;
+        }
+
+        showToast(`Selected ${weight} pack`);
     });
 
     const openCart = () => {
@@ -866,7 +927,7 @@
         if (qtyDisplay) qtyDisplay.textContent = String(productQuantity);
     });
     qs('[data-product-qty-plus]')?.addEventListener('click', () => {
-        productQuantity = Math.min(10, productQuantity + 1);
+        productQuantity = productQuantity + 1;
         if (qtyDisplay) qtyDisplay.textContent = String(productQuantity);
     });
 

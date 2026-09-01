@@ -10,3 +10,4 @@ assets/uploads/*
 !assets/uploads/banners/
 assets/uploads/banners/*
 !assets/uploads/banners/.gitkeep
+.freebuff/project-id

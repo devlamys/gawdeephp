@@ -187,7 +187,34 @@ foreach ($homepageSections as $sectionKey => $section) {
                                     <h3><a
                                             href="product?slug=<?= urlencode($product['slug']) ?>"><?= htmlspecialchars($product['name']) ?></a>
                                     </h3>
-                                    <span class="compact-product-card__weight"><?= htmlspecialchars($product['weight']) ?></span>
+                                    <?php 
+                                    $cVariants = gawdee_family_variants($products, (string) ($product['family_key'] ?? ''));
+                                    if (count($cVariants) > 1): 
+                                    ?>
+                                        <div class="card-variant-pills" aria-label="Select size">
+                                            <?php foreach ($cVariants as $cv): 
+                                                $isCur = $cv['slug'] === $product['slug'];
+                                                $cvDiscount = discount_percentage($cv);
+                                            ?>
+                                                <button type="button" 
+                                                        class="card-variant-pill <?= $isCur ? 'is-active' : '' ?>"
+                                                        data-card-variant-switch
+                                                        data-slug="<?= htmlspecialchars($cv['slug']) ?>"
+                                                        data-id="<?= htmlspecialchars($cv['id']) ?>"
+                                                        data-name="<?= htmlspecialchars($cv['full_name']) ?>"
+                                                        data-weight="<?= htmlspecialchars($cv['weight']) ?>"
+                                                        data-price="<?= (int) $cv['price'] ?>"
+                                                        data-price-formatted="<?= money($cv['price']) ?>"
+                                                        data-original-price-formatted="<?= money($cv['original_price']) ?>"
+                                                        data-discount="<?= $cvDiscount ?>"
+                                                        data-image="<?= htmlspecialchars($cv['image']) ?>">
+                                                    <?= htmlspecialchars($cv['weight']) ?>
+                                                </button>
+                                            <?php endforeach; ?>
+                                        </div>
+                                    <?php else: ?>
+                                        <span class="compact-product-card__weight"><?= htmlspecialchars($product['weight']) ?></span>
+                                    <?php endif; ?>
                                     <div class="compact-product-card__price">
                                         <strong><?= money($product['price']) ?></strong><s><?= money($product['original_price']) ?></s>
                                     </div>
@@ -196,11 +223,7 @@ foreach ($homepageSections as $sectionKey => $section) {
                                             data-name="<?= htmlspecialchars($product['full_name']) ?>"
                                             data-price="<?= (int) $product['price'] ?>"
                                             data-image="<?= htmlspecialchars($product['image']) ?>">Add to cart</button>
-                                        <?php if (gawdee_customer() !== null): ?>
-                                            <button type="button" data-wishlist
-                                                aria-label="Add <?= htmlspecialchars($product['name']) ?> to wishlist"
-                                                aria-pressed="false"><i class="ph ph-heart"></i></button>
-                                        <?php endif; ?>
+
                                     </div>
                                 </div>
                             </article>

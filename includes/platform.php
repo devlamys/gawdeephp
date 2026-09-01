@@ -958,12 +958,65 @@ function gawdee_seed_products(array $seedProducts): void
 {
     $db = gawdee_db();
     $insert = $db->prepare(<<<'SQL'
-INSERT OR IGNORE INTO products
+INSERT INTO products
 (id, slug, name, full_name, category, category_key, tag, price, original_price, weight, image, description, accent)
 VALUES (:id, :slug, :name, :full_name, :category, :category_key, :tag, :price, :original_price, :weight, :image, :description, :accent)
+ON CONFLICT(id) DO UPDATE SET
+  slug = excluded.slug,
+  name = excluded.name,
+  full_name = excluded.full_name,
+  category = excluded.category,
+  category_key = excluded.category_key,
+  tag = excluded.tag,
+  price = excluded.price,
+  original_price = excluded.original_price,
+  weight = excluded.weight,
+  image = excluded.image,
+  description = excluded.description,
+  accent = excluded.accent,
+  is_active = 1
 SQL);
     foreach ($seedProducts as $product) {
         $insert->execute($product);
+    }
+}
+
+if (!function_exists('product_family_key')) {
+    function product_family_key(string $name): string
+    {
+        $name = strtolower($name);
+        $name = preg_replace('/^gawdee\s+/i', '', $name) ?? $name;
+        $name = preg_replace('/\b\d+(?:\.\d+)?\s*(?:kg|g|gm|gms|gram|grams|ml|l|ltr|litre|litres|liter|liters)\b/i', '', $name) ?? $name;
+        $name = str_replace('—', ' ', $name);
+        $name = preg_replace('/[^a-z0-9]+/', '-', $name) ?? $name;
+        return trim($name, '-');
+    }
+}
+
+if (!function_exists('gawdee_family_variants')) {
+    function gawdee_family_variants(array $allProducts, string $familyKey): array
+    {
+        if ($familyKey === '') {
+            return [];
+        }
+        $variants = array_values(array_filter(
+            $allProducts,
+            static fn(array $candidate): bool => ($candidate['family_key'] ?? '') === $familyKey
+        ));
+        usort($variants, static function (array $a, array $b): int {
+            $parseGrams = static function (string $w): float {
+                $w = strtolower(trim($w));
+                if (preg_match('/^([\d.]+)\s*(kg|l|litre|litres|liter|liters)$/i', $w, $m)) {
+                    return ((float) $m[1]) * 1000.0;
+                }
+                if (preg_match('/^([\d.]+)\s*(g|gm|gms|gram|grams|ml)$/i', $w, $m)) {
+                    return (float) $m[1];
+                }
+                return (float) $w;
+            };
+            return $parseGrams($a['weight'] ?? '') <=> $parseGrams($b['weight'] ?? '');
+        });
+        return $variants;
     }
 }
 

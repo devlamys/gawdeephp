@@ -127,13 +127,7 @@ $isReferenceProductPage = str_contains($bodyClass, 'product-page--reference');
                     <i class="ph <?= $headerCustomer ? 'ph-user-circle-check' : 'ph-user' ?>"
                         aria-hidden="true"></i><span><?= $headerCustomer ? htmlspecialchars(explode(' ', trim((string) $headerCustomer['name']))[0]) : 'Account' ?></span>
                 </a>
-                <?php if ($headerCustomer): ?>
-                    <button class="commerce-action desktop-only" type="button" data-wishlist aria-label="Open wishlist"
-                        aria-pressed="false">
-                        <span class="commerce-action__icon"><i class="ph ph-heart"
-                                aria-hidden="true"></i><b>0</b></span><span>Wishlist</span>
-                    </button>
-                <?php endif; ?>
+
                 <button class="commerce-action" type="button" data-cart-toggle aria-label="Open shopping bag">
                     <span class="commerce-action__icon"><i class="ph ph-shopping-cart" aria-hidden="true"></i><b
                             data-cart-count>0</b></span><span class="desktop-only">Cart</span>

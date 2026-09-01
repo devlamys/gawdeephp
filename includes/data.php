@@ -5,6 +5,22 @@ declare(strict_types=1);
 require_once __DIR__ . '/commerce.php';
 
 $seedProducts = [
+    // MixMe Choco Family
+    [
+        'id' => 'mixme-choco-250',
+        'slug' => 'gawdee-mixme-choco-250-g',
+        'name' => 'MixMe Choco',
+        'full_name' => 'Gawdee MixMe — Choco 250g',
+        'category' => 'Nutrition',
+        'category_key' => 'nutrition',
+        'tag' => 'Family favourite',
+        'price' => 419,
+        'original_price' => 449,
+        'weight' => '250 g',
+        'image' => 'assets/images/products/mixme-choco.webp',
+        'description' => 'A smooth daily nutrition blend made with ragi, dates, jaggery, nuts, grains and seeds.',
+        'accent' => '#d96b43',
+    ],
     [
         'id' => 'mixme-choco',
         'slug' => 'gawdee-mixme-choco-500-g',
@@ -19,6 +35,38 @@ $seedProducts = [
         'image' => 'assets/images/products/mixme-choco.webp',
         'description' => 'A smooth daily nutrition blend made with ragi, dates, jaggery, nuts, grains and seeds.',
         'accent' => '#d96b43',
+    ],
+    [
+        'id' => 'mixme-choco-1000',
+        'slug' => 'gawdee-mixme-choco-1-kg',
+        'name' => 'MixMe Choco',
+        'full_name' => 'Gawdee MixMe — Choco 1kg',
+        'category' => 'Nutrition',
+        'category_key' => 'nutrition',
+        'tag' => 'Best value pack',
+        'price' => 1399,
+        'original_price' => 1499,
+        'weight' => '1 kg',
+        'image' => 'assets/images/products/mixme-choco.webp',
+        'description' => 'A smooth daily nutrition blend made with ragi, dates, jaggery, nuts, grains and seeds.',
+        'accent' => '#d96b43',
+    ],
+
+    // MixMe Elaichi Family
+    [
+        'id' => 'mixme-elaichi-250',
+        'slug' => 'gawdee-mixme-elaichi-250-g',
+        'name' => 'MixMe Elaichi',
+        'full_name' => 'Gawdee MixMe — Elaichi 250g',
+        'category' => 'Nutrition',
+        'category_key' => 'nutrition',
+        'tag' => 'No refined sugar',
+        'price' => 419,
+        'original_price' => 449,
+        'weight' => '250 g',
+        'image' => 'assets/images/products/mixme-elaichi.webp',
+        'description' => 'A fragrant elaichi nutrition mix created for children, adults and seniors.',
+        'accent' => '#7fa143',
     ],
     [
         'id' => 'mixme-elaichi',
@@ -36,6 +84,85 @@ $seedProducts = [
         'accent' => '#7fa143',
     ],
     [
+        'id' => 'mixme-elaichi-1000',
+        'slug' => 'gawdee-mixme-elaichi-1-kg',
+        'name' => 'MixMe Elaichi',
+        'full_name' => 'Gawdee MixMe — Elaichi 1kg',
+        'category' => 'Nutrition',
+        'category_key' => 'nutrition',
+        'tag' => 'No refined sugar',
+        'price' => 1399,
+        'original_price' => 1499,
+        'weight' => '1 kg',
+        'image' => 'assets/images/products/mixme-elaichi.webp',
+        'description' => 'A fragrant elaichi nutrition mix created for children, adults and seniors.',
+        'accent' => '#7fa143',
+    ],
+
+    // MixMe Vanilla Family
+    [
+        'id' => 'mixme-vanilla-250',
+        'slug' => 'gawdee-mixme-vanilla-250-g',
+        'name' => 'MixMe Vanilla',
+        'full_name' => 'Gawdee MixMe — Vanilla 250g',
+        'category' => 'Nutrition',
+        'category_key' => 'nutrition',
+        'tag' => 'Pure Vanilla',
+        'price' => 419,
+        'original_price' => 449,
+        'weight' => '250 g',
+        'image' => 'assets/uploads/products/products-fb1c5b2c7521f2a1f5.png',
+        'description' => 'A smooth and aromatic vanilla nutrition mix naturally sweetened with jaggery and dry dates.',
+        'accent' => '#e0a944',
+    ],
+    [
+        'id' => 'mixme-vanilla',
+        'slug' => 'gawdee-mixme-vanilla-500-g',
+        'name' => 'MixMe Vanilla',
+        'full_name' => 'Gawdee MixMe — Vanilla 500g',
+        'category' => 'Nutrition',
+        'category_key' => 'nutrition',
+        'tag' => 'Pure Vanilla',
+        'price' => 759,
+        'original_price' => 799,
+        'weight' => '500 g',
+        'image' => 'assets/uploads/products/products-fb1c5b2c7521f2a1f5.png',
+        'description' => 'A smooth and aromatic vanilla nutrition mix naturally sweetened with jaggery and dry dates.',
+        'accent' => '#e0a944',
+    ],
+    [
+        'id' => 'mixme-vanilla-1000',
+        'slug' => 'gawdee-mixme-vanilla-1-kg',
+        'name' => 'MixMe Vanilla',
+        'full_name' => 'Gawdee MixMe — Vanilla 1kg',
+        'category' => 'Nutrition',
+        'category_key' => 'nutrition',
+        'tag' => 'Pure Vanilla',
+        'price' => 1399,
+        'original_price' => 1499,
+        'weight' => '1 kg',
+        'image' => 'assets/uploads/products/products-fb1c5b2c7521f2a1f5.png',
+        'description' => 'A smooth and aromatic vanilla nutrition mix naturally sweetened with jaggery and dry dates.',
+        'accent' => '#e0a944',
+    ],
+
+    // Gir Cow A2 Ghee Family
+    [
+        'id' => 'ghee-250',
+        'slug' => 'gawdee-gir-cow-a2-ghee-250-ml',
+        'name' => 'A2 Gir Cow Ghee',
+        'full_name' => 'Gawdee Gir Cow A2 Ghee 250ml',
+        'category' => 'Ghee',
+        'category_key' => 'ghee',
+        'tag' => 'Bilona method',
+        'price' => 490,
+        'original_price' => 590,
+        'weight' => '250 ml',
+        'image' => 'assets/images/products/ghee-500.webp',
+        'description' => 'Traditionally prepared Gir cow ghee with a rich aroma and slow-crafted character.',
+        'accent' => '#d8a934',
+    ],
+    [
         'id' => 'ghee-500',
         'slug' => 'gawdee-gir-cow-a2-ghee-500-ml',
         'name' => 'A2 Gir Cow Ghee',
@@ -49,6 +176,53 @@ $seedProducts = [
         'image' => 'assets/images/products/ghee-500.webp',
         'description' => 'Traditionally prepared Gir cow ghee with a rich aroma and slow-crafted character.',
         'accent' => '#d8a934',
+    ],
+    [
+        'id' => 'ghee-1000',
+        'slug' => 'gawdee-gir-cow-a2-ghee-1-litre',
+        'name' => 'A2 Gir Cow Ghee',
+        'full_name' => 'Gawdee Gir Cow A2 Ghee 1 Litre',
+        'category' => 'Ghee',
+        'category_key' => 'ghee',
+        'tag' => 'Bilona method',
+        'price' => 1690,
+        'original_price' => 1990,
+        'weight' => '1 Litre',
+        'image' => 'assets/images/products/ghee-500.webp',
+        'description' => 'Traditionally prepared Gir cow ghee with a rich aroma and slow-crafted character.',
+        'accent' => '#d8a934',
+    ],
+
+    // Raw Wild Forest Honey Family
+    [
+        'id' => 'forest-honey-250',
+        'slug' => 'gawdee-raw-wild-forest-honey-250-g',
+        'name' => 'Raw Forest Honey',
+        'full_name' => 'Gawdee Raw Wild Forest Honey 250g',
+        'category' => 'Honey',
+        'category_key' => 'honey',
+        'tag' => 'Raw & unrefined',
+        'price' => 290,
+        'original_price' => 350,
+        'weight' => '250 g',
+        'image' => 'assets/images/products/forest-honey.webp',
+        'description' => 'Wild forest honey with its naturally deep flavour, aroma and thickness intact.',
+        'accent' => '#ad6f2d',
+    ],
+    [
+        'id' => 'forest-honey-500',
+        'slug' => 'gawdee-raw-wild-forest-honey-500-g',
+        'name' => 'Raw Forest Honey',
+        'full_name' => 'Gawdee Raw Wild Forest Honey 500g',
+        'category' => 'Honey',
+        'category_key' => 'honey',
+        'tag' => 'Raw & unrefined',
+        'price' => 540,
+        'original_price' => 620,
+        'weight' => '500 g',
+        'image' => 'assets/images/products/forest-honey.webp',
+        'description' => 'Wild forest honey with its naturally deep flavour, aroma and thickness intact.',
+        'accent' => '#ad6f2d',
     ],
     [
         'id' => 'forest-honey',
@@ -66,6 +240,38 @@ $seedProducts = [
         'accent' => '#ad6f2d',
     ],
     [
+        'id' => 'forest-honey-1000',
+        'slug' => 'gawdee-raw-wild-forest-honey-1-kg',
+        'name' => 'Raw Forest Honey',
+        'full_name' => 'Gawdee Raw Wild Forest Honey 1kg',
+        'category' => 'Honey',
+        'category_key' => 'honey',
+        'tag' => 'Raw & unrefined',
+        'price' => 990,
+        'original_price' => 1150,
+        'weight' => '1 kg',
+        'image' => 'assets/images/products/forest-honey.webp',
+        'description' => 'Wild forest honey with its naturally deep flavour, aroma and thickness intact.',
+        'accent' => '#ad6f2d',
+    ],
+
+    // Taral Drop Family
+    [
+        'id' => 'taral-drop-15',
+        'slug' => 'gawdee-taral-drop-15-ml',
+        'name' => 'Taral Drop',
+        'full_name' => 'Gawdee Taral Drop 15ml',
+        'category' => 'Wellness',
+        'category_key' => 'wellness',
+        'tag' => 'Ayurvedic ritual',
+        'price' => 129,
+        'original_price' => 179,
+        'weight' => '15 ml',
+        'image' => 'assets/images/products/taral-drop.webp',
+        'description' => 'A compact daily wellness ritual inspired by traditional Ayurvedic practice.',
+        'accent' => '#8a663e',
+    ],
+    [
         'id' => 'taral-drop',
         'slug' => 'gawdee-taral-drop-30-ml',
         'name' => 'Taral Drop',
@@ -79,6 +285,38 @@ $seedProducts = [
         'image' => 'assets/images/products/taral-drop.webp',
         'description' => 'A compact daily wellness ritual inspired by traditional Ayurvedic practice.',
         'accent' => '#8a663e',
+    ],
+    [
+        'id' => 'taral-drop-50',
+        'slug' => 'gawdee-taral-drop-50-ml',
+        'name' => 'Taral Drop',
+        'full_name' => 'Gawdee Taral Drop 50ml',
+        'category' => 'Wellness',
+        'category_key' => 'wellness',
+        'tag' => 'Ayurvedic ritual',
+        'price' => 329,
+        'original_price' => 449,
+        'weight' => '50 ml',
+        'image' => 'assets/images/products/taral-drop.webp',
+        'description' => 'A compact daily wellness ritual inspired by traditional Ayurvedic practice.',
+        'accent' => '#8a663e',
+    ],
+
+    // Moringa Powder Family
+    [
+        'id' => 'moringa-150',
+        'slug' => 'gawdee-moringa-powder-150-g',
+        'name' => 'Moringa Powder',
+        'full_name' => 'Gawdee Moringa Powder 150g',
+        'category' => 'Wellness',
+        'category_key' => 'wellness',
+        'tag' => 'Leaf to life',
+        'price' => 149,
+        'original_price' => 199,
+        'weight' => '150 g',
+        'image' => 'assets/images/products/moringa.webp',
+        'description' => 'Finely milled moringa leaf powder for simple, plant-led everyday nourishment.',
+        'accent' => '#5e7e3e',
     ],
     [
         'id' => 'moringa',
@@ -96,6 +334,38 @@ $seedProducts = [
         'accent' => '#5e7e3e',
     ],
     [
+        'id' => 'moringa-500',
+        'slug' => 'gawdee-moringa-powder-500-g',
+        'name' => 'Moringa Powder',
+        'full_name' => 'Gawdee Moringa Powder 500g',
+        'category' => 'Wellness',
+        'category_key' => 'wellness',
+        'tag' => 'Leaf to life',
+        'price' => 419,
+        'original_price' => 549,
+        'weight' => '500 g',
+        'image' => 'assets/images/products/moringa.webp',
+        'description' => 'Finely milled moringa leaf powder for simple, plant-led everyday nourishment.',
+        'accent' => '#5e7e3e',
+    ],
+
+    // Burra Sugar Family
+    [
+        'id' => 'burra-sugar-500',
+        'slug' => 'gawdee-bura-sugar-500-g',
+        'name' => 'Burra Sugar',
+        'full_name' => 'Gawdee Burra Sugar 500g',
+        'category' => 'Natural sugar',
+        'category_key' => 'sugar',
+        'tag' => 'Khandsari',
+        'price' => 89,
+        'original_price' => 119,
+        'weight' => '500 g',
+        'image' => 'assets/images/products/burra-sugar.webp',
+        'description' => 'Traditional khandsari sugar for tea, milk, sweets, desserts and everyday cooking.',
+        'accent' => '#8b5b35',
+    ],
+    [
         'id' => 'burra-sugar',
         'slug' => 'gawdee-bura-sugar-1-kg',
         'name' => 'Burra Sugar',
@@ -111,6 +381,38 @@ $seedProducts = [
         'accent' => '#8b5b35',
     ],
     [
+        'id' => 'burra-sugar-2000',
+        'slug' => 'gawdee-bura-sugar-2-kg',
+        'name' => 'Burra Sugar',
+        'full_name' => 'Gawdee Burra Sugar 2kg',
+        'category' => 'Natural sugar',
+        'category_key' => 'sugar',
+        'tag' => 'Khandsari',
+        'price' => 299,
+        'original_price' => 379,
+        'weight' => '2 kg',
+        'image' => 'assets/images/products/burra-sugar.webp',
+        'description' => 'Traditional khandsari sugar for tea, milk, sweets, desserts and everyday cooking.',
+        'accent' => '#8b5b35',
+    ],
+
+    // White Sugar Family
+    [
+        'id' => 'white-sugar-500',
+        'slug' => 'gawdee-white-sugar-500g',
+        'name' => 'Sulphur-Free Sugar',
+        'full_name' => 'Gawdee Sulphur-Free White Sugar 500g',
+        'category' => 'Natural sugar',
+        'category_key' => 'sugar',
+        'tag' => 'Everyday staple',
+        'price' => 89,
+        'original_price' => 119,
+        'weight' => '500 g',
+        'image' => 'assets/images/products/white-sugar.webp',
+        'description' => 'A clean everyday sweetener made without sulphur treatment.',
+        'accent' => '#b8975b',
+    ],
+    [
         'id' => 'white-sugar',
         'slug' => 'gawdee-white-sugar-1kg',
         'name' => 'Sulphur-Free Sugar',
@@ -121,6 +423,21 @@ $seedProducts = [
         'price' => 159,
         'original_price' => 199,
         'weight' => '1 kg',
+        'image' => 'assets/images/products/white-sugar.webp',
+        'description' => 'A clean everyday sweetener made without sulphur treatment.',
+        'accent' => '#b8975b',
+    ],
+    [
+        'id' => 'white-sugar-2000',
+        'slug' => 'gawdee-white-sugar-2kg',
+        'name' => 'Sulphur-Free Sugar',
+        'full_name' => 'Gawdee Sulphur-Free White Sugar 2kg',
+        'category' => 'Natural sugar',
+        'category_key' => 'sugar',
+        'tag' => 'Everyday staple',
+        'price' => 299,
+        'original_price' => 379,
+        'weight' => '2 kg',
         'image' => 'assets/images/products/white-sugar.webp',
         'description' => 'A clean everyday sweetener made without sulphur treatment.',
         'accent' => '#b8975b',
@@ -406,13 +723,16 @@ foreach ($products as &$catalogProduct) {
 }
 unset($catalogProduct);
 
-function product_family_key(string $name): string
-{
-    $name = strtolower($name);
-    $name = preg_replace('/^gawdee\s+/i', '', $name) ?? $name;
-    $name = preg_replace('/\b\d+(?:\.\d+)?\s*(?:kg|g|gm|ml|l|ltr)\b/i', '', $name) ?? $name;
-    $name = preg_replace('/[^a-z0-9]+/', '-', $name) ?? $name;
-    return trim($name, '-');
+if (!function_exists('product_family_key')) {
+    function product_family_key(string $name): string
+    {
+        $name = strtolower($name);
+        $name = preg_replace('/^gawdee\s+/i', '', $name) ?? $name;
+        $name = preg_replace('/\b\d+(?:\.\d+)?\s*(?:kg|g|gm|gms|gram|grams|ml|l|ltr|litre|litres|liter|liters)\b/i', '', $name) ?? $name;
+        $name = str_replace('—', ' ', $name);
+        $name = preg_replace('/[^a-z0-9]+/', '-', $name) ?? $name;
+        return trim($name, '-');
+    }
 }
 
 function product_by_slug(array $products, string $slug): ?array

@@ -56,7 +56,7 @@ function gawdee_checkout_pricing(array $requestedItems, string $couponCode = '')
     $subtotal = 0;
     foreach ($requestedItems as $requested) {
         $product = gawdee_product_by_id((string) ($requested['id'] ?? ''));
-        $quantity = min(10, max(1, (int) ($requested['quantity'] ?? 1)));
+        $quantity = max(1, (int) ($requested['quantity'] ?? 1));
         if (!$product) {
             throw new RuntimeException('A product in the cart is no longer available.');
         }

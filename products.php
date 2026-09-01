@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-require __DIR__ . '/includes/data.php';
+require_once __DIR__ . '/includes/data.php';
 
 $categoryFilters = [
     'all' => ['All Products', 'ph-squares-four'],
@@ -49,14 +49,31 @@ require __DIR__ . '/includes/header.php';
             </div>
         </div>
 
+<?php
+$catalogFamilies = [];
+foreach ($products as $p) {
+    $fKey = (string) ($p['family_key'] ?? $p['id']);
+    if (!isset($catalogFamilies[$fKey])) {
+        $catalogFamilies[$fKey] = $p;
+    }
+}
+$displayCatalogProducts = array_values($catalogFamilies);
+?>
+
         <div class="catalog-results-head reveal">
-            <p>Showing <strong data-catalog-count><?= count($products) ?></strong> pure essential products</p>
+            <p>Showing <strong data-catalog-count><?= count($displayCatalogProducts) ?></strong> pure essential products</p>
             <span class="catalog-badge"><i class="ph ph-shield-check"></i> 100% Certified Authentic</span>
         </div>
 
         <div class="product-grid catalog-product-grid" data-product-grid data-initial-category="<?= htmlspecialchars($activeCategory) ?>">
-            <?php foreach ($products as $index => $catalogProduct): ?>
-                <article class="product-card catalog-product-card reveal" data-delay="<?= ($index % 4) * 40 ?>" data-category="<?= htmlspecialchars($catalogProduct['category_key']) ?>" data-search-name="<?= htmlspecialchars(strtolower($catalogProduct['full_name'] . ' ' . $catalogProduct['category'] . ' ' . $catalogProduct['tag'])) ?>">
+            <?php foreach ($displayCatalogProducts as $index => $catalogProduct): 
+                $cVariants = gawdee_family_variants($products, (string) ($catalogProduct['family_key'] ?? ''));
+                $searchKeywords = strtolower($catalogProduct['full_name'] . ' ' . $catalogProduct['category'] . ' ' . $catalogProduct['tag']);
+                foreach ($cVariants as $cv) {
+                    $searchKeywords .= ' ' . strtolower($cv['full_name'] . ' ' . $cv['weight']);
+                }
+            ?>
+                <article class="product-card catalog-product-card reveal" data-delay="<?= ($index % 4) * 40 ?>" data-category="<?= htmlspecialchars($catalogProduct['category_key']) ?>" data-search-name="<?= htmlspecialchars($searchKeywords) ?>">
                     <a class="product-card__media" href="product?slug=<?= rawurlencode((string) $catalogProduct['slug']) ?>" style="--product-accent:<?= htmlspecialchars($catalogProduct['accent']) ?>">
                         <?php if (!empty($catalogProduct['tag'])): ?>
                             <span class="product-card__tag"><?= htmlspecialchars($catalogProduct['tag']) ?></span>
@@ -86,6 +103,29 @@ require __DIR__ . '/includes/header.php';
                                 <small>New</small>
                             <?php endif; ?>
                         </div>
+                        <?php if (count($cVariants) > 1): ?>
+                            <div class="card-variant-pills" aria-label="Select pack size">
+                                <?php foreach ($cVariants as $cv): 
+                                    $isCur = $cv['slug'] === $catalogProduct['slug'];
+                                    $cvDiscount = discount_percentage($cv);
+                                ?>
+                                    <button type="button" 
+                                            class="card-variant-pill <?= $isCur ? 'is-active' : '' ?>"
+                                            data-card-variant-switch
+                                            data-slug="<?= htmlspecialchars($cv['slug']) ?>"
+                                            data-id="<?= htmlspecialchars($cv['id']) ?>"
+                                            data-name="<?= htmlspecialchars($cv['full_name']) ?>"
+                                            data-weight="<?= htmlspecialchars($cv['weight']) ?>"
+                                            data-price="<?= (int) $cv['price'] ?>"
+                                            data-price-formatted="<?= money($cv['price']) ?>"
+                                            data-original-price-formatted="<?= money($cv['original_price']) ?>"
+                                            data-discount="<?= $cvDiscount ?>"
+                                            data-image="<?= htmlspecialchars($cv['image']) ?>">
+                                        <?= htmlspecialchars($cv['weight']) ?>
+                                    </button>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php endif; ?>
                         <div class="product-card__buy">
                             <div class="product-card__price">
                                 <strong><?= money($catalogProduct['price']) ?></strong>

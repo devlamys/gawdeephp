@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-require __DIR__ . '/includes/data.php';
+require_once __DIR__ . '/includes/data.php';
 
 $slug = isset($_GET['slug']) ? (string) $_GET['slug'] : '';
 $product = product_by_slug($products, $slug);
@@ -76,12 +76,7 @@ foreach ($products as $candidate) {
     }
 }
 $relatedProducts = array_slice(array_merge($sameCategory, $otherProducts), 0, 4);
-$variantProducts = array_values(array_filter(
-    $products,
-    static fn(array $candidate): bool =>
-    ($candidate['family_key'] ?? '') !== '' && ($candidate['family_key'] ?? '') === ($product['family_key'] ?? '')
-));
-usort($variantProducts, static fn(array $a, array $b): int => (float) ($a['weight'] ?? 0) <=> (float) ($b['weight'] ?? 0));
+$variantProducts = gawdee_family_variants($products, (string) ($product['family_key'] ?? ''));
 $gallery = is_array($product['gallery'] ?? null) ? $product['gallery'] : [['src' => $product['image'], 'label' => 'Product view']];
 $aPlusImages = is_array($product['aplus_images'] ?? null) ? $product['aplus_images'] : [];
 $comparisonRows = is_array($product['comparison_rows'] ?? null) ? $product['comparison_rows'] : [];
@@ -270,10 +265,7 @@ require __DIR__ . '/includes/header.php';
                         data-image="<?= htmlspecialchars($product['image']) ?>" <?= $stock <= 0 ? 'disabled' : '' ?>>Buy
                         Now</button>
                 </div>
-                <?php if (gawdee_customer() !== null): ?>
-                    <button class="ref-wishlist" type="button" data-wishlist aria-label="Add product to wishlist"
-                        aria-pressed="false"><i class="ph ph-heart"></i> Add to Wishlist</button>
-                <?php endif; ?>
+
             </div>
         </section>
 
@@ -345,7 +337,7 @@ require __DIR__ . '/includes/header.php';
                         </ol>
                     </div>
                     <div data-ref-product-panel="storage" hidden>
-                        <p><?= htmlspecialchars($product['storage']) ?></p>
+                        <p><?= htmlspecialchars((string) ($product['storage'] ?? 'Store in a cool, dry place.')) ?></p>
                     </div>
                 </div>
                 <aside class="ref-nutrition"><strong>Nutritional Information
@@ -549,11 +541,7 @@ require __DIR__ . '/includes/header.php';
                     style="--product-accent: <?= htmlspecialchars($product['accent']) ?>">
                     <div class="product-media__stage">
                         <span class="product-media__discount"><?= discount_percentage($product) ?>% OFF</span>
-                        <?php if (gawdee_customer() !== null): ?>
-                            <button class="product-media__wish" type="button" data-wishlist
-                                aria-label="Save <?= htmlspecialchars($product['name']) ?> to wishlist" aria-pressed="false"><i
-                                    class="ph ph-heart"></i></button>
-                        <?php endif; ?>
+
                         <img src="<?= htmlspecialchars($gallery[0]['src']) ?>"
                             alt="<?= htmlspecialchars($product['full_name']) ?>" data-product-main-image>
                         <div class="product-media__zoom"><i class="ph ph-magnifying-glass-plus"></i> Hover to explore</div>
@@ -956,6 +944,32 @@ require __DIR__ . '/includes/header.php';
                                     <?= number_format((float) ($related['rating'] ?? 0), 1) ?>         <?php else: ?><i
                                         class="ph ph-star"></i> No ratings yet<?php endif; ?>
                             </div>
+                            <?php 
+                            $relVariants = gawdee_family_variants($products, (string) ($related['family_key'] ?? ''));
+                            if (count($relVariants) > 1): 
+                            ?>
+                                <div class="card-variant-pills" aria-label="Select pack size">
+                                    <?php foreach ($relVariants as $rv): 
+                                        $isCur = $rv['slug'] === $related['slug'];
+                                        $rvDiscount = discount_percentage($rv);
+                                    ?>
+                                        <button type="button" 
+                                                class="card-variant-pill <?= $isCur ? 'is-active' : '' ?>"
+                                                data-card-variant-switch
+                                                data-slug="<?= htmlspecialchars($rv['slug']) ?>"
+                                                data-id="<?= htmlspecialchars($rv['id']) ?>"
+                                                data-name="<?= htmlspecialchars($rv['full_name']) ?>"
+                                                data-weight="<?= htmlspecialchars($rv['weight']) ?>"
+                                                data-price="<?= (int) $rv['price'] ?>"
+                                                data-price-formatted="<?= money($rv['price']) ?>"
+                                                data-original-price-formatted="<?= money($rv['original_price']) ?>"
+                                                data-discount="<?= $rvDiscount ?>"
+                                                data-image="<?= htmlspecialchars($rv['image']) ?>">
+                                            <?= htmlspecialchars($rv['weight']) ?>
+                                        </button>
+                                    <?php endforeach; ?>
+                                </div>
+                            <?php endif; ?>
                             <div class="product-card__buy">
                                 <p><strong><?= money($related['price']) ?></strong>
                                     <s><?= money($related['original_price']) ?></s>

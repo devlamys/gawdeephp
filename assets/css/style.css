@@ -1798,7 +1798,7 @@ body:not(.commerce-home) .commerce-header:not(.is-scrolled) {
 /* --------------------------------------------------------------------------
    Product Detail Page (`product.php`)
    -------------------------------------------------------------------------- */
-.ref-product-page { padding-block: 48px; }
+.ref-product-page { padding-block: 157px 64px; }
 .ref-breadcrumbs { display: flex; align-items: center; gap: 10px; font-size: .88rem; color: var(--muted); margin-bottom: 32px; }
 .ref-breadcrumbs a:hover { color: var(--gawdee-primary); }
 .ref-breadcrumbs i { color: var(--gawdee-accent); font-size: .8rem; }
@@ -4510,12 +4510,13 @@ body:not(.commerce-home) .commerce-header:not(.is-scrolled) {
 /* --------------------------------------------------------------------------
    Product Detail Page Responsive Enhancements (product.php)
    -------------------------------------------------------------------------- */
-@media (max-width: 1100px) {
+@media (max-width: 1200px) {
+    .ref-product-page { padding-block: 120px 52px; }
     .ref-review-cards { grid-template-columns: repeat(2, 1fr); }
 }
 
 @media (max-width: 1024px) {
-    .ref-product-page { padding-block: 28px 48px; }
+    .ref-product-page { padding-block: 96px 48px; }
     .ref-product-hero { grid-template-columns: 1fr 1fr; gap: 28px; margin-bottom: 40px; }
     .ref-buybox { padding: 32px 24px; }
     .ref-buybox h1 { font-size: 1.8rem; }
@@ -4524,6 +4525,7 @@ body:not(.commerce-home) .commerce-header:not(.is-scrolled) {
 }
 
 @media (max-width: 900px) {
+    .ref-product-page { padding-block: 80px 40px; }
     .ref-product-hero { grid-template-columns: 1fr; gap: 28px; margin-bottom: 36px; }
     .ref-gallery { flex-direction: column-reverse; gap: 14px; }
     .ref-gallery__thumbs { flex-direction: row; gap: 10px; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; padding-bottom: 4px; }
@@ -4543,6 +4545,7 @@ body:not(.commerce-home) .commerce-header:not(.is-scrolled) {
 }
 
 @media (max-width: 640px) {
+    .ref-product-page { padding-block: 54px 32px; }
     .ref-breadcrumbs { font-size: 0.8rem; margin-bottom: 20px; flex-wrap: wrap; gap: 6px; }
     .ref-trust-strip { grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 36px; }
     .ref-trust-strip article { padding: 14px 12px; gap: 10px; border-radius: 14px; }
@@ -4584,7 +4587,7 @@ body:not(.commerce-home) .commerce-header:not(.is-scrolled) {
 }
 
 @media (max-width: 480px) {
-    .ref-product-page { padding-block: 20px 36px; }
+    .ref-product-page { padding-block: 36px 24px; }
     .ref-gallery__stage { aspect-ratio: 1 / 1; max-height: 340px; }
     .ref-gallery__thumb { width: 58px; height: 58px; }
     .ref-buybox { padding: 20px 16px; border-radius: 16px; }
@@ -4595,7 +4598,6 @@ body:not(.commerce-home) .commerce-header:not(.is-scrolled) {
     .ref-quantity-row { flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
     .ref-purchase-actions { grid-template-columns: 1fr; gap: 10px; }
     .ref-add, .ref-buy-now { min-height: 48px; font-size: 0.92rem; }
-    .ref-wishlist { min-height: 42px; font-size: 0.82rem; }
 }
 
 /* --------------------------------------------------------------------------
@@ -5412,6 +5414,7 @@ body:not(.commerce-home) .commerce-header:not(.is-scrolled) {
     cursor: pointer;
     text-decoration: none;
     transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    user-select: none;
 }
 
 .ref-variant-chip:hover {
@@ -5425,7 +5428,61 @@ body:not(.commerce-home) .commerce-header:not(.is-scrolled) {
     border-color: var(--forest, #073c2b);
     background: var(--forest, #073c2b);
     color: #ffffff;
+    font-weight: 800;
+    transform: scale(1.03);
     box-shadow: 0 6px 18px rgba(7, 60, 43, 0.22);
+}
+
+.ref-variant-chip:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(7, 60, 43, 0.3);
+}
+
+/* Catalog & Home Card Inline Variant Selector Pills */
+.card-variant-pills {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    margin: 10px 0 12px 0;
+}
+
+.card-variant-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px 11px;
+    font-family: inherit;
+    font-size: 0.76rem;
+    font-weight: 700;
+    border-radius: 20px;
+    border: 1.5px solid #d4ded7;
+    background: #ffffff;
+    color: #1c3d2f;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    outline: none;
+    line-height: 1.2;
+    user-select: none;
+}
+
+.card-variant-pill:hover {
+    border-color: #073c2b;
+    background: #f0f7f3;
+    color: #073c2b;
+    transform: translateY(-1px);
+}
+
+.card-variant-pill.is-active {
+    border-color: #073c2b;
+    background: #073c2b;
+    color: #ffffff;
+    font-weight: 800;
+    box-shadow: 0 3px 10px rgba(7, 60, 43, 0.2);
+}
+
+.card-variant-pill:focus-visible {
+    box-shadow: 0 0 0 3px rgba(7, 60, 43, 0.25);
 }
 
 
