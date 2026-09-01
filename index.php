@@ -58,19 +58,7 @@ $homepageReels = gawdee_homepage_media('reels', false, true);
 if (empty($homepageReels)) {
     $homepageReels = gawdee_homepage_media('reels', false);
 }
-$publishedStories = gawdee_db()->query("SELECT title, slug, excerpt, featured_image, category FROM blog_posts WHERE status='published' AND is_featured=1 ORDER BY COALESCE(published_at, created_at) DESC LIMIT 4")->fetchAll();
-$stories = [];
-if ($publishedStories) {
-    foreach ($publishedStories as $index => $post) {
-        $stories[] = [
-            'tag' => trim((string) $post['category']) ?: 'Gawdee journal',
-            'title' => $post['title'],
-            'excerpt' => trim((string) $post['excerpt']),
-            'image' => trim((string) $post['featured_image']) ?: ($blogCovers[$index % count($blogCovers)] ?? ''),
-            'url' => 'blog-post.php?slug=' . rawurlencode($post['slug']),
-        ];
-    }
-}
+$publishedPosts = gawdee_db()->query("SELECT * FROM blog_posts WHERE status='published' ORDER BY is_featured DESC, COALESCE(published_at, created_at) DESC LIMIT 5")->fetchAll();
 
 require __DIR__ . '/includes/header.php';
 
@@ -187,27 +175,23 @@ foreach ($homepageSections as $sectionKey => $section) {
                                     <h3><a
                                             href="product?slug=<?= urlencode($product['slug']) ?>"><?= htmlspecialchars($product['name']) ?></a>
                                     </h3>
-                                    <?php 
+                                    <?php
                                     $cVariants = gawdee_family_variants($products, (string) ($product['family_key'] ?? ''));
-                                    if (count($cVariants) > 1): 
-                                    ?>
+                                    if (count($cVariants) > 1):
+                                        ?>
                                         <div class="card-variant-pills" aria-label="Select size">
-                                            <?php foreach ($cVariants as $cv): 
+                                            <?php foreach ($cVariants as $cv):
                                                 $isCur = $cv['slug'] === $product['slug'];
                                                 $cvDiscount = discount_percentage($cv);
-                                            ?>
-                                                <button type="button" 
-                                                        class="card-variant-pill <?= $isCur ? 'is-active' : '' ?>"
-                                                        data-card-variant-switch
-                                                        data-slug="<?= htmlspecialchars($cv['slug']) ?>"
-                                                        data-id="<?= htmlspecialchars($cv['id']) ?>"
-                                                        data-name="<?= htmlspecialchars($cv['full_name']) ?>"
-                                                        data-weight="<?= htmlspecialchars($cv['weight']) ?>"
-                                                        data-price="<?= (int) $cv['price'] ?>"
-                                                        data-price-formatted="<?= money($cv['price']) ?>"
-                                                        data-original-price-formatted="<?= money($cv['original_price']) ?>"
-                                                        data-discount="<?= $cvDiscount ?>"
-                                                        data-image="<?= htmlspecialchars($cv['image']) ?>">
+                                                ?>
+                                                <button type="button" class="card-variant-pill <?= $isCur ? 'is-active' : '' ?>"
+                                                    data-card-variant-switch data-slug="<?= htmlspecialchars($cv['slug']) ?>"
+                                                    data-id="<?= htmlspecialchars($cv['id']) ?>"
+                                                    data-name="<?= htmlspecialchars($cv['full_name']) ?>"
+                                                    data-weight="<?= htmlspecialchars($cv['weight']) ?>" data-price="<?= (int) $cv['price'] ?>"
+                                                    data-price-formatted="<?= money($cv['price']) ?>"
+                                                    data-original-price-formatted="<?= money($cv['original_price']) ?>"
+                                                    data-discount="<?= $cvDiscount ?>" data-image="<?= htmlspecialchars($cv['image']) ?>">
                                                     <?= htmlspecialchars($cv['weight']) ?>
                                                 </button>
                                             <?php endforeach; ?>
@@ -484,7 +468,7 @@ foreach ($homepageSections as $sectionKey => $section) {
                         <?php endforeach; ?>
                     </div>
                 </div>
-            </section>ion>
+            </section>
             <?php
             break;
 
@@ -549,7 +533,7 @@ foreach ($homepageSections as $sectionKey => $section) {
             break;
 
         case 'stories':
-            if (empty($stories)) {
+            if (empty($publishedPosts)) {
                 break;
             }
             ?>
@@ -561,23 +545,42 @@ foreach ($homepageSections as $sectionKey => $section) {
                         <h2 id="blog-reference-heading"><?= htmlspecialchars($homepageSections['stories']['title']) ?></h2>
                         <p><?= htmlspecialchars($homepageSections['stories']['subtitle']) ?></p>
                     </header>
-                    <div class="blog-reference-grid" id="story-rail">
-                        <?php foreach ($stories as $index => $story): ?>
-                            <article class="blog-reference-card reveal" data-delay="<?= $index * 60 ?>">
-                                <img src="<?= htmlspecialchars($story['image']) ?>" alt="<?= htmlspecialchars($story['title']) ?>"
-                                    loading="lazy">
-                                <span class="blog-reference-card__accent" aria-hidden="true"></span>
-                                <div class="blog-reference-card__wash" aria-hidden="true"></div>
-                                <div class="blog-reference-card__content">
-                                    <span><?= htmlspecialchars($story['tag']) ?></span>
-                                    <h3><?= htmlspecialchars($story['title']) ?></h3>
-                                    <p><?= htmlspecialchars($story['excerpt']) ?></p>
-                                    <a href="<?= htmlspecialchars($story['url'] ?? 'blog') ?>">Read Story <i
-                                            class="ph ph-arrow-right"></i></a>
+
+                    <div class="testimonial-reference-controls reveal" aria-label="Journal slider controls">
+                        <span><i class="ph ph-hand-swipe-left"></i> Swipe to explore wellness stories</span>
+                        <div class="section-rail-controls">
+                            <button type="button" data-scroll-rail="#journal-rail" data-scroll-direction="-1"
+                                aria-label="Previous story"><i class="ph ph-arrow-left"></i></button>
+                            <button type="button" data-scroll-rail="#journal-rail" data-scroll-direction="1"
+                                aria-label="Next story"><i class="ph ph-arrow-right"></i></button>
+                        </div>
+                    </div>
+
+                    <div class="journal-rail" id="journal-rail" data-sliding-rail tabindex="0" aria-label="Wellness journal stories">
+                        <?php foreach ($publishedPosts as $index => $post): ?>
+                            <article class="journal-card reveal" data-delay="<?= ($index % 5) * 45 ?>">
+                                <a class="journal-card__visual" href="blog-post?slug=<?= rawurlencode($post['slug']) ?>">
+                                    <?php if (!empty($post['featured_image'])): ?>
+                                        <img src="<?= htmlspecialchars($post['featured_image']) ?>" alt="<?= htmlspecialchars($post['title']) ?>" loading="lazy">
+                                    <?php else: ?>
+                                        <div class="journal-card__placeholder"><i class="ph ph-leaf"></i></div>
+                                    <?php endif; ?>
+                                    <span class="journal-card__badge"><?= htmlspecialchars(($post['category'] ?: 'Wellness') . ' · ' . (($post['source'] ?? '') === 'ai' ? 'AI-assisted' : 'Editorial')) ?></span>
+                                </a>
+                                <div class="journal-card__body">
+                                    <div class="journal-card__meta">
+                                        <i class="ph ph-calendar-blank"></i>
+                                        <span><?= htmlspecialchars(date('d M Y', strtotime($post['published_at'] ?: $post['created_at']))) ?></span>
+                                        <span>·</span>
+                                        <span><?= htmlspecialchars($post['author'] ?: 'Gawdee Editorial') ?></span>
+                                    </div>
+                                    <h2><a href="blog-post?slug=<?= rawurlencode($post['slug']) ?>"><?= htmlspecialchars($post['title']) ?></a></h2>
+                                    <a class="journal-card__link" href="blog-post?slug=<?= rawurlencode($post['slug']) ?>">Read Story <i class="ph ph-arrow-right"></i></a>
                                 </div>
                             </article>
                         <?php endforeach; ?>
                     </div>
+
                     <div class="blog-reference-footer reveal">
                         <a class="button button--secondary"
                             href="<?= htmlspecialchars($homepageSections['stories']['button_url'] ?: 'blog') ?>"><?= htmlspecialchars($homepageSections['stories']['button_label'] ?: 'View All Stories') ?>

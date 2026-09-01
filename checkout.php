@@ -40,7 +40,7 @@ require __DIR__ . '/includes/header.php';
         <?php endif; ?>
 
         <div class="checkout-grid">
-            <form class="checkout-form reveal" data-checkout-form>
+            <form class="checkout-form reveal" data-checkout-form method="POST" action="api/create-order.php">
                 <section class="checkout-card">
                     <div class="checkout-card__heading">
                         <span>01</span>

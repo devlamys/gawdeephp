@@ -5,7 +5,7 @@ Options -Indexes
 
     # Redirect external requests for *.php (except admin, api and cron) to clean extensionless URLs
     RewriteCond %{THE_REQUEST} \s/([^.\s]+)\.php[\s?] [NC]
-    RewriteCond %{REQUEST_URI} !^/(?:admin|api|cron)/ [NC]
+    RewriteCond %{REQUEST_URI} !(?:^|/)(?:admin|api|cron)/ [NC]
     RewriteRule ^ /%1 [R=301,L]
 
     # Special route for sitemap.xml

@@ -1464,13 +1464,22 @@ $stats = [
                                     value="save_offer"><input type="hidden" name="existing_offer_popup_image"
                                     value="<?= htmlspecialchars(gawdee_setting('offer_popup_image', 'assets/images/independence-offer-popup-v1.webp')) ?>"><label
                                     class="form-span-2 form-switch"
-                                    style="padding:10px 14px;background:#f8fbf9;border:1px solid #e1e8e3;border-radius:14px"><input
-                                        type="checkbox" name="offer_popup_enabled" value="1"
-                                        <?= gawdee_setting('offer_popup_enabled', '1') === '1' ? 'checked' : '' ?>><span><strong>Enable homepage offer popup</strong> (check to activate, uncheck to
-                                        disable)</span></label><label><span>Popup
-                                        Title</span><input name="offer_popup_title"
+                                    style="padding:10px 14px;background:#f8fbf9;border:1px solid #e1e8e3;border-radius:14px">
+                                    <input type="checkbox" name="offer_popup_enabled" value="1"
+                                        <?= gawdee_setting('offer_popup_enabled', '1') === '1' ? 'checked' : '' ?>>
+                                    <span>
+                                        <strong>Enable homepage offer popup</strong>
+                                    </span>
+                                </label>
+                                <label>
+                                    <span>Popup
+                                        Title</span>
+                                    <input name="offer_popup_title"
                                         value="<?= htmlspecialchars(gawdee_setting('offer_popup_title', 'Independence Day Special')) ?>"
-                                        placeholder="e.g. Independence Day Special"></label><label><span>Subtitle /
+                                        placeholder="e.g. Independence Day Special">
+                                </label>
+                                <label>
+                                    <span>Subtitle /
                                         Text</span><input name="offer_popup_text"
                                         value="<?= htmlspecialchars(gawdee_setting('offer_popup_text', 'Use code %code% at checkout')) ?>"
                                         placeholder="Use code %code% at checkout"><small class="help-text">Use %code% to

@@ -86,8 +86,8 @@ $isReferenceProductPage = str_contains($bodyClass, 'product-page--reference');
     </script>
     <?php if (isset($jsonLdExtra) && is_array($jsonLdExtra)): ?>
         <script type="application/ld+json">
-                <?= json_encode($jsonLdExtra, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) ?>
-                </script>
+                            <?= json_encode($jsonLdExtra, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) ?>
+                            </script>
     <?php endif; ?>
     <!-- Favicon & App Icons -->
     <link rel="icon" type="image/x-icon" href="favicon.ico">
@@ -112,6 +112,26 @@ $isReferenceProductPage = str_contains($bodyClass, 'product-page--reference');
     <a class="skip-link" href="#main-content">Skip to content</a>
 
     <header class="commerce-header" data-header>
+        <!-- Top Announcement Promo Bar -->
+        <div class="header-announcement" data-header-announcement>
+            <div class="container header-announcement__content">
+                <div class="announcement-text">
+                    <i class="ph-fill ph-sparkle"></i>
+                    <span><strong>100% Certified Organic &amp; Pure</strong> · Free Shipping over
+                        <?= money((int) gawdee_setting('free_shipping_threshold', '999')) ?></span>
+                </div>
+                <?php if (gawdee_setting('offer_popup_enabled', '1') === '1'): ?>
+                    <div class="announcement-cta">
+                        <a href="index#offers" class="announcement-badge">
+                            <i class="ph ph-ticket"></i> Code:
+                            <strong><?= htmlspecialchars(gawdee_setting('offer_code', 'FREEDOM10')) ?></strong>
+                        </a>
+                    </div>
+                <?php endif; ?>
+            </div>
+        </div>
+
+        <!-- Main Header Bar -->
         <div class="container commerce-header__main">
             <button class="commerce-icon mobile-menu-toggle mobile-only" type="button" data-menu-toggle
                 aria-label="Open menu" aria-expanded="false">
@@ -119,44 +139,58 @@ $isReferenceProductPage = str_contains($bodyClass, 'product-page--reference');
             </button>
 
             <a class="commerce-logo" href="index" aria-label="Gawdee home">
-                <img src="assets/images/logo.png" alt="Gawdee — The Soul of Wellness">
+                <img src="assets/images/logo.png" alt="Gawdee — The Soul of Wellness" class="header-logo-img">
             </a>
 
+            <nav class="desktop-main-nav desktop-only" aria-label="Primary navigation">
+                <a href="products" class="nav-link">All Products</a>
+                <a href="products?category=ghee" class="nav-link" data-nav-filter="ghee">Ghee</a>
+                <a href="products?category=honey" class="nav-link" data-nav-filter="honey">Honey</a>
+                <a href="products?category=nutrition" class="nav-link" data-nav-filter="nutrition">Mix Me</a>
+                <a href="products?category=sugar" class="nav-link" data-nav-filter="sugar">Sugar</a>
+                <a href="products?category=wellness" class="nav-link" data-nav-filter="wellness">Drops</a>
+                <a href="reels" class="nav-link">Reels <span class="nav-badge-hot">NEW</span></a>
+                <?php if (gawdee_setting('offer_popup_enabled', '1') === '1'): ?>
+                    <a href="index#offers" class="nav-link">Offers</a>
+                <?php endif; ?>
+                <a href="blog" class="nav-link">Blog</a>
+            </nav>
+
             <div class="commerce-actions">
-                <a class="commerce-action desktop-only" href="<?= $headerCustomer ? 'account' : 'login' ?>">
-                    <i class="ph <?= $headerCustomer ? 'ph-user-circle-check' : 'ph-user' ?>"
-                        aria-hidden="true"></i><span><?= $headerCustomer ? htmlspecialchars(explode(' ', trim((string) $headerCustomer['name']))[0]) : 'Account' ?></span>
+                <form class="header-search-form desktop-only" action="products" method="get" role="search">
+                    <i class="ph ph-magnifying-glass search-icon" aria-hidden="true"></i>
+                    <input type="search" name="search" placeholder="Search pure essentials..."
+                        aria-label="Search products" autocomplete="off">
+                </form>
+
+                <a class="commerce-action desktop-only" href="<?= $headerCustomer ? 'account' : 'login' ?>"
+                    aria-label="Account">
+                    <i class="ph <?= $headerCustomer ? 'ph-user-circle-check' : 'ph-user' ?>" aria-hidden="true"></i>
+                    <span><?= $headerCustomer ? htmlspecialchars(explode(' ', trim((string) $headerCustomer['name']))[0]) : 'Account' ?></span>
                 </a>
 
                 <button class="commerce-action" type="button" data-cart-toggle aria-label="Open shopping bag">
-                    <span class="commerce-action__icon"><i class="ph ph-shopping-cart" aria-hidden="true"></i><b
-                            data-cart-count>0</b></span><span class="desktop-only">Cart</span>
+                    <span class="commerce-action__icon">
+                        <i class="ph ph-shopping-cart" aria-hidden="true"></i>
+                        <b data-cart-count>0</b>
+                    </span>
+                    <span class="desktop-only">Cart</span>
                 </button>
             </div>
         </div>
 
-        <?php if (empty($hideCommerceNav)): ?>
-            <div class="container commerce-nav-shell">
-                <a class="category-menu-button" href="products" aria-label="Browse all categories">
-                    <i class="ph ph-squares-four" aria-hidden="true"></i> All Categories
-                </a>
-                <nav class="commerce-nav" aria-label="Product categories">
-                    <a href="products?category=ghee" data-nav-filter="ghee">Ghee</a>
-                    <a href="products?category=honey" data-nav-filter="honey">Honey</a>
-                    <a href="products?category=wellness" data-nav-filter="wellness">Drops</a>
-                    <a href="products?category=nutrition" data-nav-filter="nutrition">Mix Me</a>
-                    <a href="products?category=sugar" data-nav-filter="sugar">Sugar</a>
-                    <a href="reels">Reels <small class="nav-badge-hot">NEW</small></a>
-                    <a href="index#offers">Offers <small>HOT</small></a>
-                    <a href="blog">Blog</a>
-                </nav>
-            </div>
-        <?php endif; ?>
-
+        <!-- Mobile Navigation Menu -->
         <nav class="mobile-nav commerce-mobile-nav" data-mobile-menu aria-label="Mobile navigation">
+            <form class="mobile-search-form" action="products" method="get">
+                <input type="search" name="search" placeholder="Search Gawdee products..." aria-label="Search products">
+                <button type="submit"><i class="ph ph-magnifying-glass"></i></button>
+            </form>
             <a href="products">All products <i class="ph ph-arrow-right"></i></a>
+            <a href="products?category=ghee">A2 Gir Cow Ghee <i class="ph ph-arrow-right"></i></a>
+            <a href="products?category=honey">Raw Forest Honey <i class="ph ph-arrow-right"></i></a>
+            <a href="products?category=nutrition">Mix Me Nutrition <i class="ph ph-arrow-right"></i></a>
+            <a href="products?category=sugar">Natural Sugar <i class="ph ph-arrow-right"></i></a>
             <a href="reels">Watch Reels &amp; Videos <i class="ph ph-arrow-right"></i></a>
-            <a href="index#categories">Shop by category <i class="ph ph-arrow-right"></i></a>
             <a href="index#offers">Special offers <i class="ph ph-arrow-right"></i></a>
             <a href="blog">Wellness stories <i class="ph ph-arrow-right"></i></a>
             <a href="<?= $headerCustomer ? 'account' : 'login' ?>"><?= $headerCustomer ? 'My account & orders' : 'Sign in / register' ?>
