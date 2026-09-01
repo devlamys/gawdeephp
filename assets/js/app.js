@@ -13,7 +13,12 @@
     const searchPanel = qs('[data-search-panel]');
     const searchInput = qs('[data-site-search]');
 
-    const setHeaderState = () => header?.classList.toggle('is-scrolled', window.scrollY > 12);
+    const setHeaderState = () => {
+        if (!header) return;
+        const isScrolled = window.scrollY > 20;
+        header.classList.toggle('is-scrolled', isScrolled);
+        header.classList.toggle('is-top', !isScrolled);
+    };
     setHeaderState();
     window.addEventListener('scroll', setHeaderState, { passive: true });
 
@@ -693,6 +698,73 @@
         });
     });
 
+    // Instant Variant Switcher
+    qsa('[data-variant-switch]').forEach(chip => {
+        chip.addEventListener('click', (e) => {
+            if (e.metaKey || e.ctrlKey || e.shiftKey) return;
+            e.preventDefault();
+
+            const slug = chip.dataset.slug;
+            const id = chip.dataset.id;
+            const name = chip.dataset.name;
+            const weight = chip.dataset.weight;
+            const price = chip.dataset.price;
+            const priceFormatted = chip.dataset.priceFormatted;
+            const originalPriceFormatted = chip.dataset.originalPriceFormatted;
+            const discount = chip.dataset.discount;
+            const stock = parseInt(chip.dataset.stock || '0', 10);
+            const image = chip.dataset.image;
+
+            qsa('[data-variant-switch]').forEach(c => {
+                c.classList.remove('is-active');
+                c.removeAttribute('aria-current');
+            });
+            chip.classList.add('is-active');
+            chip.setAttribute('aria-current', 'true');
+
+            const priceEl = qs('[data-variant-price]');
+            const origPriceEl = qs('[data-variant-original-price]');
+            const discountEl = qs('[data-variant-discount]');
+            if (priceEl) priceEl.textContent = priceFormatted;
+            if (origPriceEl) origPriceEl.textContent = originalPriceFormatted;
+            if (discountEl) discountEl.textContent = `${discount}% OFF`;
+
+            const titleEl = qs('[data-variant-title]');
+            if (titleEl) {
+                titleEl.innerHTML = `${name} <i class="ph-fill ph-seal-check" aria-label="Verified product"></i>`;
+            }
+
+            const mainImg = qs('[data-product-main-image]');
+            if (mainImg && image) {
+                mainImg.src = image;
+                mainImg.alt = name;
+            }
+
+            const stockEl = qs('[data-variant-stock]');
+            if (stockEl) {
+                stockEl.innerHTML = `<i></i>${stock > 0 ? 'In stock' : 'Out of stock'}`;
+            }
+
+            qsa('[data-add-to-cart], [data-buy-now]').forEach(btn => {
+                btn.dataset.id = id;
+                btn.dataset.name = name;
+                btn.dataset.price = price;
+                btn.dataset.image = image;
+                if (stock <= 0) {
+                    btn.setAttribute('disabled', 'true');
+                } else {
+                    btn.removeAttribute('disabled');
+                }
+            });
+
+            if (window.history && window.history.replaceState && slug) {
+                window.history.replaceState({}, '', `product.php?slug=${encodeURIComponent(slug)}`);
+            }
+
+            showToast(`Selected ${weight} pack`);
+        });
+    });
+
     const openCart = () => {
         cartDrawer?.classList.add('is-open');
         backdrop?.classList.add('is-open');
@@ -992,5 +1064,174 @@
         askAi(button.dataset.aiSuggestion || button.textContent.trim());
     }));
 
+    /* --------------------------------------------------------------------------
+       Gawdee Reel Video Modal Player Initialization
+       -------------------------------------------------------------------------- */
+    const initReelPlayer = () => {
+        let backdrop = qs('.reel-modal-backdrop');
+        if (!backdrop) {
+            backdrop = document.createElement('div');
+            backdrop.className = 'reel-modal-backdrop';
+            backdrop.setAttribute('aria-hidden', 'true');
+            backdrop.innerHTML = `
+                <div class="reel-modal-container">
+                    <div class="reel-modal-controls-top">
+                        <span class="reel-modal-brand-badge"><i class="ph-fill ph-play-circle"></i> Gawdee Reel</span>
+                        <div class="reel-modal-actions-top">
+                            <button type="button" class="reel-modal-btn" data-reel-mute aria-label="Toggle mute"><i class="ph ph-speaker-high"></i></button>
+                            <button type="button" class="reel-modal-btn" data-reel-close aria-label="Close reel"><i class="ph ph-x"></i></button>
+                        </div>
+                    </div>
+                    <div class="reel-modal-video-wrap">
+                        <!-- Video element inserted dynamically -->
+                    </div>
+                    <div class="reel-modal-info-bottom">
+                        <div class="reel-modal-info-text">
+                            <h4 data-reel-title></h4>
+                            <p data-reel-subtitle></p>
+                        </div>
+                        <div class="reel-modal-product-card" data-reel-product-card style="display:none;">
+                            <img data-reel-prod-img src="" alt="">
+                            <div class="reel-modal-product-details">
+                                <strong data-reel-prod-name></strong>
+                                <span data-reel-prod-price></span>
+                            </div>
+                            <button type="button" class="reel-modal-add-cart-btn" data-reel-add-cart>
+                                <i class="ph ph-shopping-bag"></i> Add
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(backdrop);
+        }
+
+        const videoWrap = backdrop.querySelector('.reel-modal-video-wrap');
+        const titleEl = backdrop.querySelector('[data-reel-title]');
+        const subtitleEl = backdrop.querySelector('[data-reel-subtitle]');
+        const productCard = backdrop.querySelector('[data-reel-product-card]');
+        const prodImg = backdrop.querySelector('[data-reel-prod-img]');
+        const prodName = backdrop.querySelector('[data-reel-prod-name]');
+        const prodPrice = backdrop.querySelector('[data-reel-prod-price]');
+        const addCartBtn = backdrop.querySelector('[data-reel-add-cart]');
+        const closeBtn = backdrop.querySelector('[data-reel-close]');
+        const muteBtn = backdrop.querySelector('[data-reel-mute]');
+
+        let currentVideo = null;
+
+        const closeReel = () => {
+            backdrop.classList.remove('is-active');
+            backdrop.setAttribute('aria-hidden', 'true');
+            if (currentVideo) {
+                currentVideo.pause();
+                currentVideo.src = '';
+            }
+            if (videoWrap) videoWrap.innerHTML = '';
+        };
+
+        const openReel = (triggerEl) => {
+            const videoSrc = triggerEl.dataset.videoSrc || '';
+            const videoType = triggerEl.dataset.videoType || 'video';
+            const title = triggerEl.dataset.videoTitle || 'Gawdee Story';
+            const subtitle = triggerEl.dataset.videoSubtitle || '';
+            const poster = triggerEl.dataset.videoPoster || '';
+            
+            const prodId = triggerEl.dataset.productId || '';
+            const prodNameText = triggerEl.dataset.productName || '';
+            const prodPriceText = triggerEl.dataset.productPrice || '';
+            const prodImageSrc = triggerEl.dataset.productImage || '';
+
+            if (titleEl) titleEl.textContent = title;
+            if (subtitleEl) subtitleEl.textContent = subtitle;
+
+            if (prodId && productCard) {
+                productCard.style.display = 'flex';
+                if (prodImg) prodImg.src = prodImageSrc;
+                if (prodName) prodName.textContent = prodNameText;
+                if (prodPrice) prodPrice.textContent = '₹' + prodPriceText;
+                if (addCartBtn) {
+                    addCartBtn.dataset.id = prodId;
+                    addCartBtn.dataset.name = prodNameText;
+                    addCartBtn.dataset.price = prodPriceText;
+                    addCartBtn.dataset.image = prodImageSrc;
+                }
+            } else if (productCard) {
+                productCard.style.display = 'none';
+            }
+
+            if (videoWrap) {
+                videoWrap.innerHTML = '';
+                if (videoType === 'external_video' && videoSrc.includes('youtube')) {
+                    const embedUrl = videoSrc.replace('watch?v=', 'embed/');
+                    videoWrap.innerHTML = `<iframe src="${embedUrl}?autoplay=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen style="width:100%;height:100%;"></iframe>`;
+                } else {
+                    const vid = document.createElement('video');
+                    vid.src = videoSrc;
+                    if (poster) vid.poster = poster;
+                    vid.autoplay = true;
+                    vid.playsInline = true;
+                    vid.loop = true;
+                    vid.controls = true;
+                    videoWrap.appendChild(vid);
+                    currentVideo = vid;
+
+                    vid.play().catch(() => {
+                        vid.muted = true;
+                        vid.play();
+                    });
+                }
+            }
+
+            backdrop.classList.add('is-active');
+            backdrop.setAttribute('aria-hidden', 'false');
+        };
+
+        document.addEventListener('click', (e) => {
+            const trigger = e.target.closest('[data-reel-trigger]');
+            if (trigger) {
+                e.preventDefault();
+                openReel(trigger);
+            }
+        });
+
+        closeBtn?.addEventListener('click', closeReel);
+        backdrop.addEventListener('click', (e) => {
+            if (e.target === backdrop) closeReel();
+        });
+
+        muteBtn?.addEventListener('click', () => {
+            if (currentVideo) {
+                currentVideo.muted = !currentVideo.muted;
+                muteBtn.innerHTML = currentVideo.muted ? '<i class="ph ph-speaker-slash"></i>' : '<i class="ph ph-speaker-high"></i>';
+            }
+        });
+
+        addCartBtn?.addEventListener('click', (e) => {
+            e.preventDefault();
+            const id = addCartBtn.dataset.id;
+            const name = addCartBtn.dataset.name;
+            const price = parseFloat(addCartBtn.dataset.price || '0');
+            const image = addCartBtn.dataset.image;
+            if (id && name) {
+                updateCart(cart => {
+                    const existing = cart.find(item => item.id === id);
+                    if (existing) existing.quantity += 1;
+                    else cart.push({id, name, price, image, quantity: 1});
+                    return cart;
+                });
+                renderCart();
+                openDrawer();
+                showNotification(`Added ${name} to cart`);
+            }
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && backdrop.classList.contains('is-active')) {
+                closeReel();
+            }
+        });
+    };
+
+    initReelPlayer();
     renderCart();
 })();

@@ -7,7 +7,7 @@ require_once __DIR__ . '/../includes/integrations.php';
 
 $admin = gawdee_require_admin();
 $expiredPaymentOrders = gawdee_expire_stale_payment_orders();
-$allowedViews = ['dashboard', 'categories', 'products', 'orders', 'banners', 'banners_two', 'cms', 'testimonials', 'media', 'blog', 'ai', 'integrations', 'settings'];
+$allowedViews = ['dashboard', 'categories', 'products', 'orders', 'reels', 'banners', 'banners_two', 'cms', 'testimonials', 'media', 'blog', 'ai', 'integrations', 'settings'];
 $view = in_array($_GET['view'] ?? 'dashboard', $allowedViews, true) ? (string) ($_GET['view'] ?? 'dashboard') : 'dashboard';
 
 function admin_redirect(string $view, string $message, string $type = 'success'): never
@@ -41,9 +41,9 @@ function admin_upload_media(string $field, string $folder, string $existing = ''
         }
         throw new RuntimeException('The media upload did not complete (Upload error code ' . (int) $_FILES[$field]['error'] . ').');
     }
-    $maximumBytes = in_array('video', $allowedKinds, true) ? 100 * 1024 * 1024 : 10 * 1024 * 1024;
+    $maximumBytes = in_array('video', $allowedKinds, true) ? 500 * 1024 * 1024 : 10 * 1024 * 1024;
     if ((int) $_FILES[$field]['size'] > $maximumBytes) {
-        throw new RuntimeException(in_array('video', $allowedKinds, true) ? 'Videos must be smaller than 100 MB.' : 'Images must be smaller than 10 MB.');
+        throw new RuntimeException(in_array('video', $allowedKinds, true) ? 'Videos must be smaller than 500 MB.' : 'Images must be smaller than 10 MB.');
     }
     $mime = @(new finfo(FILEINFO_MIME_TYPE))->file($_FILES[$field]['tmp_name']) ?: '';
     $ext = strtolower(pathinfo($_FILES[$field]['name'] ?? '', PATHINFO_EXTENSION));
@@ -117,35 +117,92 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         gawdee_verify_csrf($_POST['csrf_token'] ?? null);
 
         if ($action === 'save_product') {
-            $id = preg_replace('/[^a-z0-9-]/', '', strtolower(trim((string) ($_POST['id'] ?? '')))) ?: gawdee_slug((string) $_POST['name']);
-            $values = [
-                'id' => $id,
-                'slug' => gawdee_slug((string) $_POST['slug']),
-                'name' => trim((string) $_POST['name']),
-                'full_name' => trim((string) $_POST['full_name']),
-                'category' => trim((string) $_POST['category']),
-                'category_key' => gawdee_slug((string) $_POST['category_key']),
-                'tag' => trim((string) ($_POST['tag'] ?? '')),
-                'price' => max(0, (int) $_POST['price']),
-                'original_price' => max(0, (int) $_POST['original_price']),
-                'weight' => trim((string) ($_POST['weight'] ?? '')),
-                'image' => trim((string) ($_POST['image'] ?? '')),
-                'description' => trim((string) ($_POST['description'] ?? '')),
-                'accent' => preg_match('/^#[0-9a-f]{6}$/i', (string) ($_POST['accent'] ?? '')) ? (string) $_POST['accent'] : '#0a7540',
-                'stock' => max(0, (int) ($_POST['stock'] ?? 0)),
-                'is_active' => isset($_POST['is_active']) ? 1 : 0,
-            ];
-            if ($values['name'] === '' || $values['full_name'] === '' || $values['slug'] === '') {
-                throw new RuntimeException('Product name, full name and slug are required.');
-            }
-            $statement = gawdee_db()->prepare(<<<'SQL'
+            $variantsData = $_POST['variants'] ?? null;
+            if (is_array($variantsData) && !empty($variantsData)) {
+                $category = trim((string) ($_POST['category'] ?? 'Pantry'));
+                $categoryKey = gawdee_slug((string) ($_POST['category_key'] ?? 'ghee'));
+                $baseName = trim((string) ($_POST['name'] ?? ''));
+                $description = trim((string) ($_POST['description'] ?? ''));
+                $tag = trim((string) ($_POST['tag'] ?? ''));
+                $accent = preg_match('/^#[0-9a-f]{6}$/i', (string) ($_POST['accent'] ?? '')) ? (string) $_POST['accent'] : '#0a7540';
+
+                foreach ($variantsData as $index => $vData) {
+                    $weight = trim((string) ($vData['weight'] ?? ''));
+                    $fullName = trim((string) ($vData['full_name'] ?? ''));
+                    if ($fullName === '' && $baseName !== '') {
+                        $fullName = 'Gawdee ' . $baseName . ($weight !== '' ? ' ' . $weight : '');
+                    }
+                    $slug = gawdee_slug($vData['slug'] ?? $fullName);
+                    $id = preg_replace('/[^a-z0-9-]/', '', strtolower(trim((string) ($vData['id'] ?? $slug))));
+                    if ($id === '') continue;
+
+                    $existingImg = trim((string) ($vData['existing_image'] ?? $_POST['existing_image'] ?? 'assets/images/logo.png'));
+                    $uploadedImg = admin_upload_media("variant_image_{$index}", 'products', $existingImg, ['image']);
+
+                    $values = [
+                        'id' => $id,
+                        'slug' => $slug,
+                        'name' => $baseName ?: $fullName,
+                        'full_name' => $fullName,
+                        'category' => $category,
+                        'category_key' => $categoryKey,
+                        'tag' => $tag,
+                        'price' => max(0, (int) ($vData['price'] ?? 0)),
+                        'original_price' => max(0, (int) ($vData['original_price'] ?? 0)),
+                        'weight' => $weight,
+                        'image' => $uploadedImg,
+                        'description' => $description,
+                        'accent' => $accent,
+                        'stock' => max(0, (int) ($vData['stock'] ?? 0)),
+                        'is_active' => isset($vData['is_active']) ? 1 : 0,
+                    ];
+                    $statement = gawdee_db()->prepare(<<<'SQL'
 INSERT INTO products (id, slug, name, full_name, category, category_key, tag, price, original_price, weight, image, description, accent, stock, is_active, updated_at)
 VALUES (:id, :slug, :name, :full_name, :category, :category_key, :tag, :price, :original_price, :weight, :image, :description, :accent, :stock, :is_active, CURRENT_TIMESTAMP)
 ON CONFLICT(id) DO UPDATE SET slug=excluded.slug, name=excluded.name, full_name=excluded.full_name, category=excluded.category, category_key=excluded.category_key, tag=excluded.tag, price=excluded.price, original_price=excluded.original_price, weight=excluded.weight, image=excluded.image, description=excluded.description, accent=excluded.accent, stock=excluded.stock, is_active=excluded.is_active, updated_at=CURRENT_TIMESTAMP
 SQL);
-            $statement->execute($values);
-            gawdee_db()->prepare("UPDATE products SET stock_status=CASE WHEN stock > 0 THEN 'in_stock' ELSE 'out_of_stock' END WHERE id=?")->execute([$id]);
-            admin_redirect('products', 'Product saved successfully.');
+                    $statement->execute($values);
+                    gawdee_db()->prepare("UPDATE products SET stock_status=CASE WHEN stock > 0 THEN 'in_stock' ELSE 'out_of_stock' END WHERE id=?")->execute([$id]);
+                }
+                admin_redirect('products', 'Product and variant sizes saved successfully.');
+            } else {
+                $id = preg_replace('/[^a-z0-9-]/', '', strtolower(trim((string) ($_POST['id'] ?? '')))) ?: gawdee_slug((string) $_POST['name']);
+                $existingImg = trim((string) ($_POST['existing_image'] ?? $_POST['image'] ?? 'assets/images/logo.png'));
+                $uploadedImg = admin_upload_media('image_file', 'products', $existingImg, ['image']);
+                $values = [
+                    'id' => $id,
+                    'slug' => gawdee_slug((string) ($_POST['slug'] ?? $_POST['full_name'])),
+                    'name' => trim((string) $_POST['name']),
+                    'full_name' => trim((string) $_POST['full_name']),
+                    'category' => trim((string) $_POST['category']),
+                    'category_key' => gawdee_slug((string) $_POST['category_key']),
+                    'tag' => trim((string) ($_POST['tag'] ?? '')),
+                    'price' => max(0, (int) $_POST['price']),
+                    'original_price' => max(0, (int) $_POST['original_price']),
+                    'weight' => trim((string) ($_POST['weight'] ?? '')),
+                    'image' => $uploadedImg,
+                    'description' => trim((string) ($_POST['description'] ?? '')),
+                    'accent' => preg_match('/^#[0-9a-f]{6}$/i', (string) ($_POST['accent'] ?? '')) ? (string) $_POST['accent'] : '#0a7540',
+                    'stock' => max(0, (int) ($_POST['stock'] ?? 0)),
+                    'is_active' => isset($_POST['is_active']) ? 1 : 0,
+                ];
+                if ($values['name'] === '' || $values['full_name'] === '') {
+                    throw new RuntimeException('Product name and full name are required.');
+                }
+                $statement = gawdee_db()->prepare(<<<'SQL'
+INSERT INTO products (id, slug, name, full_name, category, category_key, tag, price, original_price, weight, image, description, accent, stock, is_active, updated_at)
+VALUES (:id, :slug, :name, :full_name, :category, :category_key, :tag, :price, :original_price, :weight, :image, :description, :accent, :stock, :is_active, CURRENT_TIMESTAMP)
+ON CONFLICT(id) DO UPDATE SET slug=excluded.slug, name=excluded.name, full_name=excluded.full_name, category=excluded.category, category_key=excluded.category_key, tag=excluded.tag, price=excluded.price, original_price=excluded.original_price, weight=excluded.weight, image=excluded.image, description=excluded.description, accent=excluded.accent, stock=excluded.stock, is_active=excluded.is_active, updated_at=CURRENT_TIMESTAMP
+SQL);
+                $statement->execute($values);
+                gawdee_db()->prepare("UPDATE products SET stock_status=CASE WHEN stock > 0 THEN 'in_stock' ELSE 'out_of_stock' END WHERE id=?")->execute([$id]);
+                admin_redirect('products', 'Product saved successfully.');
+            }
+        }
+
+        if ($action === 'delete_product') {
+            gawdee_db()->prepare('DELETE FROM products WHERE id=?')->execute([(string) ($_POST['id'] ?? '')]);
+            admin_redirect('products', 'Product removed from catalogue.');
         }
 
         if ($action === 'toggle_product') {
@@ -316,13 +373,16 @@ SQL);
             $mediaType = in_array($_POST['media_type'] ?? '', ['image', 'video', 'external_video'], true) ? (string) $_POST['media_type'] : 'image';
             $filePath = trim((string) ($_POST['existing_file_path'] ?? ''));
             if ($mediaType !== 'external_video') {
-                $filePath = admin_upload_media('media_file', 'homepage', $filePath, [$mediaType]);
+                $uploadFolder = ($mediaType === 'video') ? 'videos' : 'homepage';
+                $filePath = admin_upload_media('media_file', $uploadFolder, $filePath, [$mediaType]);
             }
             $posterPath = admin_upload_media('poster_file', 'homepage', trim((string) ($_POST['existing_poster_path'] ?? '')), ['image']);
             $externalUrl = trim((string) ($_POST['external_url'] ?? ''));
             if ($filePath === '' && $externalUrl === '') {
                 throw new RuntimeException('Upload a media file or enter an external video URL.');
             }
+            $isFeaturedHomepage = isset($_POST['is_featured_homepage']) ? 1 : 0;
+            $redirectView = in_array((string) ($_POST['redirect_view'] ?? ''), ['reels', 'media'], true) ? (string) $_POST['redirect_view'] : 'media';
             $values = [
                 gawdee_slug((string) ($_POST['section_key'] ?? 'reels')) ?: 'reels',
                 $mediaType,
@@ -336,23 +396,26 @@ SQL);
                 trim((string) ($_POST['product_slug'] ?? '')),
                 (int) ($_POST['sort_order'] ?? 0),
                 isset($_POST['is_active']) ? 1 : 0,
+                $isFeaturedHomepage,
             ];
             if ($id > 0) {
-                gawdee_db()->prepare('UPDATE homepage_media SET section_key=?, media_type=?, title=?, subtitle=?, file_path=?, poster_path=?, external_url=?, link_url=?, alt_text=?, product_slug=?, sort_order=?, is_active=?, updated_at=CURRENT_TIMESTAMP WHERE id=?')->execute([...$values, $id]);
+                gawdee_db()->prepare('UPDATE homepage_media SET section_key=?, media_type=?, title=?, subtitle=?, file_path=?, poster_path=?, external_url=?, link_url=?, alt_text=?, product_slug=?, sort_order=?, is_active=?, is_featured_homepage=?, updated_at=CURRENT_TIMESTAMP WHERE id=?')->execute([...$values, $id]);
             } else {
-                gawdee_db()->prepare('INSERT INTO homepage_media (section_key, media_type, title, subtitle, file_path, poster_path, external_url, link_url, alt_text, product_slug, sort_order, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')->execute($values);
+                gawdee_db()->prepare('INSERT INTO homepage_media (section_key, media_type, title, subtitle, file_path, poster_path, external_url, link_url, alt_text, product_slug, sort_order, is_active, is_featured_homepage) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')->execute($values);
             }
-            admin_redirect('media', 'Homepage media card saved.');
+            admin_redirect($redirectView, $redirectView === 'reels' ? 'Video reel saved.' : 'Homepage media card saved.');
         }
 
         if ($action === 'delete_homepage_media') {
+            $redirectView = in_array((string) ($_POST['redirect_view'] ?? ''), ['reels', 'media'], true) ? (string) $_POST['redirect_view'] : 'media';
             gawdee_db()->prepare('DELETE FROM homepage_media WHERE id=?')->execute([(int) ($_POST['id'] ?? 0)]);
-            admin_redirect('media', 'Homepage media card removed.');
+            admin_redirect($redirectView, $redirectView === 'reels' ? 'Video reel removed.' : 'Homepage media card removed.');
         }
 
         if ($action === 'toggle_homepage_media') {
+            $redirectView = in_array((string) ($_POST['redirect_view'] ?? ''), ['reels', 'media'], true) ? (string) $_POST['redirect_view'] : 'media';
             gawdee_db()->prepare('UPDATE homepage_media SET is_active=CASE is_active WHEN 1 THEN 0 ELSE 1 END, updated_at=CURRENT_TIMESTAMP WHERE id=?')->execute([(int) ($_POST['id'] ?? 0)]);
-            admin_redirect('media', 'Homepage media visibility updated.');
+            admin_redirect($redirectView, $redirectView === 'reels' ? 'Video reel visibility updated.' : 'Homepage media visibility updated.');
         }
 
         if ($action === 'save_category') {
@@ -554,12 +617,13 @@ SQL);
 
 $flash = $_SESSION['admin_flash'] ?? null;
 unset($_SESSION['admin_flash']);
-$viewTitles = ['dashboard' => 'Dashboard', 'categories' => 'Shop by Category', 'products' => 'Products', 'orders' => 'Orders', 'banners' => 'Hero banners', 'banners_two' => 'Hero banners 2', 'cms' => 'Homepage CMS', 'testimonials' => 'Testimonials', 'media' => 'Homepage media', 'blog' => 'Blog', 'ai' => 'AI studio', 'integrations' => 'Integrations', 'settings' => 'Store settings'];
+$viewTitles = ['dashboard' => 'Dashboard', 'categories' => 'Shop by Category', 'products' => 'Products', 'orders' => 'Orders', 'reels' => 'Video Reels', 'banners' => 'Hero banners', 'banners_two' => 'Hero banners 2', 'cms' => 'Homepage CMS', 'testimonials' => 'Testimonials', 'media' => 'Homepage media', 'blog' => 'Blog', 'ai' => 'AI studio', 'integrations' => 'Integrations', 'settings' => 'Store settings'];
 $navItems = [
     ['dashboard', 'ph-squares-four', 'Dashboard'],
     ['categories', 'ph-squares-four', 'Categories'],
     ['products', 'ph-package', 'Products'],
     ['orders', 'ph-receipt', 'Orders'],
+    ['reels', 'ph-film-strip', 'Video Reels'],
     ['banners', 'ph-image', 'Hero banners'],
     ['banners_two', 'ph-film-strip', 'Hero banners 2'],
     ['cms', 'ph-layout', 'Homepage CMS'],
@@ -599,6 +663,9 @@ $stats = [
         href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+    <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/fill/style.css">
+    <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <link rel="stylesheet" href="assets/admin.css">
 </head>
 
@@ -710,115 +777,7 @@ $stats = [
                         </div>
 
                 <?php elseif ($view === 'products'): ?>
-                        <?php $allProducts = gawdee_products(true);
-                        $editId = (string) ($_GET['edit'] ?? '');
-                        $editProduct = null;
-                        foreach ($allProducts as $candidate) {
-                            if ($candidate['id'] === $editId)
-                                $editProduct = $candidate;
-                        } ?>
-                        <div class="admin-section-title">
-                            <div>
-                                <h2>Product catalogue</h2>
-                                <p>Prices, stock, descriptions and storefront visibility</p>
-                            </div><a class="admin-button admin-button--primary" href="?view=products&edit=new"><i
-                                    class="ph ph-plus"></i> New product</a>
-                        </div>
-                        <?php if ($editId):
-                            $p = $editProduct ?? ['id' => '', 'slug' => '', 'name' => '', 'full_name' => '', 'category' => '', 'category_key' => '', 'tag' => '', 'price' => 0, 'original_price' => 0, 'weight' => '', 'image' => '', 'description' => '', 'accent' => '#0a7540', 'stock' => 100, 'is_active' => 1]; ?>
-                                <section class="admin-card" style="margin-bottom:20px">
-                                    <div class="admin-card__header">
-                                        <div>
-                                            <h2><?= $editProduct ? 'Edit product' : 'Create product' ?></h2>
-                                            <p>Storefront data is updated immediately</p>
-                                        </div><a href="?view=products" class="admin-action-icon"><i class="ph ph-x"></i></a>
-                                    </div>
-                                    <div class="admin-card__body">
-                                        <form method="post" class="admin-form form-grid form-grid--3"><input type="hidden"
-                                                name="csrf_token" value="<?= htmlspecialchars(gawdee_csrf_token()) ?>"><input
-                                                type="hidden" name="action" value="save_product"><label><span>Product ID</span><input
-                                                    name="id" value="<?= htmlspecialchars($p['id']) ?>" <?= $editProduct ? 'readonly' : '' ?> placeholder="mixme-choco"></label><label><span>Slug</span><input name="slug"
-                                                    required value="<?= htmlspecialchars($p['slug']) ?>"></label><label><span>Short
-                                                    name</span><input name="name" required
-                                                    value="<?= htmlspecialchars($p['name']) ?>"></label><label
-                                                class="form-span-2"><span>Full name</span><input name="full_name" required
-                                                    value="<?= htmlspecialchars($p['full_name']) ?>"></label><label><span>Tag</span><input
-                                                    name="tag"
-                                                    value="<?= htmlspecialchars($p['tag']) ?>"></label><label><span>Category</span><input
-                                                    name="category"
-                                                    value="<?= htmlspecialchars($p['category']) ?>"></label><label><span>Category
-                                                    key</span><input name="category_key"
-                                                    value="<?= htmlspecialchars($p['category_key']) ?>"></label><label><span>Weight</span><input
-                                                    name="weight"
-                                                    value="<?= htmlspecialchars($p['weight']) ?>"></label><label><span>Price
-                                                    ₹</span><input type="number" min="0" name="price"
-                                                    value="<?= (int) $p['price'] ?>"></label><label><span>MRP ₹</span><input
-                                                    type="number" min="0" name="original_price"
-                                                    value="<?= (int) $p['original_price'] ?>"></label><label><span>Stock</span><input
-                                                    type="number" min="0" name="stock" value="<?= (int) $p['stock'] ?>"></label><label
-                                                class="form-span-2"><span>Image path</span><input name="image"
-                                                    value="<?= htmlspecialchars($p['image']) ?>"
-                                                    placeholder="assets/images/products/product.webp"></label><label><span>Accent
-                                                    colour</span><input type="color" name="accent"
-                                                    value="<?= htmlspecialchars($p['accent']) ?>"></label><label
-                                                class="form-span-3"><span>Description</span><textarea
-                                                    name="description"><?= htmlspecialchars($p['description']) ?></textarea></label><label
-                                                class="form-switch form-span-2"><input type="checkbox" name="is_active" <?= (int) $p['is_active'] ? 'checked' : '' ?>><span>Visible on storefront</span></label>
-                                            <div style="display:flex;justify-content:flex-end;align-items:end"><button
-                                                    class="admin-button admin-button--primary" type="submit">Save product <i
-                                                        class="ph ph-check"></i></button></div>
-                                        </form>
-                                    </div>
-                                </section>
-                        <?php endif; ?>
-                        <section class="admin-card">
-                            <div class="admin-table-wrap">
-                                <table class="admin-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Product</th>
-                                            <th>Category</th>
-                                            <th>Price</th>
-                                            <th>Stock</th>
-                                            <th>Visibility</th>
-                                            <th>Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody><?php foreach ($allProducts as $product): ?>
-                                                <tr>
-                                                    <td>
-                                                        <div class="admin-table__product"><img
-                                                                src="../<?= htmlspecialchars($product['image']) ?>" alt="">
-                                                            <div>
-                                                                <strong><?= htmlspecialchars($product['name']) ?></strong><span><?= htmlspecialchars($product['weight']) ?></span>
-                                                            </div>
-                                                        </div>
-                                                    </td>
-                                                    <td><?= htmlspecialchars($product['category']) ?></td>
-                                                    <td>₹<?= number_format((int) $product['price']) ?></td>
-                                                    <td><?= (int) $product['stock'] ?></td>
-                                                    <td><span
-                                                            class="status-pill <?= $product['is_active'] ? '' : 'status-pill--draft' ?>"><?= $product['is_active'] ? 'Active' : 'Hidden' ?></span>
-                                                    </td>
-                                                    <td>
-                                                        <div class="admin-actions"><a class="admin-action-icon"
-                                                                href="?view=products&edit=<?= rawurlencode($product['id']) ?>"><i
-                                                                    class="ph ph-pencil-simple"></i></a>
-                                                            <form method="post"><input type="hidden" name="csrf_token"
-                                                                    value="<?= htmlspecialchars(gawdee_csrf_token()) ?>"><input
-                                                                    type="hidden" name="action" value="toggle_product"><input
-                                                                    type="hidden" name="id"
-                                                                    value="<?= htmlspecialchars($product['id']) ?>"><button
-                                                                    class="admin-action-icon" type="submit"><i
-                                                                        class="ph <?= $product['is_active'] ? 'ph-eye-slash' : 'ph-eye' ?>"></i></button>
-                                                            </form>
-                                                        </div>
-                                                    </td>
-                                                </tr><?php endforeach; ?>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </section>
+                        <?php require __DIR__ . '/partials/products.php'; ?>
 
                 <?php elseif ($view === 'banners'): ?>
                         <?php $allBanners = gawdee_banners(true);
@@ -1025,6 +984,9 @@ $stats = [
 
                 <?php elseif ($view === 'testimonials'): ?>
                         <?php require __DIR__ . '/partials/testimonials.php'; ?>
+
+                <?php elseif ($view === 'reels'): ?>
+                        <?php require __DIR__ . '/partials/reels.php'; ?>
 
                 <?php elseif ($view === 'media'): ?>
                         <?php require __DIR__ . '/partials/media.php'; ?>

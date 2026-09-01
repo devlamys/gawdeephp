@@ -101,6 +101,9 @@ $isReferenceProductPage = str_contains($bodyClass, 'product-page--reference');
         href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400..700;1,9..40,400..700&family=Lora:ital,wght@0,400..700;1,400..700&family=Manrope:wght@400..800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+    <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/fill/style.css">
+    <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <link rel="stylesheet" href="assets/css/style.css">
     <script>document.documentElement.classList.add('js');</script>
 </head>
@@ -119,26 +122,18 @@ $isReferenceProductPage = str_contains($bodyClass, 'product-page--reference');
                 <img src="assets/images/logo.png" alt="Gawdee — The Soul of Wellness">
             </a>
 
-            <div class="commerce-search">
-                <i class="ph ph-magnifying-glass" aria-hidden="true"></i>
-                <label class="sr-only" for="site-search">Search products and categories</label>
-                <input id="site-search" type="search" placeholder="Search for organic products, categories…"
-                    autocomplete="off" data-site-search>
-                <!-- <button type="button" aria-label="Search">
-                <i class="ph ph-magnifying-glass"></i>
-            </button> -->
-            </div>
-
             <div class="commerce-actions">
                 <a class="commerce-action desktop-only" href="<?= $headerCustomer ? 'account' : 'login' ?>">
                     <i class="ph <?= $headerCustomer ? 'ph-user-circle-check' : 'ph-user' ?>"
                         aria-hidden="true"></i><span><?= $headerCustomer ? htmlspecialchars(explode(' ', trim((string) $headerCustomer['name']))[0]) : 'Account' ?></span>
                 </a>
-                <button class="commerce-action desktop-only" type="button" data-wishlist aria-label="Open wishlist"
-                    aria-pressed="false">
-                    <span class="commerce-action__icon"><i class="ph ph-heart"
-                            aria-hidden="true"></i><b>0</b></span><span>Wishlist</span>
-                </button>
+                <?php if ($headerCustomer): ?>
+                    <button class="commerce-action desktop-only" type="button" data-wishlist aria-label="Open wishlist"
+                        aria-pressed="false">
+                        <span class="commerce-action__icon"><i class="ph ph-heart"
+                                aria-hidden="true"></i><b>0</b></span><span>Wishlist</span>
+                    </button>
+                <?php endif; ?>
                 <button class="commerce-action" type="button" data-cart-toggle aria-label="Open shopping bag">
                     <span class="commerce-action__icon"><i class="ph ph-shopping-cart" aria-hidden="true"></i><b
                             data-cart-count>0</b></span><span class="desktop-only">Cart</span>
@@ -157,6 +152,7 @@ $isReferenceProductPage = str_contains($bodyClass, 'product-page--reference');
                     <a href="products?category=wellness" data-nav-filter="wellness">Drops</a>
                     <a href="products?category=nutrition" data-nav-filter="nutrition">Mix Me</a>
                     <a href="products?category=sugar" data-nav-filter="sugar">Sugar</a>
+                    <a href="reels">Reels <small class="nav-badge-hot">NEW</small></a>
                     <a href="index#offers">Offers <small>HOT</small></a>
                     <a href="blog">Blog</a>
                 </nav>
@@ -165,6 +161,7 @@ $isReferenceProductPage = str_contains($bodyClass, 'product-page--reference');
 
         <nav class="mobile-nav commerce-mobile-nav" data-mobile-menu aria-label="Mobile navigation">
             <a href="products">All products <i class="ph ph-arrow-right"></i></a>
+            <a href="reels">Watch Reels &amp; Videos <i class="ph ph-arrow-right"></i></a>
             <a href="index#categories">Shop by category <i class="ph ph-arrow-right"></i></a>
             <a href="index#offers">Special offers <i class="ph ph-arrow-right"></i></a>
             <a href="blog">Wellness stories <i class="ph ph-arrow-right"></i></a>

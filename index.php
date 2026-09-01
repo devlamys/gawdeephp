@@ -54,7 +54,10 @@ $reelProducts = [$products[2], $products[3], $products[0]];
 $homepageSections = gawdee_sections();
 $homepageBanners = gawdee_banners();
 $heroBannersTwo = gawdee_hero_banners_two();
-$homepageReels = gawdee_homepage_media('reels');
+$homepageReels = gawdee_homepage_media('reels', false, true);
+if (empty($homepageReels)) {
+    $homepageReels = gawdee_homepage_media('reels', false);
+}
 $publishedStories = gawdee_db()->query("SELECT title, slug, excerpt, featured_image, category FROM blog_posts WHERE status='published' AND is_featured=1 ORDER BY COALESCE(published_at, created_at) DESC LIMIT 4")->fetchAll();
 $stories = [];
 if ($publishedStories) {
@@ -193,9 +196,11 @@ foreach ($homepageSections as $sectionKey => $section) {
                                             data-name="<?= htmlspecialchars($product['full_name']) ?>"
                                             data-price="<?= (int) $product['price'] ?>"
                                             data-image="<?= htmlspecialchars($product['image']) ?>">Add to cart</button>
-                                        <button type="button" data-wishlist
-                                            aria-label="Add <?= htmlspecialchars($product['name']) ?> to wishlist"
-                                            aria-pressed="false"><i class="ph ph-heart"></i></button>
+                                        <?php if (gawdee_customer() !== null): ?>
+                                            <button type="button" data-wishlist
+                                                aria-label="Add <?= htmlspecialchars($product['name']) ?> to wishlist"
+                                                aria-pressed="false"><i class="ph ph-heart"></i></button>
+                                        <?php endif; ?>
                                     </div>
                                 </div>
                             </article>
@@ -377,8 +382,10 @@ foreach ($homepageSections as $sectionKey => $section) {
             </section>
             <?php
             break;
-
         case 'reels':
+            if (empty($homepageReels)) {
+                break;
+            }
             ?>
             <section class="content-section reels-section" id="made-with-care">
                 <div class="container">
@@ -389,30 +396,46 @@ foreach ($homepageSections as $sectionKey => $section) {
                             <h2><?= htmlspecialchars($homepageSections['reels']['title']) ?></h2>
                         </div>
                         <p><?= htmlspecialchars($homepageSections['reels']['subtitle']) ?></p>
+                        <a href="reels.php" class="reels-view-all-btn">Watch All Reels &amp; Stories <i
+                                class="ph ph-arrow-right"></i></a>
                     </div>
                     <div class="reel-grid">
                         <?php foreach ($homepageReels as $index => $media):
-                            $product = product_by_slug($products, (string) $media['product_slug']); ?>
+                            $product = product_by_slug($products, (string) $media['product_slug']);
+                            $videoSrc = $media['file_path'] ?: $media['external_url'];
+                            $posterSrc = $media['poster_path'] ?: ($product['image'] ?? 'assets/images/logo.png');
+                            ?>
                             <article class="reel-card reveal" data-delay="<?= $index * 75 ?>">
-                                <div class="reel-card__media">
-                                    <?php if ($media['media_type'] === 'video' && $media['file_path']): ?>
-                                        <video controls playsinline preload="metadata" <?= $media['poster_path'] ? 'poster="' . htmlspecialchars($media['poster_path']) . '"' : '' ?>>
+                                <div class="reel-card__media" data-reel-trigger data-video-src="<?= htmlspecialchars($videoSrc) ?>"
+                                    data-video-type="<?= htmlspecialchars($media['media_type']) ?>"
+                                    data-video-title="<?= htmlspecialchars($media['title'] ?: ($product['name'] ?? 'Gawdee Story')) ?>"
+                                    data-video-subtitle="<?= htmlspecialchars($media['subtitle']) ?>"
+                                    data-video-poster="<?= htmlspecialchars($posterSrc) ?>"
+                                    data-product-id="<?= htmlspecialchars($product['id'] ?? '') ?>"
+                                    data-product-name="<?= htmlspecialchars($product['full_name'] ?? '') ?>"
+                                    data-product-price="<?= htmlspecialchars((string) ($product['price'] ?? '')) ?>"
+                                    data-product-image="<?= htmlspecialchars($product['image'] ?? '') ?>"
+                                    data-product-url="<?= $product ? 'product.php?slug=' . rawurlencode($product['slug']) : '' ?>">
+
+                                    <?php if ($media['poster_path']): ?>
+                                        <img src="<?= htmlspecialchars($media['poster_path']) ?>"
+                                            alt="<?= htmlspecialchars($media['alt_text'] ?: $media['title']) ?>" loading="lazy">
+                                    <?php elseif ($media['media_type'] === 'video' && $media['file_path']): ?>
+                                        <video playsinline muted preload="metadata">
                                             <source src="<?= htmlspecialchars($media['file_path']) ?>">
                                         </video>
-                                    <?php elseif ($media['media_type'] === 'external_video'): ?>
-                                        <?php if ($media['poster_path']): ?><img src="<?= htmlspecialchars($media['poster_path']) ?>"
-                                                alt="<?= htmlspecialchars($media['alt_text'] ?: $media['title']) ?>"
-                                                loading="lazy"><?php else: ?><span class="reel-card__placeholder"><i
-                                                    class="ph ph-video-camera"></i></span><?php endif; ?>
-                                        <a href="<?= htmlspecialchars($media['external_url']) ?>" target="_blank" rel="noopener"
-                                            aria-label="Watch <?= htmlspecialchars($media['title']) ?>"><i class="ph ph-play"></i></a>
                                     <?php else: ?>
-                                        <img src="<?= htmlspecialchars($media['file_path']) ?>"
-                                            alt="<?= htmlspecialchars($media['alt_text'] ?: $media['title']) ?>" loading="lazy">
-                                        <?php if ($media['link_url']): ?><a href="<?= htmlspecialchars($media['link_url']) ?>"
-                                                aria-label="Open <?= htmlspecialchars($media['title']) ?>"><i
-                                                    class="ph ph-arrow-up-right"></i></a><?php endif; ?>
+                                        <img src="<?= htmlspecialchars($product['image'] ?? 'assets/images/logo.png') ?>"
+                                            alt="<?= htmlspecialchars($media['title']) ?>" loading="lazy">
                                     <?php endif; ?>
+
+                                    <div class="reel-card__overlay">
+                                        <button type="button" class="reel-card__play-btn"
+                                            aria-label="Play <?= htmlspecialchars($media['title']) ?>">
+                                            <i class="ph-fill ph-play"></i>
+                                        </button>
+                                        <span class="reel-card__badge"><i class="ph ph-video"></i> Reel</span>
+                                    </div>
                                     <span class="reel-card__index"><?= sprintf('%02d', $index + 1) ?></span>
                                 </div>
                                 <div class="reel-card__product">
@@ -431,7 +454,8 @@ foreach ($homepageSections as $sectionKey => $section) {
                                         <div>
                                             <h3><?= htmlspecialchars($media['title']) ?></h3>
                                             <p><?= htmlspecialchars($media['subtitle']) ?></p>
-                                        </div><?php endif; ?>
+                                        </div>
+                                    <?php endif; ?>
                                 </div>
                             </article>
                         <?php endforeach; ?>
@@ -489,8 +513,7 @@ foreach ($homepageSections as $sectionKey => $section) {
                                 <blockquote>“<?= htmlspecialchars($testimonial['quote']) ?>”</blockquote>
                                 <footer>
                                     <a href="product?slug=<?= urlencode($testimonial['slug']) ?>">Read Full Story</a>
-                                    <a class="testimonial-reference-arrow"
-                                        href="product?slug=<?= urlencode($testimonial['slug']) ?>"
+                                    <a class="testimonial-reference-arrow" href="product?slug=<?= urlencode($testimonial['slug']) ?>"
                                         aria-label="Read <?= htmlspecialchars($testimonial['name']) ?>'s story"><i
                                             class="ph ph-caret-right"></i></a>
                                 </footer>
@@ -606,8 +629,8 @@ foreach ($homepageSections as $sectionKey => $section) {
         <section class="offer-popup__dialog" role="dialog" aria-modal="true" aria-labelledby="independence-offer-title"
             aria-describedby="independence-offer-description">
             <div class="offer-popup__flag" aria-hidden="true"><span></span><span></span><span></span></div>
-            <button class="offer-popup__close" type="button" data-offer-popup-close
-                aria-label="Close offer popup"><i class="ph ph-x"></i></button>
+            <button class="offer-popup__close" type="button" data-offer-popup-close aria-label="Close offer popup"><i
+                    class="ph ph-x"></i></button>
             <a class="offer-popup__art" href="<?= htmlspecialchars($offerPopupLink) ?>" data-offer-popup-shop>
                 <img src="<?= htmlspecialchars($offerPopupImage) ?>"
                     alt="<?= htmlspecialchars($offerPopupTitle) ?>. Flat <?= htmlspecialchars($offerPopupPercent) ?> percent off with code <?= htmlspecialchars($offerPopupCode) ?>.">
@@ -622,8 +645,8 @@ foreach ($homepageSections as $sectionKey => $section) {
                         aria-label="Copy offer code <?= htmlspecialchars($offerPopupCode) ?>"><strong><?= htmlspecialchars($offerPopupCode) ?></strong><span><i
                                 class="ph ph-copy"></i> Copy code</span></button>
                 <?php endif; ?>
-                <a class="offer-popup__shop" href="<?= htmlspecialchars($offerPopupLink) ?>" data-offer-popup-shop><?= htmlspecialchars($offerPopupBtnText) ?> <i
-                        class="ph ph-arrow-right"></i></a>
+                <a class="offer-popup__shop" href="<?= htmlspecialchars($offerPopupLink) ?>"
+                    data-offer-popup-shop><?= htmlspecialchars($offerPopupBtnText) ?> <i class="ph ph-arrow-right"></i></a>
             </div>
         </section>
     </div>

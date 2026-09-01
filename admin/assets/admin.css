@@ -23,4 +23,305 @@
 .testimonial-admin-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.testimonial-admin-card{display:flex;min-height:235px;flex-direction:column;padding:18px;border:1px solid #e1e7e2;border-radius:18px;background:linear-gradient(145deg,#fff,#fffaf2);box-shadow:0 10px 30px rgba(23,51,36,.05)}.testimonial-admin-card.is-hidden,.media-admin-card.is-hidden{opacity:.58}.testimonial-admin-card__head{display:flex;align-items:center;gap:11px}.testimonial-admin-card__head>img,.testimonial-admin-card__head>span{width:43px;height:43px;border-radius:50%;object-fit:cover}.testimonial-admin-card__head>span{display:grid;place-items:center;color:#086b42;background:#dff1e7;font-size:.68rem;font-weight:800}.testimonial-admin-card h3{margin:0;font-size:.78rem}.testimonial-admin-card small{color:#8b8065;font-size:.57rem}.testimonial-admin-card blockquote{flex:1;margin:17px 0;color:#57655d;font-size:.68rem;line-height:1.7}.testimonial-admin-card footer{display:flex;align-items:center;justify-content:space-between;gap:12px}.testimonial-admin-card footer form,.media-admin-card form{display:inline-flex}
 .media-admin-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.media-admin-card{overflow:hidden;border:1px solid #e1e7e2;border-radius:18px;background:#fff;box-shadow:0 10px 30px rgba(23,51,36,.05)}.media-admin-card__visual{position:relative;height:190px;display:grid;place-items:center;color:#0a7045;background:linear-gradient(145deg,#edf7f0,#fff5df);font-size:2.2rem}.media-admin-card__visual img{width:100%;height:100%;object-fit:cover}.media-admin-card__visual>i{font-size:2.3rem}.media-admin-card__visual img+i{position:absolute;width:52px;height:52px;display:grid;place-items:center;border-radius:50%;color:#fff;background:rgba(5,74,45,.78)}.media-admin-card__visual>span{position:absolute;left:11px;top:11px;padding:5px 8px;border-radius:999px;color:#fff;background:rgba(5,68,42,.82);font-size:.53rem;font-weight:800;text-transform:capitalize}.media-admin-card__body{padding:15px}.media-admin-card__body small{color:#87938c;font-size:.56rem}.media-admin-card__body h3{margin:5px 0;font-size:.78rem}.media-admin-card__body p{min-height:34px;margin:0 0 12px;color:#7e8983;font-size:.62rem;line-height:1.5}.blog-image-preview img{width:100%;height:180px;object-fit:cover;border-radius:14px}.admin-table__placeholder{width:43px;height:43px;display:grid;place-items:center;border-radius:11px;color:#087345;background:#e8f4ed}
 @media(max-width:1100px){.testimonial-admin-grid,.media-admin-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:800px){.cms-editor__body{grid-template-columns:1fr}.cms-editor__body>*{grid-column:auto}.testimonial-admin-grid,.media-admin-grid{grid-template-columns:1fr}.sticky-save-bar{align-items:stretch;flex-direction:column}.sticky-save-bar .admin-button{justify-content:center}.cms-editor>summary{grid-template-columns:42px 1fr 22px}.cms-editor>summary .status-pill{display:none}}
+@media(max-width:800px){.cms-editor__body{grid-template-columns:1fr}.cms-editor__body>*{grid-column:auto}.testimonial-admin-grid,.media-admin-card__visual{grid-template-columns:1fr}.sticky-save-bar{align-items:stretch;flex-direction:column}.sticky-save-bar .admin-button{justify-content:center}.cms-editor>summary{grid-template-columns:42px 1fr 22px}.cms-editor>summary .status-pill{display:none}}
+
+/* --------------------------------------------------------------------------
+   Admin Video Reels Manager & Player Modal Styles
+   -------------------------------------------------------------------------- */
+.reel-card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+    gap: 20px;
+}
+
+.reel-card-admin {
+    overflow: hidden;
+    border: 1px solid var(--line, #e1e7e2);
+    border-radius: 18px;
+    background: #ffffff;
+    box-shadow: 0 10px 30px rgba(23, 51, 36, 0.05);
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.reel-card-admin:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 36px rgba(7, 60, 43, 0.12);
+}
+
+.reel-card-admin__visual {
+    position: relative;
+    height: 220px;
+    background: #041f17;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.reel-card-admin__visual img,
+.reel-card-admin__visual video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+}
+
+.reel-card-admin:hover .reel-card-admin__visual img,
+.reel-card-admin:hover .reel-card-admin__visual video {
+    transform: scale(1.05);
+}
+
+.reel-card-admin__play-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.2) 0%, rgba(3, 31, 22, 0.75) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.3s ease;
+}
+
+.reel-card-admin__play-icon {
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    background: var(--forest, #073c2b);
+    color: #ffba00;
+    display: grid;
+    place-items: center;
+    font-size: 1.8rem;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    border: 2px solid rgba(255, 255, 255, 0.25);
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.2s ease;
+}
+
+.reel-card-admin__visual:hover .reel-card-admin__play-icon {
+    transform: scale(1.15);
+    background: #ffffff;
+    color: var(--forest, #073c2b);
+}
+
+.reel-card-admin__badges {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    right: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.reel-badge {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.62rem;
+    font-weight: 800;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    backdrop-filter: blur(8px);
+}
+
+.reel-badge--type {
+    background: rgba(7, 60, 43, 0.85);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.reel-badge--featured {
+    background: rgba(233, 119, 49, 0.9);
+    color: #ffffff;
+}
+
+.reel-card-admin__body {
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.reel-card-admin__meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+    font-size: 0.64rem;
+    color: #7b8881;
+}
+
+.reel-card-admin__title {
+    margin: 0 0 4px 0;
+    font-family: "Manrope", sans-serif;
+    font-size: 0.94rem;
+    color: #14231c;
+}
+
+.reel-card-admin__subtitle {
+    margin: 0 0 14px 0;
+    color: #66746c;
+    font-size: 0.76rem;
+    line-height: 1.45;
+}
+
+.reel-card-admin__product-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 10px;
+    background: #e8f4ed;
+    color: #087345;
+    font-size: 0.7rem;
+    font-weight: 700;
+    margin-bottom: 16px;
+}
+
+.reel-card-admin__actions {
+    margin-top: auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding-top: 14px;
+    border-top: 1px solid #edf1ee;
+}
+
+.admin-play-btn {
+    padding: 7px 14px;
+    border-radius: 9px;
+    background: #087345;
+    color: #ffffff;
+    font-size: 0.72rem;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.admin-play-btn:hover {
+    background: #055432;
+    transform: scale(1.03);
+}
+
+/* Admin Reel Modal Video Player */
+.admin-reel-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(3, 20, 14, 0.88);
+    backdrop-filter: blur(10px);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.admin-reel-modal-backdrop.is-open {
+    opacity: 1;
+    visibility: visible;
+}
+
+.admin-reel-modal-box {
+    position: relative;
+    width: 100%;
+    max-width: 440px;
+    height: 82vh;
+    max-height: 750px;
+    background: #000000;
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
+    display: flex;
+    flex-direction: column;
+    transform: scale(0.94);
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.admin-reel-modal-backdrop.is-open .admin-reel-modal-box {
+    transform: scale(1);
+}
+
+.admin-reel-modal-header {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    right: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 10;
+}
+
+.admin-reel-modal-badge {
+    background: rgba(7, 60, 43, 0.8);
+    backdrop-filter: blur(6px);
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 800;
+    padding: 6px 12px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.admin-reel-modal-close {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(6px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #fff;
+    font-size: 1.2rem;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+}
+
+.admin-reel-modal-player-area {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.admin-reel-modal-player-area video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.admin-reel-modal-info {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 20px;
+    background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.9) 100%);
+    color: #fff;
+    z-index: 10;
+}
+
+.admin-reel-modal-info h3 {
+    margin: 0 0 4px 0;
+    font-size: 1.1rem;
+}
+
+.admin-reel-modal-info p {
+    margin: 0;
+    font-size: 0.82rem;
+    color: rgba(255, 255, 255, 0.8);
+}
+

@@ -384,6 +384,7 @@ CREATE TABLE IF NOT EXISTS homepage_media (
     product_slug VARCHAR(191) NOT NULL DEFAULT '',
     sort_order INT NOT NULL DEFAULT 0,
     is_active TINYINT(1) NOT NULL DEFAULT 1,
+    is_featured_homepage TINYINT(1) NOT NULL DEFAULT 1,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -630,6 +631,7 @@ CREATE TABLE IF NOT EXISTS homepage_media (
     product_slug TEXT NOT NULL DEFAULT '',
     sort_order INTEGER NOT NULL DEFAULT 0,
     is_active INTEGER NOT NULL DEFAULT 1,
+    is_featured_homepage INTEGER NOT NULL DEFAULT 1,
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
@@ -807,6 +809,7 @@ SQL);
     ] as $column => $definition) {
         gawdee_ensure_column($db, 'hero_banners_two', $column, $definition);
     }
+    gawdee_ensure_column($db, 'homepage_media', 'is_featured_homepage', 'INTEGER NOT NULL DEFAULT 1');
     gawdee_ensure_column($db, 'orders', 'user_id', 'INTEGER');
     foreach ([
         'discount' => 'INTEGER NOT NULL DEFAULT 0',
@@ -934,10 +937,20 @@ function gawdee_seed_defaults(PDO $db): void
     }
 
     if ((int) $db->query('SELECT COUNT(*) FROM homepage_media')->fetchColumn() === 0) {
-        $insertMedia = $db->prepare('INSERT INTO homepage_media (section_key, media_type, title, subtitle, file_path, link_url, alt_text, product_slug, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)');
+        $insertMedia = $db->prepare('INSERT INTO homepage_media (section_key, media_type, title, subtitle, file_path, link_url, alt_text, product_slug, sort_order, is_active, is_featured_homepage) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 1)');
         $insertMedia->execute(['reels', 'image', 'Pure A2 Ghee', 'Bilona-crafted everyday goodness', 'assets/images/products/ghee-500.webp', 'product.php?slug=gawdee-gir-cow-a2-ghee-500-ml', 'Gawdee A2 Gir Cow Ghee', 'gawdee-gir-cow-a2-ghee-500-ml', 10]);
         $insertMedia->execute(['reels', 'image', 'Raw Forest Honey', 'Naturally rich and thoughtfully sourced', 'assets/images/products/forest-honey.webp', 'product.php?slug=gawdee-raw-wild-forest-honey-650-g', 'Gawdee Raw Forest Honey', 'gawdee-raw-wild-forest-honey-650-g', 20]);
         $insertMedia->execute(['reels', 'image', 'MixMe Choco', 'Family nutrition made delicious', 'assets/images/products/mixme-choco.webp', 'product.php?slug=gawdee-mixme-choco-500-g', 'Gawdee MixMe Choco', 'gawdee-mixme-choco-500-g', 30]);
+    }
+
+    $videoCount = (int) $db->query("SELECT COUNT(*) FROM homepage_media WHERE media_type = 'video'")->fetchColumn();
+    if ($videoCount === 0) {
+        $insertVideo = $db->prepare('INSERT INTO homepage_media (section_key, media_type, title, subtitle, file_path, link_url, alt_text, product_slug, sort_order, is_active, is_featured_homepage) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 1)');
+        $insertVideo->execute(['reels', 'video', 'The Journey of Purity', 'Bilona-crafted A2 Gir Cow Ghee', 'assets/uploads/videos/VID_20260517_014538_687 (2).mp4', 'product.php?slug=gawdee-gir-cow-a2-ghee-500-ml', 'A2 Gir Cow Ghee Journey', 'gawdee-gir-cow-a2-ghee-500-ml', 10]);
+        $insertVideo->execute(['reels', 'video', 'Traditional Method Explained', 'Ancient wisdom for modern wellness', 'assets/uploads/videos/WhatsApp Video 2026-05-13 at 17.38.57.mp4', 'product.php?slug=gawdee-gir-cow-a2-ghee-500-ml', 'Traditional Method Explained', 'gawdee-gir-cow-a2-ghee-500-ml', 20]);
+        $insertVideo->execute(['reels', 'video', 'From Our Farms to Your Home', 'Fresh, organic daily nutrition', 'assets/uploads/videos/Ashu- mixme - Gawdee.mp4', 'product.php?slug=gawdee-mixme-choco-500-g', 'MixMe Choco Daily Nutrition', 'gawdee-mixme-choco-500-g', 30]);
+        $insertVideo->execute(['reels', 'video', 'Enhance Every Meal', 'Pure flavor and natural aroma', 'assets/uploads/videos/sakshi gupta Ghee - Gawdee - Enhance.mp4', 'product.php?slug=gawdee-gir-cow-a2-ghee-500-ml', 'Enhance Every Meal with Pure Ghee', 'gawdee-gir-cow-a2-ghee-500-ml', 40]);
+        $insertVideo->execute(['reels', 'video', 'Raw Forest Honey Harvest', '100% natural, untouched wild honey', 'assets/uploads/videos/IMG_7391.MOV', 'product.php?slug=gawdee-raw-wild-forest-honey-650-g', 'Raw Wild Forest Honey', 'gawdee-raw-wild-forest-honey-650-g', 50]);
     }
 }
 
@@ -965,6 +978,7 @@ function gawdee_products(bool $includeInactive = false): array
         $row['rating'] = (float) ($row['rating'] ?? 0);
         $row['review_count'] = (int) ($row['review_count'] ?? 0);
         $row['is_active'] = (int) $row['is_active'];
+        $row['family_key'] = product_family_key((string) ($row['full_name'] ?? $row['name'] ?? ''));
         return $row;
     }, $rows);
 }
@@ -1147,7 +1161,7 @@ function gawdee_category_by_id(int $id): ?array
     return $row;
 }
 
-function gawdee_homepage_media(?string $sectionKey = null, bool $includeInactive = false): array
+function gawdee_homepage_media(?string $sectionKey = null, bool $includeInactive = false, bool $onlyFeatured = false): array
 {
     $conditions = [];
     $values = [];
@@ -1158,6 +1172,9 @@ function gawdee_homepage_media(?string $sectionKey = null, bool $includeInactive
     if (!$includeInactive) {
         $conditions[] = 'is_active = 1';
     }
+    if ($onlyFeatured) {
+        $conditions[] = 'is_featured_homepage = 1';
+    }
     $sql = 'SELECT * FROM homepage_media' . ($conditions ? ' WHERE ' . implode(' AND ', $conditions) : '') . ' ORDER BY section_key, sort_order, id';
     $statement = gawdee_db()->prepare($sql);
     $statement->execute($values);
@@ -1165,8 +1182,28 @@ function gawdee_homepage_media(?string $sectionKey = null, bool $includeInactive
         $row['id'] = (int) $row['id'];
         $row['sort_order'] = (int) $row['sort_order'];
         $row['is_active'] = (int) $row['is_active'];
+        $row['is_featured_homepage'] = (int) ($row['is_featured_homepage'] ?? 1);
         return $row;
     }, $statement->fetchAll());
+}
+
+function gawdee_product_videos(string $productSlug = '', int $limit = 4): array
+{
+    $allMedia = gawdee_homepage_media(null, false);
+    $videoMedia = array_values(array_filter($allMedia, static fn(array $m): bool => in_array($m['media_type'], ['video', 'external_video'], true) && (!empty($m['file_path']) || !empty($m['external_url']))));
+    if (empty($videoMedia)) {
+        return [];
+    }
+    $matched = [];
+    $others = [];
+    foreach ($videoMedia as $item) {
+        if ($productSlug !== '' && !empty($item['product_slug']) && $item['product_slug'] === $productSlug) {
+            $matched[] = $item;
+        } else {
+            $others[] = $item;
+        }
+    }
+    return array_slice(array_merge($matched, $others), 0, $limit);
 }
 
 function gawdee_has_admin(): bool
