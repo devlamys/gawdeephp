@@ -67,50 +67,47 @@ $heroScrubVideo = gawdee_setting('hero_scrub_video', '');
 $heroScrubPoster = gawdee_setting('hero_scrub_poster', '');
 $heroScrubTitle = gawdee_setting('hero_scrub_title', '');
 $heroScrubSubtitle = gawdee_setting('hero_scrub_subtitle', '');
+$heroScrubBgImage = gawdee_setting('hero_scrub_bg_image', '');
+
+$heroBgSrc = '';
+if (!empty($heroScrubBgImage)) {
+    $heroBgSrc = (str_starts_with($heroScrubBgImage, 'http://') || str_starts_with($heroScrubBgImage, 'https://')) 
+        ? $heroScrubBgImage 
+        : (str_starts_with($heroScrubBgImage, 'assets/') ? $heroScrubBgImage : 'assets/' . ltrim($heroScrubBgImage, '/'));
+}
 ?>
 
 <?php
 $firstSlide = $heroBannersTwo[0] ?? null;
-$initialEyebrow = !empty($firstSlide['eyebrow']) ? $firstSlide['eyebrow'] : '';
-$initialTitle = !empty($firstSlide['headline']) ? $firstSlide['headline'] : (!empty($firstSlide['title']) ? $firstSlide['title'] : ($heroScrubTitle ?: ''));
-$initialSubtitle = !empty($firstSlide['subtitle']) ? $firstSlide['subtitle'] : ($heroScrubSubtitle ?: '');
+$initialEyebrow = !empty($firstSlide['eyebrow']) ? $firstSlide['eyebrow'] : gawdee_setting('hero_scrub_eyebrow', 'EVERYDAY FAVOURITES');
+$initialTitle = !empty($firstSlide['headline']) ? $firstSlide['headline'] : (!empty($firstSlide['title']) ? $firstSlide['title'] : ($heroScrubTitle ?: 'Pure, Organic & Traditional Food Essentials'));
+$initialSubtitle = !empty($firstSlide['subtitle']) ? $firstSlide['subtitle'] : ($heroScrubSubtitle ?: 'Handpicked unadulterated products thoughtfully crafted for modern living.');
+$hasHeroVideos = (!empty($heroScrubVideo) || !empty($heroBannersTwo));
 ?>
 
 <?php if ($heroScrubEnabled): ?>
-    <section class="hero-scrub-section" data-hero-scrub-section
+    <section class="hero-scrub-section <?= !$hasHeroVideos ? 'hero-scrub-section--image-mode' : '' ?>" data-hero-scrub-section
         data-hero-slides="<?= htmlspecialchars(json_encode($heroBannersTwo, JSON_UNESCAPED_SLASHES), ENT_QUOTES) ?>"
         aria-label="Cinematic Gawdee experience">
-        <div class="hero-scrub-sticky">
-            <video class="hero-scrub-video is-active" data-hero-scrub-video muted playsinline autoplay loop preload="auto"
-                <?= $heroScrubPoster ? 'poster="' . htmlspecialchars($heroScrubPoster) . '"' : '' ?>>
-                <?php if ($heroScrubVideo): ?>
-                    <source src="<?= htmlspecialchars($heroScrubVideo) ?>" type="video/mp4">
+        <?php if ($hasHeroVideos): ?>
+            <div class="hero-scrub-sticky">
+                <video class="hero-scrub-video is-active" data-hero-scrub-video muted playsinline autoplay loop preload="auto"
+                    <?= $heroScrubPoster ? 'poster="' . htmlspecialchars($heroScrubPoster) . '"' : '' ?>>
+                    <?php if ($heroScrubVideo): ?>
+                        <source src="<?= htmlspecialchars($heroScrubVideo) ?>" type="video/mp4">
+                    <?php endif; ?>
+                </video>
+                <video class="hero-scrub-video hero-scrub-video--next" data-hero-scrub-video-next muted playsinline preload="auto"></video>
+                <?php if ($heroScrubPoster): ?>
+                    <img class="hero-scrub-poster-overlay" data-hero-scrub-poster src="<?= htmlspecialchars($heroScrubPoster) ?>"
+                        alt="Gawdee Pure Food">
                 <?php endif; ?>
-            </video>
-            <video class="hero-scrub-video hero-scrub-video--next" data-hero-scrub-video-next muted playsinline
-                preload="auto"></video>
-            <?php if ($heroScrubPoster): ?>
-                <img class="hero-scrub-poster-overlay" data-hero-scrub-poster src="<?= htmlspecialchars($heroScrubPoster) ?>"
-                    alt="Gawdee Pure Food">
-            <?php endif; ?>
-            <div class="hero-scrub-overlay" aria-hidden="true"></div>
-            <div class="container hero-scrub-content">
-                <span class="hero-scrub-eyebrow is-active" data-scrub-step="1"><i class="ph ph-sparkle"></i>
-                    <?= htmlspecialchars($initialEyebrow) ?></span>
-                <h1 class="hero-scrub-title is-active" data-scrub-title data-scrub-step="2">
-                    <?= htmlspecialchars($initialTitle) ?>
-                </h1>
-                <p class="hero-scrub-subtitle is-active" data-scrub-step="3"><?= htmlspecialchars($initialSubtitle) ?></p>
-                <div class="hero-scrub-actions is-active" data-scrub-step="4">
-                    <a href="#shop" class="button button--primary">Shop Collection <i class="ph ph-arrow-right"></i></a>
-                    <a href="#why-gawdee" class="button button--cream">Meet Gawdee</a>
-                </div>
-                <div class="hero-scrub-indicator" data-scrub-indicator>
-                    <span>Scroll to explore</span>
-                    <i class="ph ph-caret-down"></i>
-                </div>
             </div>
-        </div>
+        <?php elseif ($heroBgSrc): ?>
+            <div class="hero-image-banner-wrap">
+                <img src="<?= htmlspecialchars($heroBgSrc) ?>" alt="Gawdee Main Banner" class="hero-banner-responsive-img">
+            </div>
+        <?php endif; ?>
     </section>
 <?php endif; ?>
 
@@ -143,7 +140,7 @@ foreach ($homepageSections as $sectionKey => $section) {
                         <div>
                             <span class="eyebrow"><i class="ph ph-fire"></i>
                                 <?= htmlspecialchars($homepageSections['shop']['eyebrow'] ?: 'Bestsellers') ?></span>
-                            <h2><?= htmlspecialchars($homepageSections['shop']['title']) ?></h2>
+                            <h1><?= htmlspecialchars($homepageSections['shop']['title']) ?></h1>
                             <p><?= htmlspecialchars($homepageSections['shop']['subtitle']) ?></p>
                         </div>
                         <div class="commerce-section__actions">
@@ -159,8 +156,7 @@ foreach ($homepageSections as $sectionKey => $section) {
                         </div>
                     </div>
 
-                    <div class="compact-product-grid home-product-rail" id="home-product-rail" data-product-grid data-sliding-rail
-                        data-auto-slide="3600" tabindex="0" aria-label="Bestselling products">
+                    <div class="compact-product-grid home-product-rail" id="home-product-rail" data-product-grid aria-label="Bestselling products">
                         <?php foreach ($featuredProducts as $index => $product): ?>
                             <article class="compact-product-card reveal" data-delay="<?= $index * 45 ?>"
                                 data-category="<?= htmlspecialchars($product['category_key']) ?>"
@@ -271,25 +267,25 @@ foreach ($homepageSections as $sectionKey => $section) {
                     <div class="story-pillar-grid">
                         <article class="story-pillar-card">
                             <span class="story-pillar-num">01</span>
-                            <h3>Nutrient-Rich Ingredients</h3>
+                            <h4 class="">Nutrient-Rich Ingredients</h4>
                             <p>Carefully selected natural ingredients packed with essential nutrients to support your body and make
                                 everyday meals more nourishing.</p>
                         </article>
                         <article class="story-pillar-card">
                             <span class="story-pillar-num">02</span>
-                            <h3>Clean & Wholesome</h3>
+                            <h4 class="gawdee-dark">Clean & Wholesome</h4>
                             <p>Made with thoughtfully chosen ingredients and no unnecessary artificial additives, so you know
                                 exactly what goes into your food.</p>
                         </article>
                         <article class="story-pillar-card">
                             <span class="story-pillar-num">03</span>
-                            <h3>Nutrition for Every Day</h3>
+                            <h4 class="">Nutrition for Every Day</h4>
                             <p>Created to fit effortlessly into your daily routine, helping you add wholesome nourishment to your
                                 breakfast, snacks, and everyday meals.</p>
                         </article>
                         <article class="story-pillar-card">
                             <span class="story-pillar-num">04</span>
-                            <h3>Quality You Can Trust</h3>
+                            <h4 class="">Quality You Can Trust</h4>
                             <p>Every Gawdee product is carefully prepared, quality checked, and packed with care to preserve its
                                 freshness, goodness, and nutritional value.</p>
                         </article>
@@ -447,18 +443,16 @@ foreach ($homepageSections as $sectionKey => $section) {
                                 </div>
                                 <div class="reel-card__product">
                                     <?php if ($product): ?>
-                                        <img src="<?= htmlspecialchars($product['image']) ?>" alt="">
-                                        <div>
-                                            <h3><?= htmlspecialchars($media['title'] ?: $product['name']) ?></h3>
-                                            <p><?= money($product['price']) ?> <span><?= htmlspecialchars($product['weight']) ?></span></p>
-                                        </div>
-                                        <button type="button" data-add-to-cart data-id="<?= htmlspecialchars($product['id']) ?>"
-                                            data-name="<?= htmlspecialchars($product['full_name']) ?>" data-price="<?= $product['price'] ?>"
-                                            data-image="<?= htmlspecialchars($product['image']) ?>"
-                                            aria-label="Add <?= htmlspecialchars($product['name']) ?> to cart"><i
-                                                class="ph ph-shopping-bag"></i></button>
+                                        <a href="product?slug=<?= rawurlencode($product['slug']) ?>" class="reel-card__product-link" aria-label="View details for <?= htmlspecialchars($product['name']) ?>">
+                                            <img src="<?= htmlspecialchars($product['image']) ?>" alt="<?= htmlspecialchars($product['name']) ?>">
+                                            <div class="reel-card__product-info">
+                                                <h3><?= htmlspecialchars($media['title'] ?: $product['name']) ?></h3>
+                                                <p><?= money($product['price']) ?> <span><?= htmlspecialchars($product['weight']) ?></span></p>
+                                            </div>
+                                            <span class="reel-card__product-arrow" aria-hidden="true"><i class="ph ph-arrow-right"></i></span>
+                                        </a>
                                     <?php else: ?>
-                                        <div>
+                                        <div class="reel-card__product-info">
                                             <h3><?= htmlspecialchars($media['title']) ?></h3>
                                             <p><?= htmlspecialchars($media['subtitle']) ?></p>
                                         </div>
@@ -556,16 +550,19 @@ foreach ($homepageSections as $sectionKey => $section) {
                         </div>
                     </div>
 
-                    <div class="journal-rail" id="journal-rail" data-sliding-rail tabindex="0" aria-label="Wellness journal stories">
+                    <div class="journal-rail" id="journal-rail" data-sliding-rail tabindex="0"
+                        aria-label="Wellness journal stories">
                         <?php foreach ($publishedPosts as $index => $post): ?>
                             <article class="journal-card reveal" data-delay="<?= ($index % 5) * 45 ?>">
                                 <a class="journal-card__visual" href="blog-post?slug=<?= rawurlencode($post['slug']) ?>">
                                     <?php if (!empty($post['featured_image'])): ?>
-                                        <img src="<?= htmlspecialchars($post['featured_image']) ?>" alt="<?= htmlspecialchars($post['title']) ?>" loading="lazy">
+                                        <img src="<?= htmlspecialchars($post['featured_image']) ?>"
+                                            alt="<?= htmlspecialchars($post['title']) ?>" loading="lazy">
                                     <?php else: ?>
                                         <div class="journal-card__placeholder"><i class="ph ph-leaf"></i></div>
                                     <?php endif; ?>
-                                    <span class="journal-card__badge"><?= htmlspecialchars(($post['category'] ?: 'Wellness') . ' · ' . (($post['source'] ?? '') === 'ai' ? 'AI-assisted' : 'Editorial')) ?></span>
+                                    <span
+                                        class="journal-card__badge"><?= htmlspecialchars(($post['category'] ?: 'Wellness') . ' · ' . (($post['source'] ?? '') === 'ai' ? 'AI-assisted' : 'Editorial')) ?></span>
                                 </a>
                                 <div class="journal-card__body">
                                     <div class="journal-card__meta">
@@ -574,8 +571,11 @@ foreach ($homepageSections as $sectionKey => $section) {
                                         <span>·</span>
                                         <span><?= htmlspecialchars($post['author'] ?: 'Gawdee Editorial') ?></span>
                                     </div>
-                                    <h2><a href="blog-post?slug=<?= rawurlencode($post['slug']) ?>"><?= htmlspecialchars($post['title']) ?></a></h2>
-                                    <a class="journal-card__link" href="blog-post?slug=<?= rawurlencode($post['slug']) ?>">Read Story <i class="ph ph-arrow-right"></i></a>
+                                    <h2><a
+                                            href="blog-post?slug=<?= rawurlencode($post['slug']) ?>"><?= htmlspecialchars($post['title']) ?></a>
+                                    </h2>
+                                    <a class="journal-card__link" href="blog-post?slug=<?= rawurlencode($post['slug']) ?>">Read Story <i
+                                            class="ph ph-arrow-right"></i></a>
                                 </div>
                             </article>
                         <?php endforeach; ?>

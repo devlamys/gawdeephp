@@ -27,7 +27,7 @@ $isReferenceProductPage = str_contains($bodyClass, 'product-page--reference');
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#063E2B">
+    <meta name="theme-color" content="#5C8733">
 
     <!-- SEO Primary Meta Tags -->
     <title><?= htmlspecialchars($pageTitle) ?></title>
@@ -86,8 +86,8 @@ $isReferenceProductPage = str_contains($bodyClass, 'product-page--reference');
     </script>
     <?php if (isset($jsonLdExtra) && is_array($jsonLdExtra)): ?>
         <script type="application/ld+json">
-                            <?= json_encode($jsonLdExtra, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) ?>
-                            </script>
+                                <?= json_encode($jsonLdExtra, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) ?>
+                                </script>
     <?php endif; ?>
     <!-- Favicon & App Icons -->
     <link rel="icon" type="image/x-icon" href="favicon.ico">
@@ -117,8 +117,10 @@ $isReferenceProductPage = str_contains($bodyClass, 'product-page--reference');
             <div class="container header-announcement__content">
                 <div class="announcement-text">
                     <i class="ph-fill ph-sparkle"></i>
-                    <span><strong>100% Certified Organic &amp; Pure</strong> · Free Shipping over
-                        <?= money((int) gawdee_setting('free_shipping_threshold', '999')) ?></span>
+                    <span>
+                        <strong>100% Certified Organic &amp; Pure</strong> · Free Shipping over
+                        <?= money((int) gawdee_setting('free_shipping_threshold', '999')) ?>
+                    </span>
                 </div>
                 <?php if (gawdee_setting('offer_popup_enabled', '1') === '1'): ?>
                     <div class="announcement-cta">
@@ -181,20 +183,36 @@ $isReferenceProductPage = str_contains($bodyClass, 'product-page--reference');
 
         <!-- Mobile Navigation Menu -->
         <nav class="mobile-nav commerce-mobile-nav" data-mobile-menu aria-label="Mobile navigation">
-            <form class="mobile-search-form" action="products" method="get">
-                <input type="search" name="search" placeholder="Search Gawdee products..." aria-label="Search products">
-                <button type="submit"><i class="ph ph-magnifying-glass"></i></button>
-            </form>
-            <a href="products">All products <i class="ph ph-arrow-right"></i></a>
-            <a href="products?category=ghee">A2 Gir Cow Ghee <i class="ph ph-arrow-right"></i></a>
-            <a href="products?category=honey">Raw Forest Honey <i class="ph ph-arrow-right"></i></a>
-            <a href="products?category=nutrition">Mix Me Nutrition <i class="ph ph-arrow-right"></i></a>
-            <a href="products?category=sugar">Natural Sugar <i class="ph ph-arrow-right"></i></a>
-            <a href="reels">Watch Reels &amp; Videos <i class="ph ph-arrow-right"></i></a>
-            <a href="index#offers">Special offers <i class="ph ph-arrow-right"></i></a>
-            <a href="blog">Wellness stories <i class="ph ph-arrow-right"></i></a>
-            <a href="<?= $headerCustomer ? 'account' : 'login' ?>"><?= $headerCustomer ? 'My account & orders' : 'Sign in / register' ?>
-                <i class="ph ph-arrow-right"></i></a>
+            <div class="mobile-nav-top-bar">
+                <span class="mobile-nav-title"><i class="ph ph-compass"></i> Explore Gawdee</span>
+                <button class="mobile-nav-close-btn" type="button" data-menu-toggle aria-label="Close menu">
+                    <i class="ph ph-x" aria-hidden="true"></i> <span>Close</span>
+                </button>
+            </div>
+            <a href="products"><i class="ph ph-squares-four"></i> <span>All Products</span> <i
+                    class="ph ph-arrow-right"></i></a>
+            <a href="products?category=ghee"><i class="ph ph-drop"></i> <span>A2 Gir Cow Ghee</span> <i
+                    class="ph ph-arrow-right"></i></a>
+            <a href="products?category=honey"><i class="ph ph-flower"></i> <span>Raw Forest Honey</span> <i
+                    class="ph ph-arrow-right"></i></a>
+            <a href="products?category=nutrition"><i class="ph ph-bowl-food"></i> <span>Mix Me Nutrition</span> <i
+                    class="ph ph-arrow-right"></i></a>
+            <a href="products?category=sugar"><i class="ph ph-sparkle"></i> <span>Natural Sugar</span> <i
+                    class="ph ph-arrow-right"></i></a>
+            <a href="products?category=wellness"><i class="ph ph-first-aid"></i> <span>Wellness Drops</span> <i
+                    class="ph ph-arrow-right"></i></a>
+            <a href="reels"><i class="ph ph-film-strip"></i> <span>Watch Reels &amp; Videos</span> <i
+                    class="ph ph-arrow-right"></i></a>
+            <?php if (gawdee_setting('offer_popup_enabled', '1') === '1'): ?>
+                <a href="index#offers"><i class="ph ph-tag"></i> <span>Special Offers</span> <i
+                        class="ph ph-arrow-right"></i></a>
+            <?php endif; ?>
+            <a href="blog"><i class="ph ph-article"></i> <span>Wellness Stories &amp; Blog</span> <i
+                    class="ph ph-arrow-right"></i></a>
+            <a href="<?= $headerCustomer ? 'account' : 'login' ?>"><i
+                    class="ph <?= $headerCustomer ? 'ph-user-circle-check' : 'ph-user' ?>"></i>
+                <span><?= $headerCustomer ? 'My Account &amp; Orders' : 'Sign In / Register' ?></span> <i
+                    class="ph ph-arrow-right"></i></a>
         </nav>
     </header>
 
@@ -217,7 +235,7 @@ $isReferenceProductPage = str_contains($bodyClass, 'product-page--reference');
         <div class="cart-summary" data-cart-summary hidden>
             <div class="cart-summary__line"><span>Subtotal</span><strong data-cart-total>₹0</strong></div>
             <p>Taxes and delivery are calculated at checkout.</p>
-            <a class="button button--primary button--full" href="checkout.php">Secure checkout <i
+            <a class="button button--primary button--full" href="checkout">Secure checkout <i
                     class="ph ph-arrow-right"></i></a>
         </div>
     </aside>

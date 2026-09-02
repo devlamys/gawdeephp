@@ -15,7 +15,7 @@
 
     const setHeaderState = () => {
         if (!header) return;
-        const isScrolled = window.scrollY > 20;
+        const isScrolled = window.scrollY > 40;
         header.classList.toggle('is-scrolled', isScrolled);
         header.classList.toggle('is-top', !isScrolled);
     };
@@ -464,13 +464,7 @@
 
     const saveCart = () => localStorage.setItem(storageKey, JSON.stringify(cart));
 
-    const showToast = message => {
-        if (!toast) return;
-        toast.textContent = message;
-        toast.classList.add('is-visible');
-        window.clearTimeout(toastTimer);
-        toastTimer = window.setTimeout(() => toast.classList.remove('is-visible'), 2200);
-    };
+    const showToast = () => {};
 
     qsa('[data-newsletter-form]').forEach(form => {
         form.addEventListener('submit', async event => {
@@ -1151,16 +1145,16 @@
                             <h4 data-reel-title></h4>
                             <p data-reel-subtitle></p>
                         </div>
-                        <div class="reel-modal-product-card" data-reel-product-card style="display:none;">
+                        <a href="#" class="reel-modal-product-card" data-reel-product-card style="display:none;" aria-label="View product details">
                             <img data-reel-prod-img src="" alt="">
                             <div class="reel-modal-product-details">
                                 <strong data-reel-prod-name></strong>
                                 <span data-reel-prod-price></span>
                             </div>
-                            <button type="button" class="reel-modal-add-cart-btn" data-reel-add-cart>
-                                <i class="ph ph-shopping-bag"></i> Add
-                            </button>
-                        </div>
+                            <span class="reel-modal-view-btn">
+                                View Item <i class="ph ph-arrow-right"></i>
+                            </span>
+                        </a>
                     </div>
                 </div>
             `;
@@ -1174,7 +1168,6 @@
         const prodImg = backdrop.querySelector('[data-reel-prod-img]');
         const prodName = backdrop.querySelector('[data-reel-prod-name]');
         const prodPrice = backdrop.querySelector('[data-reel-prod-price]');
-        const addCartBtn = backdrop.querySelector('[data-reel-add-cart]');
         const closeBtn = backdrop.querySelector('[data-reel-close]');
         const muteBtn = backdrop.querySelector('[data-reel-mute]');
 
@@ -1201,21 +1194,17 @@
             const prodNameText = triggerEl.dataset.productName || '';
             const prodPriceText = triggerEl.dataset.productPrice || '';
             const prodImageSrc = triggerEl.dataset.productImage || '';
+            const prodUrl = triggerEl.dataset.productUrl || '';
 
             if (titleEl) titleEl.textContent = title;
             if (subtitleEl) subtitleEl.textContent = subtitle;
 
             if (prodId && productCard) {
                 productCard.style.display = 'flex';
+                if (prodUrl) productCard.href = prodUrl;
                 if (prodImg) prodImg.src = prodImageSrc;
                 if (prodName) prodName.textContent = prodNameText;
                 if (prodPrice) prodPrice.textContent = '₹' + prodPriceText;
-                if (addCartBtn) {
-                    addCartBtn.dataset.id = prodId;
-                    addCartBtn.dataset.name = prodNameText;
-                    addCartBtn.dataset.price = prodPriceText;
-                    addCartBtn.dataset.image = prodImageSrc;
-                }
             } else if (productCard) {
                 productCard.style.display = 'none';
             }
@@ -1264,25 +1253,6 @@
             if (currentVideo) {
                 currentVideo.muted = !currentVideo.muted;
                 muteBtn.innerHTML = currentVideo.muted ? '<i class="ph ph-speaker-slash"></i>' : '<i class="ph ph-speaker-high"></i>';
-            }
-        });
-
-        addCartBtn?.addEventListener('click', (e) => {
-            e.preventDefault();
-            const id = addCartBtn.dataset.id;
-            const name = addCartBtn.dataset.name;
-            const price = parseFloat(addCartBtn.dataset.price || '0');
-            const image = addCartBtn.dataset.image;
-            if (id && name) {
-                updateCart(cart => {
-                    const existing = cart.find(item => item.id === id);
-                    if (existing) existing.quantity += 1;
-                    else cart.push({id, name, price, image, quantity: 1});
-                    return cart;
-                });
-                renderCart();
-                openDrawer();
-                showNotification(`Added ${name} to cart`);
             }
         });
 

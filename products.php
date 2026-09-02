@@ -61,7 +61,6 @@ $displayCatalogProducts = array_values($catalogFamilies);
 ?>
 
         <div class="catalog-results-head reveal">
-            <p>Showing <strong data-catalog-count><?= count($displayCatalogProducts) ?></strong> pure essential products</p>
             <span class="catalog-badge"><i class="ph ph-shield-check"></i> 100% Certified Authentic</span>
         </div>
 
@@ -80,7 +79,6 @@ $displayCatalogProducts = array_values($catalogFamilies);
                         <?php endif; ?>
                         <span class="product-card__discount"><?= discount_percentage($catalogProduct) ?>% OFF</span>
                         <img src="<?= htmlspecialchars($catalogProduct['image']) ?>" alt="<?= htmlspecialchars($catalogProduct['full_name']) ?>" loading="lazy">
-                        <span class="product-card__view">View Details <i class="ph ph-arrow-right"></i></span>
                     </a>
                     <div class="product-card__body">
                         <div class="product-card__meta">
@@ -138,7 +136,7 @@ $displayCatalogProducts = array_values($catalogFamilies);
                                     data-price="<?= (int) $catalogProduct['price'] ?>"
                                     data-image="<?= htmlspecialchars($catalogProduct['image']) ?>"
                                     aria-label="Add <?= htmlspecialchars($catalogProduct['name']) ?> to cart">
-                                <span>Add</span> <i class="ph ph-plus"></i>
+                                <span>Add to cart</span>
                             </button>
                         </div>
                     </div>

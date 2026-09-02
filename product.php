@@ -370,23 +370,40 @@ require __DIR__ . '/includes/header.php';
                         $vSrc = $media['file_path'] ?: $media['external_url'];
                         $pSrc = $media['poster_path'] ?: ($product['image'] ?? 'assets/images/logo.png');
                         ?>
-                        <div class="ref-watch__card" data-reel-trigger data-video-src="<?= htmlspecialchars($vSrc) ?>"
-                            data-video-type="<?= htmlspecialchars($media['media_type']) ?>"
-                            data-video-title="<?= htmlspecialchars($media['title'] ?: $product['name']) ?>"
-                            data-video-subtitle="<?= htmlspecialchars($media['subtitle']) ?>"
-                            data-video-poster="<?= htmlspecialchars($pSrc) ?>"
-                            data-product-id="<?= htmlspecialchars($product['id']) ?>"
-                            data-product-name="<?= htmlspecialchars($product['full_name']) ?>"
-                            data-product-price="<?= htmlspecialchars((string) $product['price']) ?>"
-                            data-product-image="<?= htmlspecialchars($product['image']) ?>"
-                            data-product-url="product.php?slug=<?= rawurlencode($product['slug']) ?>">
-                            <img src="<?= htmlspecialchars($pSrc) ?>"
-                                alt="<?= htmlspecialchars((string) ($media['title'] ?: $product['name'])) ?>" loading="lazy">
-                            <div class="ref-watch__card-overlay">
-                                <span><?= htmlspecialchars((string) ($media['title'] ?: ['The Journey of Purity', 'Traditional Method Explained', 'From Our Farms to Your Home', 'Ways to Enjoy Gawdee'][$mediaIndex] ?? 'Discover Gawdee')) ?></span>
-                                <small><i class="ph-fill ph-play-circle"></i> Watch Reel</small>
+                        <article class="reel-card reveal" data-delay="<?= $mediaIndex * 75 ?>">
+                            <div class="reel-card__media" data-reel-trigger data-video-src="<?= htmlspecialchars($vSrc) ?>"
+                                data-video-type="<?= htmlspecialchars($media['media_type']) ?>"
+                                data-video-title="<?= htmlspecialchars($media['title'] ?: $product['name']) ?>"
+                                data-video-subtitle="<?= htmlspecialchars($media['subtitle']) ?>"
+                                data-video-poster="<?= htmlspecialchars($pSrc) ?>"
+                                data-product-id="<?= htmlspecialchars($product['id']) ?>"
+                                data-product-name="<?= htmlspecialchars($product['full_name']) ?>"
+                                data-product-price="<?= htmlspecialchars((string) $product['price']) ?>"
+                                data-product-image="<?= htmlspecialchars($product['image']) ?>"
+                                data-product-url="product.php?slug=<?= rawurlencode($product['slug']) ?>">
+
+                                <img src="<?= htmlspecialchars($pSrc) ?>"
+                                    alt="<?= htmlspecialchars((string) ($media['title'] ?: $product['name'])) ?>" loading="lazy">
+
+                                <div class="reel-card__overlay">
+                                    <button type="button" class="reel-card__play-btn"
+                                        aria-label="Play <?= htmlspecialchars($media['title'] ?: $product['name']) ?>">
+                                        <i class="ph-fill ph-play"></i>
+                                    </button>
+                                    <span class="reel-card__badge"><i class="ph ph-video"></i> Reel</span>
+                                </div>
+                                <span class="reel-card__index"><?= sprintf('%02d', $mediaIndex + 1) ?></span>
                             </div>
-                        </div>
+                            <div class="reel-card__product">
+                                <a href="product?slug=<?= rawurlencode($product['slug']) ?>" class="reel-card__product-link" aria-label="View details for <?= htmlspecialchars($product['name']) ?>">
+                                    <div class="reel-card__product-info">
+                                        <h3><?= htmlspecialchars((string) ($media['title'] ?: ['The Journey of Purity', 'Traditional Method Explained', 'From Our Farms to Your Home', 'Ways to Enjoy Gawdee'][$mediaIndex] ?? 'Discover Gawdee')) ?></h3>
+                                        <p><?= money($product['price']) ?> <span><?= htmlspecialchars($product['weight']) ?></span></p>
+                                    </div>
+                                    <span class="reel-card__product-arrow" aria-hidden="true"><i class="ph ph-arrow-right"></i></span>
+                                </a>
+                            </div>
+                        </article>
                     <?php endforeach; ?>
                 </div>
             </section><?php endif; ?>
@@ -442,40 +459,6 @@ require __DIR__ . '/includes/header.php';
                             </div>
                         <?php endfor; ?>
                     </div>
-
-                    <?php $loggedInCustomer = gawdee_customer(); ?>
-                    <?php if ($loggedInCustomer !== null): ?>
-                        <details class="ref-write-review" open>
-                            <summary><i class="ph ph-note-pencil"></i> Write a Review</summary>
-                            <form data-review-form data-product-id="<?= htmlspecialchars($product['id']) ?>">
-                                <div class="ref-review-rating">
-                                    <?php for ($star = 5; $star >= 1; $star--): ?>
-                                        <input type="radio" id="ref-rating-<?= $star ?>" name="rating" value="<?= $star ?>"
-                                            <?= $star === 5 ? 'required' : '' ?>>
-                                        <label for="ref-rating-<?= $star ?>">★</label>
-                                    <?php endfor; ?>
-                                </div>
-                                <input name="name" value="<?= htmlspecialchars($loggedInCustomer['name']) ?>"
-                                    placeholder="Your name" required readonly style="background:#f1f5f2;cursor:not-allowed">
-                                <input type="email" name="email" value="<?= htmlspecialchars($loggedInCustomer['email']) ?>"
-                                    placeholder="Email address" required readonly
-                                    style="background:#f1f5f2;cursor:not-allowed">
-                                <textarea name="review" minlength="15" maxlength="1200"
-                                    placeholder="Share your experience with this product..." required></textarea>
-                                <button type="submit">Submit Review <i class="ph ph-paper-plane-right"></i></button>
-                                <p data-review-status aria-live="polite"></p>
-                            </form>
-                        </details>
-                    <?php else: ?>
-                        <div class="ref-review-login-prompt">
-                            <i class="ph ph-lock-key"></i>
-                            <p>Only logged-in customers can submit reviews.</p>
-                            <a href="login.php?return=<?= rawurlencode('product.php?slug=' . $product['slug'] . '#reviews') ?>"
-                                class="ref-review-login-btn">
-                                <i class="ph ph-user"></i> Login to Write Review
-                            </a>
-                        </div>
-                    <?php endif; ?>
                 </aside>
 
                 <div class="ref-review-cards" data-review-list>
@@ -929,8 +912,7 @@ require __DIR__ . '/includes/header.php';
                             <span class="product-card__tag"><?= htmlspecialchars($related['tag']) ?></span><span
                                 class="product-card__discount"><?= discount_percentage($related) ?>% off</span>
                             <img src="<?= htmlspecialchars($related['image']) ?>"
-                                alt="<?= htmlspecialchars($related['full_name']) ?>" loading="lazy"><span
-                                class="product-card__view">View details <i class="ph ph-arrow-up-right"></i></span>
+                                alt="<?= htmlspecialchars($related['full_name']) ?>" loading="lazy">
                         </a>
                         <div class="product-card__body">
                             <div class="product-card__meta">

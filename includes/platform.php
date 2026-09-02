@@ -890,6 +890,7 @@ function gawdee_seed_defaults(PDO $db): void
     $sections = [
         ['hero', 'Featured collection', 'Pure food. Beautifully made.', 'Explore seasonal offers and family wellness favourites.', '', 1, 10],
         ['shop', 'Everyday favourites', 'Bestsellers', 'Handpicked products for everyday family routines.', '', 1, 20],
+        ['catalog_list', 'Complete collection', 'Product Catalog List', 'Explore our full range of 100% certified organic and pure essentials.', '', 1, 25],
         ['categories', 'Browse the pantry', 'Shop by category', 'Find the right products for your daily rituals.', '', 1, 30],
         ['offer', 'Independence Day offer', 'Flat 10% OFF', 'On all products. Use code FREEDOM10 at checkout.', 'Celebrate with better everyday wellness.', 1, 40],
         ['combos', 'Thoughtful bundles', 'Healthy combos. Greater savings.', 'Pairs designed to make everyday wellness simpler.', '', 1, 50],
@@ -1451,4 +1452,23 @@ function gawdee_base_url(string $path = ''): string
     return $path !== '' ? $baseUrl . '/' . ltrim($path, '/') : $baseUrl;
 }
 
+if (!function_exists('money')) {
+    function money(int|float $amount): string
+    {
+        return '₹' . number_format($amount, 0, '.', ',');
+    }
+}
+
+if (!function_exists('discount_percentage')) {
+    function discount_percentage(array $product): int
+    {
+        if (($product['original_price'] ?? 0) <= 0) {
+            return 0;
+        }
+
+        return (int) round((1 - (($product['price'] ?? 0) / $product['original_price'])) * 100);
+    }
+}
+
 gawdee_db();
+

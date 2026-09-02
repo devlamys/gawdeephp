@@ -480,17 +480,37 @@ SQL);
         }
 
         if ($action === 'save_hero_scrub') {
-            gawdee_set_setting('hero_scrub_enabled', isset($_POST['hero_scrub_enabled']) ? '1' : '0');
-            gawdee_set_setting('hero_scrub_title', trim((string) ($_POST['hero_scrub_title'] ?? '')));
-            gawdee_set_setting('hero_scrub_subtitle', trim((string) ($_POST['hero_scrub_subtitle'] ?? '')));
+            if (isset($_POST['has_enabled_field'])) {
+                gawdee_set_setting('hero_scrub_enabled', isset($_POST['hero_scrub_enabled']) ? '1' : '0');
+            } else {
+                gawdee_set_setting('hero_scrub_enabled', '1');
+            }
+            if (isset($_POST['hero_scrub_eyebrow'])) {
+                gawdee_set_setting('hero_scrub_eyebrow', trim((string) $_POST['hero_scrub_eyebrow']));
+            }
+            if (isset($_POST['hero_scrub_title'])) {
+                gawdee_set_setting('hero_scrub_title', trim((string) $_POST['hero_scrub_title']));
+            }
+            if (isset($_POST['hero_scrub_subtitle'])) {
+                gawdee_set_setting('hero_scrub_subtitle', trim((string) $_POST['hero_scrub_subtitle']));
+            }
 
             $videoPath = admin_upload_media('hero_scrub_video', 'hero', trim((string) ($_POST['existing_hero_scrub_video'] ?? '')), ['video']);
-            gawdee_set_setting('hero_scrub_video', $videoPath);
+            if (!empty($videoPath)) {
+                gawdee_set_setting('hero_scrub_video', $videoPath);
+            }
 
             $posterPath = admin_upload_media('hero_scrub_poster', 'hero', trim((string) ($_POST['existing_hero_scrub_poster'] ?? '')), ['image']);
-            gawdee_set_setting('hero_scrub_poster', $posterPath);
+            if (!empty($posterPath)) {
+                gawdee_set_setting('hero_scrub_poster', $posterPath);
+            }
 
-            admin_redirect('cms', 'Hero scrub video settings saved successfully.');
+            $bgUrl = trim((string) ($_POST['hero_scrub_bg_image_url'] ?? ''));
+            $uploadedBg = admin_upload_media('hero_scrub_bg_image', 'hero', '', ['image']);
+            $finalBg = !empty($uploadedBg) ? $uploadedBg : (!empty($bgUrl) ? $bgUrl : trim((string) ($_POST['existing_hero_scrub_bg_image'] ?? '')));
+            gawdee_set_setting('hero_scrub_bg_image', $finalBg);
+
+            admin_redirect('banners_two', 'Hero section background image & text settings saved successfully.');
         }
 
         if ($action === 'save_integrations') {
@@ -977,6 +997,71 @@ $stats = [
                                 </div>
                             </article><?php endforeach; ?>
                     </div>
+
+                    <!-- Hero Scrub Background & Media Settings Form Card -->
+                    <section class="admin-card" style="margin-top:28px">
+                        <div class="admin-card__header">
+                            <div>
+                                <h2><i class="ph ph-image"></i> Hero Section Background Image &amp; Content Studio</h2>
+                                <p>Set a background image file or direct image URL link, headline title, eyebrow, and subtitle for the main <code>.hero-scrub-section</code> background. Recommended Size: <strong>1920 × 1080 px</strong> (Desktop 16:9 ratio) or <strong>800 × 1200 px</strong> (Mobile ratio).</p>
+                            </div>
+                        </div>
+                        <div class="admin-card__body">
+                            <form method="post" enctype="multipart/form-data" class="admin-form form-grid form-grid--2">
+                                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(gawdee_csrf_token()) ?>">
+                                <input type="hidden" name="action" value="save_hero_scrub">
+                                <input type="hidden" name="has_enabled_field" value="1">
+                                <input type="hidden" name="existing_hero_scrub_bg_image" value="<?= htmlspecialchars(gawdee_setting('hero_scrub_bg_image', '')) ?>">
+
+                                <label class="form-switch form-span-2">
+                                    <input type="checkbox" name="hero_scrub_enabled" <?= gawdee_setting('hero_scrub_enabled', '1') === '1' ? 'checked' : '' ?>>
+                                    <span>Enable &amp; Show Hero Section on Homepage</span>
+                                </label>
+
+                                <label class="form-span-2">
+                                    <span>Eyebrow Tagline</span>
+                                    <input type="text" name="hero_scrub_eyebrow" value="<?= htmlspecialchars(gawdee_setting('hero_scrub_eyebrow', 'EVERYDAY FAVOURITES')) ?>" placeholder="e.g. TRADITIONAL WELLNESS ESSENTIALS">
+                                </label>
+
+                                <label class="form-span-2">
+                                    <span>Main Hero Headline / Title</span>
+                                    <input type="text" name="hero_scrub_title" value="<?= htmlspecialchars(gawdee_setting('hero_scrub_title', 'Pure, Organic & Traditional Food Essentials')) ?>" placeholder="e.g. Gawdee Pure Food Essentials">
+                                </label>
+
+                                <label class="form-span-2">
+                                    <span>Hero Subtitle / Description</span>
+                                    <input type="text" name="hero_scrub_subtitle" value="<?= htmlspecialchars(gawdee_setting('hero_scrub_subtitle', 'Handpicked unadulterated products thoughtfully crafted for modern living.')) ?>" placeholder="Subheading text...">
+                                </label>
+
+                                <label class="form-span-2">
+                                    <span>Background Image Link / Direct URL (e.g. https://... or assets/images/...)</span>
+                                    <input type="text" name="hero_scrub_bg_image_url" value="<?= htmlspecialchars(gawdee_setting('hero_scrub_bg_image', '')) ?>" placeholder="https://example.com/hero-bg.jpg or assets/images/hero-bg.png">
+                                </label>
+
+                                <label>
+                                    <span>Or Upload New Background Image File</span>
+                                    <input type="file" name="hero_scrub_bg_image" accept="image/jpeg,image/png,image/webp">
+                                    <small class="help-text">Recommended Resolution: 1920×1080px (WebP / JPG / PNG under 500KB)</small>
+                                </label>
+
+                                <label>
+                                    <span>Current Active Image Link / Path</span>
+                                    <input type="text" readonly value="<?= htmlspecialchars(gawdee_setting('hero_scrub_bg_image', 'assets/images/gawdee-home-nature-background-desktop-v1.png')) ?>">
+                                </label>
+
+                                <?php if (gawdee_setting('hero_scrub_bg_image', '')): ?>
+                                    <div class="form-span-2" style="margin-top:8px">
+                                        <small class="help-text" style="display:block;margin-bottom:6px">Active Background Preview:</small>
+                                        <img src="<?= htmlspecialchars(admin_media_url(gawdee_setting('hero_scrub_bg_image', ''))) ?>" alt="Hero BG Preview" style="max-height:160px;width:auto;border-radius:12px;border:1px solid #dce5de;object-fit:cover">
+                                    </div>
+                                <?php endif; ?>
+
+                                <div class="form-span-2" style="display:flex;justify-content:flex-end;margin-top:12px">
+                                    <button class="admin-button admin-button--primary">Save Hero Background &amp; Text <i class="ph ph-check"></i></button>
+                                </div>
+                            </form>
+                        </div>
+                    </section>
 
                 <?php elseif ($view === 'cms'): ?>
                     <?php require __DIR__ . '/partials/cms.php'; ?>

@@ -746,16 +746,21 @@ function product_by_slug(array $products, string $slug): ?array
     return null;
 }
 
-function money(int|float $amount): string
-{
-    return '₹' . number_format($amount, 0, '.', ',');
-}
-
-function discount_percentage(array $product): int
-{
-    if ($product['original_price'] <= 0) {
-        return 0;
+if (!function_exists('money')) {
+    function money(int|float $amount): string
+    {
+        return '₹' . number_format($amount, 0, '.', ',');
     }
-
-    return (int) round((1 - ($product['price'] / $product['original_price'])) * 100);
 }
+
+if (!function_exists('discount_percentage')) {
+    function discount_percentage(array $product): int
+    {
+        if (($product['original_price'] ?? 0) <= 0) {
+            return 0;
+        }
+
+        return (int) round((1 - (($product['price'] ?? 0) / $product['original_price'])) * 100);
+    }
+}
+

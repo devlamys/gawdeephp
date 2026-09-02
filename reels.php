@@ -108,19 +108,16 @@ require __DIR__ . '/includes/header.php';
                             <p><?= htmlspecialchars($media['subtitle'] ?: 'Pure food thoughtfully made for modern families.') ?></p>
                             
                             <?php if ($product): ?>
-                                <div class="reel-hub-card__product-link">
-                                    <img src="<?= htmlspecialchars($product['image']) ?>" alt="">
+                                <a href="product?slug=<?= rawurlencode($product['slug']) ?>" class="reel-hub-card__product-link" aria-label="View details for <?= htmlspecialchars($product['name']) ?>">
+                                    <img src="<?= htmlspecialchars($product['image']) ?>" alt="<?= htmlspecialchars($product['name']) ?>">
                                     <div>
                                         <strong><?= htmlspecialchars($product['name']) ?></strong>
                                         <small><?= money($product['price']) ?> · <?= htmlspecialchars($product['weight']) ?></small>
                                     </div>
-                                    <button type="button" data-add-to-cart data-id="<?= htmlspecialchars($product['id']) ?>"
-                                            data-name="<?= htmlspecialchars($product['full_name']) ?>" data-price="<?= $product['price'] ?>"
-                                            data-image="<?= htmlspecialchars($product['image']) ?>"
-                                            aria-label="Add <?= htmlspecialchars($product['name']) ?> to cart">
-                                        <i class="ph ph-shopping-bag"></i>
-                                    </button>
-                                </div>
+                                    <span class="reel-hub-card__product-arrow" aria-hidden="true">
+                                        <i class="ph ph-arrow-right"></i>
+                                    </span>
+                                </a>
                             <?php endif; ?>
                         </div>
                     </article>
