@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../includes/data.php';
 
-$view = in_array($argv[1] ?? '', ['cms', 'testimonials', 'media', 'blog'], true) ? (string) $argv[1] : 'cms';
+$view = in_array($argv[1] ?? '', ['cms', 'section-items', 'testimonials', 'video-testimonials', 'reviews', 'media', 'blog'], true) ? (string) $argv[1] : 'cms';
 $markers = [
     'cms' => 'Homepage content studio',
+    'section-items' => 'Homepage section item manager',
     'testimonials' => 'Customer story manager',
+    'video-testimonials' => 'Video testimonial manager',
+    'reviews' => 'Product review manager',
     'media' => 'Homepage media library',
     'blog' => 'Stories & publishing',
 ];

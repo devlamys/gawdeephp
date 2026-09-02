@@ -92,14 +92,7 @@
     q('[data-checkout-form]').addEventListener('submit', async event => {
         event.preventDefault();
         errorNode.hidden = true;
-        if (!cart.length) {
-            showError('Your shopping bag is empty. Please add items before placing an order.');
-            return;
-        }
-        if (!hasPaymentMethod) {
-            showError('No payment method is available. Please contact store support.');
-            return;
-        }
+        if (!cart.length || !hasPaymentMethod) return;
         setBusy(true);
         const form = new FormData(event.currentTarget);
         const customer = Object.fromEntries(form.entries());

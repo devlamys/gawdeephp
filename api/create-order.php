@@ -5,11 +5,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/../includes/integrations.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    if (str_contains($_SERVER['HTTP_ACCEPT'] ?? '', 'text/html')) {
-        header('Location: ../checkout.php');
-        exit;
-    }
-    gawdee_json_response(['ok' => false, 'message' => 'Method not allowed. Order creation requires a POST request.'], 405);
+    gawdee_json_response(['ok' => false, 'message' => 'Method not allowed.'], 405);
 }
 
 try {

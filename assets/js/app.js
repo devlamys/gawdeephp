@@ -13,12 +13,7 @@
     const searchPanel = qs('[data-search-panel]');
     const searchInput = qs('[data-site-search]');
 
-    const setHeaderState = () => {
-        if (!header) return;
-        const isScrolled = window.scrollY > 40;
-        header.classList.toggle('is-scrolled', isScrolled);
-        header.classList.toggle('is-top', !isScrolled);
-    };
+    const setHeaderState = () => header?.classList.toggle('is-scrolled', window.scrollY > 12);
     setHeaderState();
     window.addEventListener('scroll', setHeaderState, { passive: true });
 
@@ -119,185 +114,31 @@
     searchInput?.addEventListener('keydown', event => {
         if (event.key !== 'Enter') return;
         if (!productGrid) {
-            window.location.href = `products?search=${encodeURIComponent(searchInput.value.trim())}`;
+            window.location.href = `products.php?search=${encodeURIComponent(searchInput.value.trim())}#product-catalog`;
         } else {
             closeSearch();
         }
+    });
+
+    qs('.commerce-search button')?.addEventListener('click', () => {
+        const query = searchInput?.value.trim() || '';
+        if (!productGrid) {
+            window.location.href = `products.php?search=${encodeURIComponent(query)}#product-catalog`;
+            return;
+        }
+        activeSearch = query.toLowerCase();
+        filterProducts();
+        (document.getElementById('shop') || document.getElementById('product-catalog'))?.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth' });
     });
 
     const initialSearch = new URLSearchParams(window.location.search).get('search');
     if (initialSearch && productGrid) {
         activeSearch = initialSearch.toLowerCase();
         if (searchInput) searchInput.value = initialSearch;
+        if (catalogSearch) catalogSearch.value = initialSearch;
         filterProducts();
     }
     if (productGrid) filterProducts();
-
-    // Video hero experience & 8-phrase headline rotation loop changing every 2 seconds
-    const scrubSection = qs('[data-hero-scrub-section]');
-    const scrubVideo = qs('[data-hero-scrub-video]', scrubSection || document);
-    const scrubPoster = qs('[data-hero-scrub-poster]', scrubSection || document);
-    const scrubEyebrow = qs('.hero-scrub-eyebrow', scrubSection || document) || qs('[data-scrub-step="1"]', scrubSection || document);
-    const scrubTitle = qs('[data-scrub-title]', scrubSection || document);
-    const scrubSubtitle = qs('.hero-scrub-subtitle', scrubSection || document) || qs('[data-scrub-step="3"]', scrubSection || document);
-    const scrubSteps = qsa('[data-scrub-step]', scrubSection || document);
-    const scrubIndicator = qs('[data-scrub-indicator]', scrubSection || document);
-
-    // Hero banner 2 dynamic video slides & headlines player
-    if (scrubSection) {
-        let heroSlides = [];
-        try {
-            if (scrubSection.dataset.heroSlides) {
-                heroSlides = JSON.parse(scrubSection.dataset.heroSlides);
-            }
-        } catch (e) {
-            heroSlides = [];
-        }
-
-        if (Array.isArray(heroSlides) && heroSlides.length > 0) {
-            let activeSlideIndex = 0;
-            let slideTimer = null;
-            let fadeTimer = null;
-
-            const scrubSticky = qs('.hero-scrub-sticky', scrubSection);
-            let videoA = qs('[data-hero-scrub-video]', scrubSection);
-            let videoB = qs('[data-hero-scrub-video-next]', scrubSection);
-
-            if (!videoB && scrubSticky) {
-                videoB = document.createElement('video');
-                videoB.className = 'hero-scrub-video hero-scrub-video--next';
-                videoB.setAttribute('data-hero-scrub-video-next', '');
-                videoB.muted = true;
-                videoB.playsInline = true;
-                videoB.preload = 'auto';
-                scrubSticky.insertBefore(videoB, scrubSection.querySelector('.hero-scrub-overlay'));
-            }
-
-            let activeVideoEl = videoA;
-            let nextVideoEl = videoB;
-
-            const playSlideIndex = (index) => {
-                activeSlideIndex = index % heroSlides.length;
-                const slide = heroSlides[activeSlideIndex];
-                const nextSlide = heroSlides[(activeSlideIndex + 1) % heroSlides.length];
-                const isMobile = window.innerWidth <= 700;
-
-                const currentVideoUrl = isMobile && slide.mobile_video ? slide.mobile_video : (slide.desktop_video || slide.mobile_video);
-                const nextVideoUrl = isMobile && nextSlide.mobile_video ? nextSlide.mobile_video : (nextSlide.desktop_video || nextSlide.mobile_video);
-
-                if (scrubEyebrow) {
-                    scrubEyebrow.style.opacity = '0';
-                    scrubEyebrow.style.transform = 'translateY(10px)';
-                    setTimeout(() => {
-                        const eb = slide.eyebrow || "";
-                        scrubEyebrow.innerHTML = `<i class="ph ph-sparkle"></i> ${eb}`;
-                        scrubEyebrow.style.opacity = '1';
-                        scrubEyebrow.style.transform = 'translateY(0)';
-                    }, 150);
-                }
-
-                if (scrubTitle) {
-                    scrubTitle.style.opacity = '0';
-                    scrubTitle.style.transform = 'translateY(10px)';
-                    setTimeout(() => {
-                        scrubTitle.textContent = slide.headline || slide.title || "Nourishment, Rooted in Nature";
-                        scrubTitle.style.opacity = '1';
-                        scrubTitle.style.transform = 'translateY(0)';
-                    }, 150);
-                }
-
-                if (scrubSubtitle) {
-                    scrubSubtitle.style.opacity = '0';
-                    scrubSubtitle.style.transform = 'translateY(10px)';
-                    setTimeout(() => {
-                        scrubSubtitle.textContent = slide.subtitle || "Thoughtfully sourced natural goodness for everyday wellness.";
-                        scrubSubtitle.style.opacity = '1';
-                        scrubSubtitle.style.transform = 'translateY(0)';
-                    }, 150);
-                }
-
-                if (scrubPoster) scrubPoster.style.opacity = '0';
-                if (scrubIndicator) scrubIndicator.style.opacity = '0';
-
-                // Play current video slide on active video element
-                if (activeVideoEl && currentVideoUrl) {
-                    const src = activeVideoEl.getAttribute('src') || activeVideoEl.querySelector('source')?.getAttribute('src');
-                    if (src !== currentVideoUrl) {
-                        activeVideoEl.src = currentVideoUrl;
-                        activeVideoEl.load();
-                    }
-                    activeVideoEl.style.transition = 'opacity 200ms ease-in-out';
-                    activeVideoEl.style.opacity = '1';
-                    activeVideoEl.style.zIndex = '2';
-                    try { activeVideoEl.currentTime = 0; } catch (e) {}
-                    activeVideoEl.play().catch(() => {});
-                }
-
-                const durationMs = Math.max(1, Number(slide.duration || 1)) * 1000;
-                const fadeOffsetMs = Math.min(200, Math.floor(durationMs / 2));
-                const fadeStartTimeMs = Math.max(0, durationMs - fadeOffsetMs);
-
-                clearTimeout(slideTimer);
-                clearTimeout(fadeTimer);
-
-                // 200ms before end of current video: reduce opacity of first video & start next video with reduced opacity
-                fadeTimer = setTimeout(() => {
-                    if (activeVideoEl) {
-                        activeVideoEl.style.transition = `opacity ${fadeOffsetMs}ms ease-in-out`;
-                        activeVideoEl.style.opacity = '0.25'; // Reduce opacity at end of first video
-                    }
-
-                    if (nextVideoEl && nextVideoUrl) {
-                        const src = nextVideoEl.getAttribute('src') || nextVideoEl.querySelector('source')?.getAttribute('src');
-                        if (src !== nextVideoUrl) {
-                            nextVideoEl.src = nextVideoUrl;
-                            nextVideoEl.load();
-                        }
-                        nextVideoEl.style.zIndex = '1';
-                        nextVideoEl.style.transition = 'none';
-                        nextVideoEl.style.opacity = '0.25'; // Start next video with reduced opacity
-                        try { nextVideoEl.currentTime = 0; } catch (e) {}
-
-                        const playPromise = nextVideoEl.play();
-                        if (playPromise !== undefined) {
-                            playPromise.then(() => {
-                                requestAnimationFrame(() => {
-                                    nextVideoEl.style.transition = `opacity ${fadeOffsetMs}ms ease-in-out`;
-                                    nextVideoEl.style.opacity = '1'; // Fade up to full opacity
-                                });
-                            }).catch(() => {});
-                        }
-                    }
-                }, fadeStartTimeMs);
-
-                // At end of duration: swap video elements and continue loop
-                slideTimer = setTimeout(() => {
-                    if (activeVideoEl) {
-                        activeVideoEl.style.zIndex = '0';
-                        activeVideoEl.style.opacity = '0';
-                    }
-                    if (nextVideoEl) {
-                        nextVideoEl.style.zIndex = '2';
-                        nextVideoEl.style.opacity = '1';
-                    }
-
-                    // Swap active and next elements for continuous loop
-                    const temp = activeVideoEl;
-                    activeVideoEl = nextVideoEl;
-                    nextVideoEl = temp;
-
-                    playSlideIndex(activeSlideIndex + 1);
-                }, durationMs);
-            };
-
-            if (reduceMotion) {
-                scrubSteps.forEach(step => step.classList.add('is-active'));
-                if (scrubPoster) scrubPoster.style.opacity = '1';
-            } else {
-                playSlideIndex(0);
-            }
-        }
-    }
 
     // Full-image hero carousel with autoplay, keyboard controls and touch swiping.
     const heroSlider = qs('[data-hero-slider]');
@@ -464,7 +305,13 @@
 
     const saveCart = () => localStorage.setItem(storageKey, JSON.stringify(cart));
 
-    const showToast = () => {};
+    const showToast = message => {
+        if (!toast) return;
+        toast.textContent = message;
+        toast.classList.add('is-visible');
+        window.clearTimeout(toastTimer);
+        toastTimer = window.setTimeout(() => toast.classList.remove('is-visible'), 2200);
+    };
 
     qsa('[data-newsletter-form]').forEach(form => {
         form.addEventListener('submit', async event => {
@@ -486,9 +333,9 @@
         });
     });
 
-    qsa('[data-copy-offer], [data-copy-coupon]').forEach(button => {
-        button.addEventListener('click', async (e) => {
-            const code = button.dataset.copyCoupon || button.dataset.copyOffer || '';
+    qsa('[data-copy-offer]').forEach(button => {
+        button.addEventListener('click', async () => {
+            const code = button.dataset.copyOffer || '';
             if (!code) return;
 
             try {
@@ -509,13 +356,13 @@
                 button.classList.add('is-copied');
                 const label = qs('span', button);
                 if (label) label.innerHTML = '<i class="ph ph-check"></i> Copied';
-                showToast(`Coupon ${code} copied to clipboard!`);
+                showToast(`Offer code ${code} copied`);
                 window.setTimeout(() => {
                     button.classList.remove('is-copied');
                     if (label) label.innerHTML = '<i class="ph ph-copy"></i> Copy code';
                 }, 2200);
             } catch {
-                showToast(`Use coupon code ${code} at checkout`);
+                showToast(`Use code ${code} at checkout`);
             }
         });
     });
@@ -682,142 +529,14 @@
         startAutoplay();
     });
 
-
-
-    // Instant Variant Switcher
-    qsa('[data-variant-switch]').forEach(chip => {
-        chip.addEventListener('click', (e) => {
-            if (e.metaKey || e.ctrlKey || e.shiftKey) return;
-            e.preventDefault();
-
-            const slug = chip.dataset.slug;
-            const id = chip.dataset.id;
-            const name = chip.dataset.name;
-            const weight = chip.dataset.weight;
-            const price = chip.dataset.price;
-            const priceFormatted = chip.dataset.priceFormatted;
-            const originalPriceFormatted = chip.dataset.originalPriceFormatted;
-            const discount = chip.dataset.discount;
-            const stock = parseInt(chip.dataset.stock || '0', 10);
-            const image = chip.dataset.image;
-
-            qsa('[data-variant-switch]').forEach(c => {
-                c.classList.remove('is-active');
-                c.removeAttribute('aria-current');
-            });
-            chip.classList.add('is-active');
-            chip.setAttribute('aria-current', 'true');
-
-            const priceEl = qs('[data-variant-price]');
-            const origPriceEl = qs('[data-variant-original-price]');
-            const discountEl = qs('[data-variant-discount]');
-            if (priceEl) priceEl.textContent = priceFormatted;
-            if (origPriceEl) origPriceEl.textContent = originalPriceFormatted;
-            if (discountEl) discountEl.textContent = `${discount}% OFF`;
-
-            const titleEl = qs('[data-variant-title]');
-            if (titleEl) {
-                titleEl.innerHTML = `${name} <i class="ph-fill ph-seal-check" aria-label="Verified product"></i>`;
-            }
-
-            const mainImg = qs('[data-product-main-image]');
-            if (mainImg && image) {
-                mainImg.src = image;
-                mainImg.alt = name;
-            }
-
-            const stockEl = qs('[data-variant-stock]');
-            if (stockEl) {
-                stockEl.innerHTML = `<i></i>${stock > 0 ? 'In stock' : 'Out of stock'}`;
-            }
-
-            qsa('[data-add-to-cart], [data-buy-now]').forEach(btn => {
-                btn.dataset.id = id;
-                btn.dataset.name = name;
-                btn.dataset.price = price;
-                btn.dataset.image = image;
-                if (stock <= 0) {
-                    btn.setAttribute('disabled', 'true');
-                } else {
-                    btn.removeAttribute('disabled');
-                }
-            });
-
-            if (window.history && window.history.replaceState && slug) {
-                window.history.replaceState({}, '', `product.php?slug=${encodeURIComponent(slug)}`);
-            }
-
-            showToast(`Selected ${weight} pack`);
+    qsa('[data-wishlist]').forEach(button => {
+        button.addEventListener('click', () => {
+            const isSaved = button.classList.toggle('is-saved');
+            button.setAttribute('aria-pressed', String(isSaved));
+            const icon = qs('i', button);
+            icon?.classList.toggle('ph-fill', isSaved);
+            showToast(isSaved ? 'Saved to your wishlist' : 'Removed from your wishlist');
         });
-    });
-
-    // Card-level Instant Variant Switcher
-    document.addEventListener('click', (e) => {
-        const pill = e.target.closest('[data-card-variant-switch]');
-        if (!pill) return;
-        e.preventDefault();
-        e.stopPropagation();
-
-        const card = pill.closest('.product-card, .compact-product-card');
-        if (!card) return;
-
-        const slug = pill.dataset.slug;
-        const id = pill.dataset.id;
-        const name = pill.dataset.name;
-        const weight = pill.dataset.weight;
-        const price = pill.dataset.price;
-        const priceFormatted = pill.dataset.priceFormatted;
-        const originalPriceFormatted = pill.dataset.originalPriceFormatted;
-        const discount = pill.dataset.discount;
-        const image = pill.dataset.image;
-
-        card.querySelectorAll('[data-card-variant-switch]').forEach(p => p.classList.remove('is-active'));
-        pill.classList.add('is-active');
-
-        card.querySelectorAll('a[href*="product"]').forEach(link => {
-            try {
-                const url = new URL(link.getAttribute('href'), window.location.href);
-                url.searchParams.set('slug', slug);
-                link.setAttribute('href', url.pathname.substring(url.pathname.lastIndexOf('/') + 1) + url.search);
-            } catch (_) {
-                link.setAttribute('href', `product.php?slug=${encodeURIComponent(slug)}`);
-            }
-        });
-
-        const img = card.querySelector('.product-card__media img, .compact-product-card__media img');
-        if (img && image) {
-            img.src = image;
-            img.alt = name;
-        }
-
-        const weightEl = card.querySelector('.compact-product-card__weight, .product-card__meta span:last-child');
-        if (weightEl) {
-            weightEl.textContent = weight;
-        }
-
-        const priceStrong = card.querySelector('.product-card__price strong, .compact-product-card__price strong, .product-card__buy strong');
-        if (priceStrong && priceFormatted) {
-            priceStrong.textContent = priceFormatted;
-        }
-        const priceS = card.querySelector('.product-card__price s, .compact-product-card__price s, .product-card__buy s');
-        if (priceS && originalPriceFormatted) {
-            priceS.textContent = originalPriceFormatted;
-        }
-
-        const discountEl = card.querySelector('.product-card__discount');
-        if (discountEl && discount) {
-            discountEl.textContent = `${discount}% OFF`;
-        }
-
-        const addBtn = card.querySelector('[data-add-to-cart]');
-        if (addBtn) {
-            addBtn.dataset.id = id;
-            addBtn.dataset.name = name;
-            addBtn.dataset.price = price;
-            if (image) addBtn.dataset.image = image;
-        }
-
-        showToast(`Selected ${weight} pack`);
     });
 
     const openCart = () => {
@@ -921,7 +640,7 @@
         if (qtyDisplay) qtyDisplay.textContent = String(productQuantity);
     });
     qs('[data-product-qty-plus]')?.addEventListener('click', () => {
-        productQuantity = productQuantity + 1;
+        productQuantity = Math.min(10, productQuantity + 1);
         if (qtyDisplay) qtyDisplay.textContent = String(productQuantity);
     });
 
@@ -965,7 +684,7 @@
             if (button.disabled) return;
             const quantity = Number(qtyDisplay?.textContent || 1);
             addToCart(button, quantity);
-            window.setTimeout(() => { window.location.href = 'checkout'; }, reduceMotion ? 0 : 220);
+            window.setTimeout(() => { window.location.href = 'checkout.php'; }, reduceMotion ? 0 : 220);
         });
     });
 
@@ -988,34 +707,28 @@
         const reviewList = qs('[data-review-list]');
         if (!reviewList) return;
         const card = document.createElement('article');
-        card.className = 'ref-review-card';
-
-        const header = document.createElement('div');
-        header.className = 'ref-review-card__header';
-        
-        const avatar = document.createElement('span');
-        avatar.className = 'ref-review-avatar';
-        avatar.textContent = (review.name || 'C').slice(0, 1).toUpperCase();
-        
-        const meta = document.createElement('div');
-        meta.className = 'ref-review-meta';
-        meta.innerHTML = `<strong>${safeText(review.name)}</strong><small><i class="ph-fill ph-seal-check"></i> Verified Buyer</small>`;
-        
-        header.append(avatar, meta);
-
+        card.className = 'review-card';
+        const avatar = document.createElement('div');
+        avatar.className = 'review-card__avatar';
+        avatar.textContent = (review.name || 'G').slice(0, 1).toUpperCase();
+        const content = document.createElement('div');
+        const top = document.createElement('div');
+        top.className = 'review-card__top';
+        const identity = document.createElement('div');
+        const name = document.createElement('strong');
+        name.textContent = review.name;
+        const meta = document.createElement('span');
+        meta.textContent = `Customer review · ${review.date}`;
+        identity.append(name, meta);
         const stars = document.createElement('div');
-        stars.className = 'ref-review-stars';
-        stars.textContent = '★'.repeat(Number(review.rating || 5));
-
-        const quote = document.createElement('blockquote');
-        quote.className = 'ref-review-text';
-        quote.textContent = `“${review.review}”`;
-
-        const date = document.createElement('time');
-        date.className = 'ref-review-date';
-        date.textContent = review.date || 'Just now';
-
-        card.append(header, stars, quote, date);
+        stars.className = 'review-stars';
+        stars.setAttribute('aria-label', `${review.rating} out of 5 stars`);
+        stars.textContent = '★'.repeat(review.rating) + '☆'.repeat(5 - review.rating);
+        const copy = document.createElement('p');
+        copy.textContent = `“${review.review}”`;
+        top.append(identity, stars);
+        content.append(top, copy);
+        card.append(avatar, content);
         reviewList.prepend(card);
     };
 
@@ -1119,150 +832,5 @@
         askAi(button.dataset.aiSuggestion || button.textContent.trim());
     }));
 
-    /* --------------------------------------------------------------------------
-       Gawdee Reel Video Modal Player Initialization
-       -------------------------------------------------------------------------- */
-    const initReelPlayer = () => {
-        let backdrop = qs('.reel-modal-backdrop');
-        if (!backdrop) {
-            backdrop = document.createElement('div');
-            backdrop.className = 'reel-modal-backdrop';
-            backdrop.setAttribute('aria-hidden', 'true');
-            backdrop.innerHTML = `
-                <div class="reel-modal-container">
-                    <div class="reel-modal-controls-top">
-                        <span class="reel-modal-brand-badge"><i class="ph-fill ph-play-circle"></i> Gawdee Reel</span>
-                        <div class="reel-modal-actions-top">
-                            <button type="button" class="reel-modal-btn" data-reel-mute aria-label="Toggle mute"><i class="ph ph-speaker-high"></i></button>
-                            <button type="button" class="reel-modal-btn" data-reel-close aria-label="Close reel"><i class="ph ph-x"></i></button>
-                        </div>
-                    </div>
-                    <div class="reel-modal-video-wrap">
-                        <!-- Video element inserted dynamically -->
-                    </div>
-                    <div class="reel-modal-info-bottom">
-                        <div class="reel-modal-info-text">
-                            <h4 data-reel-title></h4>
-                            <p data-reel-subtitle></p>
-                        </div>
-                        <a href="#" class="reel-modal-product-card" data-reel-product-card style="display:none;" aria-label="View product details">
-                            <img data-reel-prod-img src="" alt="">
-                            <div class="reel-modal-product-details">
-                                <strong data-reel-prod-name></strong>
-                                <span data-reel-prod-price></span>
-                            </div>
-                            <span class="reel-modal-view-btn">
-                                View Item <i class="ph ph-arrow-right"></i>
-                            </span>
-                        </a>
-                    </div>
-                </div>
-            `;
-            document.body.appendChild(backdrop);
-        }
-
-        const videoWrap = backdrop.querySelector('.reel-modal-video-wrap');
-        const titleEl = backdrop.querySelector('[data-reel-title]');
-        const subtitleEl = backdrop.querySelector('[data-reel-subtitle]');
-        const productCard = backdrop.querySelector('[data-reel-product-card]');
-        const prodImg = backdrop.querySelector('[data-reel-prod-img]');
-        const prodName = backdrop.querySelector('[data-reel-prod-name]');
-        const prodPrice = backdrop.querySelector('[data-reel-prod-price]');
-        const closeBtn = backdrop.querySelector('[data-reel-close]');
-        const muteBtn = backdrop.querySelector('[data-reel-mute]');
-
-        let currentVideo = null;
-
-        const closeReel = () => {
-            backdrop.classList.remove('is-active');
-            backdrop.setAttribute('aria-hidden', 'true');
-            if (currentVideo) {
-                currentVideo.pause();
-                currentVideo.src = '';
-            }
-            if (videoWrap) videoWrap.innerHTML = '';
-        };
-
-        const openReel = (triggerEl) => {
-            const videoSrc = triggerEl.dataset.videoSrc || '';
-            const videoType = triggerEl.dataset.videoType || 'video';
-            const title = triggerEl.dataset.videoTitle || 'Gawdee Story';
-            const subtitle = triggerEl.dataset.videoSubtitle || '';
-            const poster = triggerEl.dataset.videoPoster || '';
-            
-            const prodId = triggerEl.dataset.productId || '';
-            const prodNameText = triggerEl.dataset.productName || '';
-            const prodPriceText = triggerEl.dataset.productPrice || '';
-            const prodImageSrc = triggerEl.dataset.productImage || '';
-            const prodUrl = triggerEl.dataset.productUrl || '';
-
-            if (titleEl) titleEl.textContent = title;
-            if (subtitleEl) subtitleEl.textContent = subtitle;
-
-            if (prodId && productCard) {
-                productCard.style.display = 'flex';
-                if (prodUrl) productCard.href = prodUrl;
-                if (prodImg) prodImg.src = prodImageSrc;
-                if (prodName) prodName.textContent = prodNameText;
-                if (prodPrice) prodPrice.textContent = '₹' + prodPriceText;
-            } else if (productCard) {
-                productCard.style.display = 'none';
-            }
-
-            if (videoWrap) {
-                videoWrap.innerHTML = '';
-                if (videoType === 'external_video' && videoSrc.includes('youtube')) {
-                    const embedUrl = videoSrc.replace('watch?v=', 'embed/');
-                    videoWrap.innerHTML = `<iframe src="${embedUrl}?autoplay=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen style="width:100%;height:100%;"></iframe>`;
-                } else {
-                    const vid = document.createElement('video');
-                    vid.src = videoSrc;
-                    if (poster) vid.poster = poster;
-                    vid.autoplay = true;
-                    vid.playsInline = true;
-                    vid.loop = true;
-                    vid.controls = true;
-                    videoWrap.appendChild(vid);
-                    currentVideo = vid;
-
-                    vid.play().catch(() => {
-                        vid.muted = true;
-                        vid.play();
-                    });
-                }
-            }
-
-            backdrop.classList.add('is-active');
-            backdrop.setAttribute('aria-hidden', 'false');
-        };
-
-        document.addEventListener('click', (e) => {
-            const trigger = e.target.closest('[data-reel-trigger]');
-            if (trigger) {
-                e.preventDefault();
-                openReel(trigger);
-            }
-        });
-
-        closeBtn?.addEventListener('click', closeReel);
-        backdrop.addEventListener('click', (e) => {
-            if (e.target === backdrop) closeReel();
-        });
-
-        muteBtn?.addEventListener('click', () => {
-            if (currentVideo) {
-                currentVideo.muted = !currentVideo.muted;
-                muteBtn.innerHTML = currentVideo.muted ? '<i class="ph ph-speaker-slash"></i>' : '<i class="ph ph-speaker-high"></i>';
-            }
-        });
-
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && backdrop.classList.contains('is-active')) {
-                closeReel();
-            }
-        });
-    };
-
-    initReelPlayer();
     renderCart();
 })();

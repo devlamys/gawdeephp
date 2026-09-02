@@ -108,7 +108,23 @@ $knownIds = [
 
 $db = gawdee_db();
 $existingBySlug = $db->prepare('SELECT id FROM products WHERE slug = ?');
-$upsert = $db->prepare(<<<'SQL'
+$driver = $db->getAttribute(PDO::ATTR_DRIVER_NAME);
+if ($driver === 'mysql') {
+    $upsert = $db->prepare(<<<'SQL'
+INSERT INTO products
+(id, slug, name, full_name, category, category_key, tag, price, original_price, weight, image, description, accent, stock, stock_status, sku, source_id, source_url, rating, review_count, gallery_json, details_json, is_active, updated_at)
+VALUES
+(:id, :slug, :name, :full_name, :category, :category_key, :tag, :price, :original_price, :weight, :image, :description, :accent, :stock, :stock_status, :sku, :source_id, :source_url, :rating, :review_count, :gallery_json, :details_json, :is_active, NOW())
+ON DUPLICATE KEY UPDATE
+name=VALUES(name), full_name=VALUES(full_name), category=VALUES(category), category_key=VALUES(category_key),
+tag=VALUES(tag), price=VALUES(price), original_price=VALUES(original_price), weight=VALUES(weight),
+image=VALUES(image), description=VALUES(description), accent=VALUES(accent), stock=VALUES(stock),
+stock_status=VALUES(stock_status), sku=VALUES(sku), source_id=VALUES(source_id), source_url=VALUES(source_url),
+rating=VALUES(rating), review_count=VALUES(review_count), gallery_json=VALUES(gallery_json),
+details_json=VALUES(details_json), is_active=VALUES(is_active), updated_at=NOW()
+SQL);
+} else {
+    $upsert = $db->prepare(<<<'SQL'
 INSERT INTO products
 (id, slug, name, full_name, category, category_key, tag, price, original_price, weight, image, description, accent, stock, stock_status, sku, source_id, source_url, rating, review_count, gallery_json, details_json, is_active, updated_at)
 VALUES
@@ -121,6 +137,7 @@ stock_status=excluded.stock_status, sku=excluded.sku, source_id=excluded.source_
 rating=excluded.rating, review_count=excluded.review_count, gallery_json=excluded.gallery_json,
 details_json=excluded.details_json, is_active=excluded.is_active, updated_at=CURRENT_TIMESTAMP
 SQL);
+}
 
 $imported = 0;
 $downloadedImages = 0;

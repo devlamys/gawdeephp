@@ -1,6 +1,26 @@
 # Gawdee commerce platform
 
-A modern PHP ecommerce storefront with customer accounts and order tracking, a secure admin panel, SQLite-backed products and orders, homepage CMS and banner uploads, Razorpay checkout verification, a merchant-configurable DTDC adapter, Groq/OpenAI AI chat, and AI-assisted blog publishing.
+A modern PHP ecommerce storefront with customer accounts and order tracking, a secure admin panel, dual **MySQL** and **SQLite** database support with `.env` configuration, homepage CMS and banner uploads, Razorpay checkout verification, a merchant-configurable DTDC adapter, Groq/OpenAI AI chat, and AI-assisted blog publishing.
+
+## Environment & cPanel Setup
+
+Copy `.env.example` to `.env` in your root directory:
+
+```env
+DB_DRIVER=mysql
+DB_HOST=localhost
+DB_NAME=cpaneluser_gawdee
+DB_USER=cpaneluser_gawdeeuser
+DB_PASSWORD=your_secure_password
+```
+
+For cPanel hosting deployment instructions, see [CPANEL_DEPLOYMENT_GUIDE.md](file:///c:/xampp/htdocs/gawdeeNew/CPANEL_DEPLOYMENT_GUIDE.md).
+
+To export existing SQLite data into a MySQL dump file (`gawdee_mysql_dump.sql`) or migrate directly to MySQL:
+
+```bash
+php scripts/migrate-sqlite-to-mysql.php
+```
 
 ## Run locally
 

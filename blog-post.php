@@ -12,77 +12,24 @@ if (!$post) {
 } else {
     $pageTitle = $post['title'] . ' — Gawdee Journal';
     $pageDescription = $post['meta_description'] ?: $post['excerpt'];
-    $pageKeywords = 'Gawdee, Gawdee Journal, ' . ($post['category'] ?: 'Wellness') . ', natural wellness, health guide';
-    $ogType = 'article';
-    $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-    $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
-    $canonicalUrl = $scheme . '://' . $host . '/blog-post?slug=' . urlencode($post['slug']);
-    if (!empty($post['cover_image'])) {
-        $ogImage = str_starts_with($post['cover_image'], 'http') ? $post['cover_image'] : ($scheme . '://' . $host . '/' . ltrim($post['cover_image'], '/'));
-    }
-    $jsonLdExtra = [
-        '@context' => 'https://schema.org',
-        '@type' => 'BlogPosting',
-        'headline' => $post['title'],
-        'description' => $pageDescription,
-        'url' => $canonicalUrl,
-        'datePublished' => $post['created_at'] ?? null,
-        'author' => [
-            '@type' => 'Organization',
-            'name' => 'Gawdee'
-        ],
-        'publisher' => [
-            '@type' => 'Organization',
-            'name' => 'Gawdee',
-            'logo' => [
-                '@type' => 'ImageObject',
-                'url' => $scheme . '://' . $host . '/assets/images/logo.png'
-            ]
-        ]
-    ];
 }
 $bodyClass = 'blog-post-page';
 require __DIR__ . '/includes/header.php';
 ?>
 <?php if ($post): ?>
-<article class="journal-article section">
-    <div class="container container--narrow">
-        <header class="journal-article__header reveal">
-            <a class="journal-article__back" href="blog"><i class="ph ph-arrow-left"></i> Back to Journal</a>
-            <span class="eyebrow"><i class="ph ph-tag"></i> <?= htmlspecialchars($post['category'] ?: 'Gawdee Journal') ?></span>
-            <h1><?= htmlspecialchars($post['title']) ?></h1>
-            <?php if ($post['excerpt']): ?><p class="journal-article__excerpt"><?= htmlspecialchars($post['excerpt']) ?></p><?php endif; ?>
-            <div class="journal-article__meta">
-                <span><i class="ph ph-calendar-blank"></i> <?= htmlspecialchars(date('d F Y', strtotime($post['published_at'] ?: $post['created_at']))) ?></span>
-                <span>·</span>
-                <span><i class="ph ph-user"></i> <?= htmlspecialchars($post['author'] ?: 'Gawdee Editorial') ?></span>
-            </div>
-        </header>
-        <?php if ($post['featured_image']): ?>
-            <figure class="journal-article__cover reveal reveal--scale">
-                <img src="<?= htmlspecialchars($post['featured_image']) ?>" alt="<?= htmlspecialchars($post['title']) ?>">
-            </figure>
-        <?php endif; ?>
-        <div class="journal-article__body reveal">
-            <?= $post['content'] ?>
-        </div>
-        <footer class="journal-article__footer reveal">
-            <div>
-                <span class="eyebrow"><i class="ph ph-plant"></i> Mindful Food</span>
-                <h3>Thoughtful choices start with good information.</h3>
-            </div>
-            <a class="button button--primary" href="index#shop">Explore Gawdee Products <i class="ph ph-arrow-right"></i></a>
-        </footer>
-    </div>
+<article class="journal-article">
+    <header>
+        <a href="blog.php"><i class="ph ph-arrow-left"></i> All stories</a>
+        <span class="content-eyebrow"><?= htmlspecialchars($post['category'] ?: 'Gawdee journal') ?></span>
+        <h1><?= htmlspecialchars($post['title']) ?></h1>
+        <?php if ($post['excerpt']): ?><p><?= htmlspecialchars($post['excerpt']) ?></p><?php endif; ?>
+        <small><?= htmlspecialchars(date('d F Y', strtotime($post['published_at'] ?: $post['created_at']))) ?> · <?= htmlspecialchars($post['author'] ?: 'Gawdee editorial') ?></small>
+    </header>
+    <?php if ($post['featured_image']): ?><figure class="journal-article__cover"><img src="<?= htmlspecialchars($post['featured_image']) ?>" alt="<?= htmlspecialchars($post['title']) ?>"></figure><?php endif; ?>
+    <div class="journal-article__body"><?= $post['content'] ?></div>
+    <footer><strong>Thoughtful food choices start with good information.</strong><a href="index.php#shop">Explore Gawdee products <i class="ph ph-arrow-right"></i></a></footer>
 </article>
 <?php else: ?>
-<section class="journal-hero section text-center">
-    <div class="container">
-        <span class="eyebrow">404</span>
-        <h1>Story not found.</h1>
-        <p>The article may have moved or is still being prepared.</p>
-        <a class="button button--primary" href="blog">Back to Journal</a>
-    </div>
-</section>
+<section class="journal-hero"><h1>Story not found.</h1><p>The article may have moved or is still being prepared.</p><a class="button button--primary" href="blog.php">Back to journal</a></section>
 <?php endif; ?>
 <?php require __DIR__ . '/includes/footer.php'; ?>

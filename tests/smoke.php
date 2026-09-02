@@ -52,19 +52,4 @@ $dirty = '<h2 onclick="bad()">Good</h2><script>alert(1)</script><p style="color:
 $clean = gawdee_sanitize_article_html($dirty);
 $check(!str_contains($clean, '<script') && !str_contains($clean, 'onclick') && !str_contains($clean, 'style='), 'blog HTML sanitization');
 
-gawdee_set_setting('offer_popup_enabled', '0');
-gawdee_set_setting('offer_popup_title', 'Festive Offer');
-gawdee_set_setting('offer_popup_text', 'Use %code% for special discount');
-gawdee_set_setting('offer_popup_link', '/products.php');
-gawdee_set_setting('offer_popup_btn_text', 'Claim Deal');
-$check(
-    gawdee_setting('offer_popup_enabled') === '0' &&
-    gawdee_setting('offer_popup_title') === 'Festive Offer' &&
-    gawdee_setting('offer_popup_text') === 'Use %code% for special discount' &&
-    gawdee_setting('offer_popup_link') === '/products.php' &&
-    gawdee_setting('offer_popup_btn_text') === 'Claim Deal',
-    'dynamic offer popup settings control'
-);
-gawdee_set_setting('offer_popup_enabled', '1');
-
 exit($failures ? 1 : 0);

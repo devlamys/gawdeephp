@@ -4,600 +4,289 @@ declare(strict_types=1);
 
 require __DIR__ . '/includes/data.php';
 
-$pageTitle = 'Gawdee — Authentic organic food for everyday wellness';
+$pageTitle = 'Gawdee — Pure by Nature. Trusted for Generations.';
 $pageDescription = 'Shop Gawdee A2 Gir cow ghee, raw honey, natural nutrition blends and traditional pantry essentials.';
-$pageKeywords = 'Gawdee, Gawdee organic, A2 Gir cow ghee, raw wild forest honey, MixMe nutrition, Taral drops, organic food store India, pure ghee, natural sweeteners';
-$bodyClass = 'commerce-home';
+$bodyClass = 'commerce-home gawdee-reference-home';
 
-$categories = gawdee_categories();
+$homepageSections = gawdee_sections();
+$homepageMedia = gawdee_homepage_media('reels');
+$videoTestimonials = array_slice(gawdee_video_testimonials(), 0, 6);
+$heroSection = $homepageSections['hero'];
+$heroTitle = trim((string) $heroSection['title']) ?: 'Pure by Nature. Trusted for Generations.';
+$heroTitleParts = preg_split('/(?=Trusted\b)/', $heroTitle, 2) ?: [$heroTitle];
+$heroLead = rtrim((string) ($heroTitleParts[0] ?? $heroTitle));
+$heroRest = trim((string) ($heroTitleParts[1] ?? ''));
 
-$combos = [
-    ['tag' => 'Wellness Combo', 'title' => 'A2 Ghee 500ml + Honey 650g', 'items' => [$products[2], $products[3]], 'price' => 1499, 'original' => 1748],
-    ['tag' => 'Energy Combo', 'title' => 'MixMe Choco + Raw Honey', 'items' => [$products[0], $products[3]], 'price' => 1299, 'original' => 1458],
-    ['tag' => 'Immunity Combo', 'title' => 'Taral Drop + Moringa Powder', 'items' => [$products[4], $products[5]], 'price' => 399, 'original' => 558],
-    ['tag' => 'Daily Nutrition', 'title' => 'MixMe Elaichi + A2 Ghee', 'items' => [$products[1], $products[2]], 'price' => 1549, 'original' => 1808],
+$firstProductIn = static function (string $category) use ($products): array {
+    foreach ($products as $product) {
+        if (($product['category_key'] ?? '') === $category) {
+            return $product;
+        }
+    }
+    return $products[0];
+};
+
+$ghee = $firstProductIn('ghee');
+$honey = $firstProductIn('honey');
+$sugar = $firstProductIn('sugar');
+$nutrition = $firstProductIn('nutrition');
+$wellness = $firstProductIn('wellness');
+
+$homePackshot = static function (array $product): string {
+    return match ((string) ($product['id'] ?? '')) {
+        'ghee-500' => 'assets/images/hero-products/ghee-cutout-v1.png',
+        'burra-sugar' => 'assets/images/hero-products/sugar-cutout-v1.png',
+        'mixme-choco' => 'assets/images/products/mixme-choco.webp',
+        'mixme-elaichi' => 'assets/images/products/mixme-elaichi.webp',
+        default => (string) $product['image'],
+    };
+};
+
+$categories = [
+    ['name' => 'A2 Gir Cow Ghee', 'subtitle' => 'Pure, bilona-churned', 'filter' => 'ghee', 'product' => $ghee, 'class' => 'is-dark'],
+    ['name' => 'Natural Honey', 'subtitle' => 'Raw & naturally rich', 'filter' => 'honey', 'product' => $honey, 'class' => 'is-honey'],
+    ['name' => 'Natural Sugars', 'subtitle' => 'Traditional sweetness', 'filter' => 'sugar', 'product' => $sugar, 'class' => 'is-sugar'],
+    ['name' => 'Grains & Millets', 'subtitle' => 'Everyday nourishment', 'filter' => 'nutrition', 'product' => $nutrition, 'class' => 'is-grain'],
+    ['name' => 'Wellness Products', 'subtitle' => 'Clean daily support', 'filter' => 'wellness', 'product' => $wellness, 'class' => 'is-wellness'],
 ];
 
-$featuredProducts = [$products[0], $products[1], $products[4], $products[6], $products[2], $products[3]];
-
-$testimonialFavourites = [
-    'honey' => product_by_slug($products, 'gawdee-raw-wild-forest-honey-650-g') ?? $products[0],
-    'ghee' => product_by_slug($products, 'gawdee-gir-cow-a2-ghee-500-ml') ?? $products[0],
-    'mixme' => product_by_slug($products, 'gawdee-mixme-choco-500-g') ?? $products[0],
-    'moringa' => product_by_slug($products, 'gawdee-moringa-powder-300-g') ?? $products[0],
-];
+$featuredProducts = array_slice($products, 0, 5);
 
 $testimonials = [];
-foreach (gawdee_testimonials() as $story) {
+foreach (array_slice(gawdee_testimonials(), 0, 3) as $story) {
     $relatedProduct = product_by_slug($products, (string) $story['product_slug']) ?? $products[0];
     $testimonials[] = [
         'name' => $story['name'],
-        'initials' => $story['initials'],
         'avatar' => $story['avatar'],
-        'product' => $story['product_name'] ?: $relatedProduct['name'],
+        'initials' => $story['initials'],
+        'location' => $story['product_name'] ?: $relatedProduct['name'],
         'quote' => $story['quote'],
-        'image' => $relatedProduct['image'],
-        'slug' => $relatedProduct['slug'],
-        'theme' => $story['theme'],
-        'rating' => $story['rating'],
+        'rating' => (int) $story['rating'],
     ];
 }
-$testimonialDeck = array_merge($testimonials, array_slice($testimonials, 0, min(2, count($testimonials))));
 
-$blogCovers = [
-    'assets/images/blogs/small-daily-improvements-v1.webp',
-    'assets/images/blogs/gradual-better-eating-v1.webp',
-    'assets/images/blogs/modern-food-choices-v1.webp',
-    'assets/images/blogs/quality-over-quantity-v1.webp',
+$benefitItems = gawdee_section_items('benefits');
+$processItems = gawdee_section_items('process');
+$assuranceItems = gawdee_section_items('assurance');
+$whyItems = gawdee_section_items('why');
+$newsletterPerks = gawdee_section_items('newsletter-perks');
+
+$instagramImages = [
+    'assets/images/catalog/gawdee-gir-cow-a2-ghee-500-ml/gallery-02.webp',
+    'assets/images/catalog/gawdee-gir-cow-a2-ghee-500-ml/story-01.webp',
+    'assets/images/catalog/gawdee-raw-wild-forest-honey-650-g/gallery-01.webp',
+    'assets/images/catalog/gawdee-raw-wild-forest-honey-650-g/story-01.webp',
+    'assets/images/catalog/gawdee-mixme-choco-500-g/gallery-01.webp',
+    'assets/images/catalog/gawdee-moringa-powder-300-g/gallery-01.webp',
+    'assets/images/catalog/gawdee-bura-sugar-1-kg/gallery-01.webp',
+    'assets/images/catalog/gawdee-gir-cow-a2-ghee-1-ltr/gallery-01.webp',
 ];
-$reelProducts = [$products[2], $products[3], $products[0]];
-$homepageSections = gawdee_sections();
-$homepageBanners = gawdee_banners();
-$heroBannersTwo = gawdee_hero_banners_two();
-$homepageReels = gawdee_homepage_media('reels', false, true);
-if (empty($homepageReels)) {
-    $homepageReels = gawdee_homepage_media('reels', false);
+$instagramFeed = [];
+foreach ($instagramImages as $index => $image) {
+    $media = $homepageMedia ? $homepageMedia[$index % count($homepageMedia)] : [];
+    $instagramFeed[] = [
+        'image' => $image,
+        'link' => (string) ($media['link_url'] ?? $media['external_url'] ?? 'https://www.instagram.com/gawdee_organic/'),
+        'title' => (string) ($media['alt_text'] ?? $media['title'] ?? 'Gawdee farm and product story'),
+    ];
 }
-$publishedPosts = gawdee_db()->query("SELECT * FROM blog_posts WHERE status='published' ORDER BY is_featured DESC, COALESCE(published_at, created_at) DESC LIMIT 5")->fetchAll();
+
+$videoEmbedUrl = static function (string $url): string {
+    if (!filter_var($url, FILTER_VALIDATE_URL) || !preg_match('/^https:\/\//i', $url)) {
+        return '';
+    }
+    $parts = parse_url($url);
+    $host = strtolower((string) ($parts['host'] ?? ''));
+    $path = trim((string) ($parts['path'] ?? ''), '/');
+    if (in_array($host, ['youtube.com', 'www.youtube.com', 'm.youtube.com'], true)) {
+        parse_str((string) ($parts['query'] ?? ''), $query);
+        $id = preg_replace('/[^A-Za-z0-9_-]/', '', (string) ($query['v'] ?? ''));
+        return $id !== '' ? 'https://www.youtube.com/embed/' . $id : '';
+    }
+    if ($host === 'youtu.be') {
+        $id = preg_replace('/[^A-Za-z0-9_-]/', '', $path);
+        return $id !== '' ? 'https://www.youtube.com/embed/' . $id : '';
+    }
+    if (in_array($host, ['vimeo.com', 'www.vimeo.com'], true)) {
+        $id = preg_replace('/[^0-9]/', '', $path);
+        return $id !== '' ? 'https://player.vimeo.com/video/' . $id : '';
+    }
+    return '';
+};
 
 require __DIR__ . '/includes/header.php';
-
-$heroScrubEnabled = gawdee_setting('hero_scrub_enabled', '1') === '1';
-$heroScrubVideo = gawdee_setting('hero_scrub_video', '');
-$heroScrubPoster = gawdee_setting('hero_scrub_poster', '');
-$heroScrubTitle = gawdee_setting('hero_scrub_title', '');
-$heroScrubSubtitle = gawdee_setting('hero_scrub_subtitle', '');
-$heroScrubBgImage = gawdee_setting('hero_scrub_bg_image', '');
-
-$heroBgSrc = '';
-if (!empty($heroScrubBgImage)) {
-    $heroBgSrc = (str_starts_with($heroScrubBgImage, 'http://') || str_starts_with($heroScrubBgImage, 'https://')) 
-        ? $heroScrubBgImage 
-        : (str_starts_with($heroScrubBgImage, 'assets/') ? $heroScrubBgImage : 'assets/' . ltrim($heroScrubBgImage, '/'));
-}
 ?>
 
-<?php
-$firstSlide = $heroBannersTwo[0] ?? null;
-$initialEyebrow = !empty($firstSlide['eyebrow']) ? $firstSlide['eyebrow'] : gawdee_setting('hero_scrub_eyebrow', 'EVERYDAY FAVOURITES');
-$initialTitle = !empty($firstSlide['headline']) ? $firstSlide['headline'] : (!empty($firstSlide['title']) ? $firstSlide['title'] : ($heroScrubTitle ?: 'Pure, Organic & Traditional Food Essentials'));
-$initialSubtitle = !empty($firstSlide['subtitle']) ? $firstSlide['subtitle'] : ($heroScrubSubtitle ?: 'Handpicked unadulterated products thoughtfully crafted for modern living.');
-$hasHeroVideos = (!empty($heroScrubVideo) || !empty($heroBannersTwo));
-?>
-
-<?php if ($heroScrubEnabled): ?>
-    <section class="hero-scrub-section <?= !$hasHeroVideos ? 'hero-scrub-section--image-mode' : '' ?>" data-hero-scrub-section
-        data-hero-slides="<?= htmlspecialchars(json_encode($heroBannersTwo, JSON_UNESCAPED_SLASHES), ENT_QUOTES) ?>"
-        aria-label="Cinematic Gawdee experience">
-        <?php if ($hasHeroVideos): ?>
-            <div class="hero-scrub-sticky">
-                <video class="hero-scrub-video is-active" data-hero-scrub-video muted playsinline autoplay loop preload="auto"
-                    <?= $heroScrubPoster ? 'poster="' . htmlspecialchars($heroScrubPoster) . '"' : '' ?>>
-                    <?php if ($heroScrubVideo): ?>
-                        <source src="<?= htmlspecialchars($heroScrubVideo) ?>" type="video/mp4">
-                    <?php endif; ?>
-                </video>
-                <video class="hero-scrub-video hero-scrub-video--next" data-hero-scrub-video-next muted playsinline preload="auto"></video>
-                <?php if ($heroScrubPoster): ?>
-                    <img class="hero-scrub-poster-overlay" data-hero-scrub-poster src="<?= htmlspecialchars($heroScrubPoster) ?>"
-                        alt="Gawdee Pure Food">
-                <?php endif; ?>
+<?php if ($homepageSections['hero']['is_active'] ?? 1): ?>
+<section class="gawdee-hero" aria-labelledby="gawdee-hero-title">
+    <img class="gawdee-hero__art" src="<?= htmlspecialchars($heroSection['image'] ?: 'assets/images/gawdee-a2-farm-hero-v1.png') ?>" alt="Gawdee A2 Gir Cow Ghee with Gir cows on an Indian farm" fetchpriority="high">
+    <div class="container gawdee-hero__inner">
+        <div class="gawdee-hero__copy reveal">
+            <span class="gawdee-kicker"><i class="ph ph-leaf"></i> <?= htmlspecialchars($heroSection['eyebrow'] ?: '100% Pure • Natural • Tested') ?></span>
+            <h1 id="gawdee-hero-title"><em><?= htmlspecialchars($heroLead) ?></em><?= $heroRest !== '' ? '<br><span>' . htmlspecialchars($heroRest) . '</span>' : '' ?></h1>
+            <p><?= htmlspecialchars($heroSection['subtitle'] ?: 'Made from the milk of free-grazed Gir cows. Our A2 Ghee is bilona-churned in small batches to bring you pure nutrition that your family deserves.') ?></p>
+            <div class="gawdee-hero__actions">
+                <a class="button button--primary" href="<?= htmlspecialchars($heroSection['button_url'] ?: 'products.php?category=ghee') ?>"><?= htmlspecialchars($heroSection['button_label'] ?: 'Shop A2 Ghee') ?> <i class="ph ph-arrow-right"></i></a>
+                <a class="button button--outline" href="#farms">Explore Our Farms</a>
             </div>
-        <?php elseif ($heroBgSrc): ?>
-            <div class="hero-image-banner-wrap">
-                <img src="<?= htmlspecialchars($heroBgSrc) ?>" alt="Gawdee Main Banner" class="hero-banner-responsive-img">
+            <div class="gawdee-hero__proof" aria-label="A2 ghee qualities">
+                <span><i class="ph ph-cow"></i> A2 Protein Rich</span>
+                <span><i class="ph ph-stomach"></i> Easy to Digest</span>
+                <span><i class="ph ph-flask"></i> Bilona Churned</span>
+                <span><i class="ph ph-seal-check"></i> Lab Tested</span>
             </div>
-        <?php endif; ?>
-    </section>
-<?php endif; ?>
-
-<section class="trust-strip reveal" aria-label="Shopping benefits">
-    <div class="container trust-strip__inner">
-        <div class="trust-item"><i class="ph ph-leaf"></i><span><strong>100% Authentic</strong>Carefully chosen
-                products</span></div>
-        <div class="trust-item"><i class="ph ph-truck"></i><span><strong>Free Shipping</strong>On orders above
-                ₹999</span></div>
-        <div class="trust-item"><i class="ph ph-wallet"></i><span><strong>Secure Payments</strong>Safe and
-                protected</span></div>
-        <div class="trust-item"><i class="ph ph-clock-counter-clockwise"></i><span><strong>Easy Support</strong>Helpful
-                customer care</span></div>
-        <div class="trust-item"><i class="ph ph-headset"></i><span><strong>Customer Support</strong>Questions are
-                welcome</span></div>
+        </div>
+        <div class="gawdee-hero__farm-notes" aria-label="Farm sourcing highlights">
+            <span><i class="ph ph-cow"></i><strong>Made with Love</strong>from Our Farms</span>
+            <span><i class="ph ph-drop"></i><strong>Get Cow Milk</strong>100% Pure</span>
+        </div>
     </div>
 </section>
+<?php endif; ?>
 
-<?php
-foreach ($homepageSections as $sectionKey => $section) {
-    if (!($section['is_active'] ?? 1)) {
-        continue;
-    }
-    switch ($sectionKey) {
-        case 'shop':
-            ?>
-            <section class="commerce-section" id="shop">
-                <div class="container">
-                    <div class="commerce-section__heading reveal">
-                        <div>
-                            <span class="eyebrow"><i class="ph ph-fire"></i>
-                                <?= htmlspecialchars($homepageSections['shop']['eyebrow'] ?: 'Bestsellers') ?></span>
-                            <h1><?= htmlspecialchars($homepageSections['shop']['title']) ?></h1>
-                            <p><?= htmlspecialchars($homepageSections['shop']['subtitle']) ?></p>
-                        </div>
-                        <div class="commerce-section__actions">
-                            <a class="text-link"
-                                href="<?= htmlspecialchars($homepageSections['shop']['button_url'] ?: 'products') ?>"><?= htmlspecialchars($homepageSections['shop']['button_label'] ?: 'View all products') ?>
-                                <i class="ph ph-arrow-right"></i></a>
-                            <div class="section-rail-controls home-slider-controls" aria-label="Bestseller slider controls">
-                                <button type="button" data-scroll-rail="#home-product-rail" data-scroll-direction="-1"
-                                    aria-label="Previous products"><i class="ph ph-arrow-left"></i></button>
-                                <button type="button" data-scroll-rail="#home-product-rail" data-scroll-direction="1"
-                                    aria-label="Next products"><i class="ph ph-arrow-right"></i></button>
-                            </div>
-                        </div>
-                    </div>
+<?php if ($homepageSections['benefits']['is_active'] ?? 1): ?>
+<section class="gawdee-benefits container reveal" aria-label="<?= htmlspecialchars($homepageSections['benefits']['title'] ?: 'Product qualities') ?>">
+    <?php foreach ($benefitItems as $item): ?><div><?php if ($item['image']): ?><img src="<?= htmlspecialchars($item['image']) ?>" alt="" loading="lazy"><?php else: ?><i class="ph <?= htmlspecialchars($item['icon']) ?>"></i><?php endif; ?><span><strong><?= htmlspecialchars($item['title']) ?></strong><?= htmlspecialchars($item['subtitle']) ?></span></div><?php endforeach; ?>
+</section>
+<?php endif; ?>
 
-                    <div class="compact-product-grid home-product-rail" id="home-product-rail" data-product-grid aria-label="Bestselling products">
-                        <?php foreach ($featuredProducts as $index => $product): ?>
-                            <article class="compact-product-card reveal" data-delay="<?= $index * 45 ?>"
-                                data-category="<?= htmlspecialchars($product['category_key']) ?>"
-                                data-search-name="<?= htmlspecialchars(strtolower($product['full_name'] . ' ' . $product['category'])) ?>">
-                                <a class="compact-product-card__media" href="product?slug=<?= urlencode($product['slug']) ?>">
-                                    <span
-                                        class="compact-product-card__badge <?= $index % 3 === 2 ? 'is-blue' : ($index % 2 === 0 ? 'is-orange' : '') ?>"><?= $index === 5 ? 'New arrival' : ($index % 2 === 0 ? 'Best seller' : 'Popular') ?></span>
-                                    <img src="<?= htmlspecialchars($product['image']) ?>"
-                                        alt="<?= htmlspecialchars($product['full_name']) ?>" loading="lazy">
-                                </a>
-                                <div class="compact-product-card__body">
-                                    <h3><a
-                                            href="product?slug=<?= urlencode($product['slug']) ?>"><?= htmlspecialchars($product['name']) ?></a>
-                                    </h3>
-                                    <?php
-                                    $cVariants = gawdee_family_variants($products, (string) ($product['family_key'] ?? ''));
-                                    if (count($cVariants) > 1):
-                                        ?>
-                                        <div class="card-variant-pills" aria-label="Select size">
-                                            <?php foreach ($cVariants as $cv):
-                                                $isCur = $cv['slug'] === $product['slug'];
-                                                $cvDiscount = discount_percentage($cv);
-                                                ?>
-                                                <button type="button" class="card-variant-pill <?= $isCur ? 'is-active' : '' ?>"
-                                                    data-card-variant-switch data-slug="<?= htmlspecialchars($cv['slug']) ?>"
-                                                    data-id="<?= htmlspecialchars($cv['id']) ?>"
-                                                    data-name="<?= htmlspecialchars($cv['full_name']) ?>"
-                                                    data-weight="<?= htmlspecialchars($cv['weight']) ?>" data-price="<?= (int) $cv['price'] ?>"
-                                                    data-price-formatted="<?= money($cv['price']) ?>"
-                                                    data-original-price-formatted="<?= money($cv['original_price']) ?>"
-                                                    data-discount="<?= $cvDiscount ?>" data-image="<?= htmlspecialchars($cv['image']) ?>">
-                                                    <?= htmlspecialchars($cv['weight']) ?>
-                                                </button>
-                                            <?php endforeach; ?>
-                                        </div>
-                                    <?php else: ?>
-                                        <span class="compact-product-card__weight"><?= htmlspecialchars($product['weight']) ?></span>
-                                    <?php endif; ?>
-                                    <div class="compact-product-card__price">
-                                        <strong><?= money($product['price']) ?></strong><s><?= money($product['original_price']) ?></s>
-                                    </div>
-                                    <div class="compact-product-card__actions">
-                                        <button type="button" data-add-to-cart data-id="<?= htmlspecialchars($product['id']) ?>"
-                                            data-name="<?= htmlspecialchars($product['full_name']) ?>"
-                                            data-price="<?= (int) $product['price'] ?>"
-                                            data-image="<?= htmlspecialchars($product['image']) ?>">Add to cart</button>
-
-                                    </div>
-                                </div>
-                            </article>
-                        <?php endforeach; ?>
-                    </div>
-                    <p class="product-empty" data-product-empty hidden>No products match your search.</p>
-                </div>
-            </section>
-            <?php
-            break;
-
-        case 'categories':
-            ?>
-            <section class="commerce-section category-section" id="categories">
-                <div class="container">
-                    <div class="commerce-section__heading reveal">
-                        <div>
-                            <span class="eyebrow"><i class="ph ph-squares-four"></i>
-                                <?= htmlspecialchars($homepageSections['categories']['eyebrow'] ?: 'Organic Categories') ?></span>
-                            <h2><?= htmlspecialchars($homepageSections['categories']['title']) ?></h2>
-                            <p><?= htmlspecialchars($homepageSections['categories']['subtitle']) ?></p>
-                        </div>
-                    </div>
-                    <div class="category-grid">
-                        <?php foreach ($categories as $index => $category): ?>
-                            <a class="category-card reveal" data-delay="<?= $index * 35 ?>"
-                                href="products?category=<?= rawurlencode((string) $category['filter']) ?>"
-                                data-category-link="<?= htmlspecialchars($category['filter']) ?>">
-                                <span class="category-card__visual">
-                                    <?php if (!empty($category['image'])): ?>
-                                        <img src="<?= htmlspecialchars($category['image']) ?>"
-                                            alt="<?= htmlspecialchars($category['name']) ?>" loading="lazy">
-                                    <?php elseif (!empty($category['icon'])): ?>
-                                        <i class="ph <?= htmlspecialchars($category['icon']) ?>"></i>
-                                    <?php else: ?>
-                                        <i class="ph ph-squares-four"></i>
-                                    <?php endif; ?>
-                                </span>
-                                <strong><?= htmlspecialchars($category['name']) ?></strong>
-                                <span class="category-card__arrow"><i class="ph ph-arrow-right"></i></span>
-                            </a>
-                        <?php endforeach; ?>
-                    </div>
-                </div>
-            </section>
-            <?php
-            break;
-
-        case 'why':
-        case 'why_gawdee':
-            ?>
-            <section class="commerce-section brand-story-section reveal" id="why-gawdee">
-                <div class="container">
-                    <div class="brand-story-header">
-                        <span class="eyebrow"><i class="ph ph-plant"></i>
-                            <?= htmlspecialchars($section['eyebrow'] ?: 'Why Gawdee') ?></span>
-                        <h2><?= htmlspecialchars($section['title'] ?: 'Food should feel closer to nature.') ?></h2>
-                        <p><?= htmlspecialchars($section['subtitle'] ?: 'We believe everyday food should be pure, unadulterated, and made with traditional Indian care for modern families.') ?>
-                        </p>
-                    </div>
-                    <div class="story-pillar-grid">
-                        <article class="story-pillar-card">
-                            <span class="story-pillar-num">01</span>
-                            <h4 class="">Nutrient-Rich Ingredients</h4>
-                            <p>Carefully selected natural ingredients packed with essential nutrients to support your body and make
-                                everyday meals more nourishing.</p>
-                        </article>
-                        <article class="story-pillar-card">
-                            <span class="story-pillar-num">02</span>
-                            <h4 class="gawdee-dark">Clean & Wholesome</h4>
-                            <p>Made with thoughtfully chosen ingredients and no unnecessary artificial additives, so you know
-                                exactly what goes into your food.</p>
-                        </article>
-                        <article class="story-pillar-card">
-                            <span class="story-pillar-num">03</span>
-                            <h4 class="">Nutrition for Every Day</h4>
-                            <p>Created to fit effortlessly into your daily routine, helping you add wholesome nourishment to your
-                                breakfast, snacks, and everyday meals.</p>
-                        </article>
-                        <article class="story-pillar-card">
-                            <span class="story-pillar-num">04</span>
-                            <h4 class="">Quality You Can Trust</h4>
-                            <p>Every Gawdee product is carefully prepared, quality checked, and packed with care to preserve its
-                                freshness, goodness, and nutritional value.</p>
-                        </article>
-                    </div>
-                </div>
-            </section>
-            <?php
-            break;
-
-        case 'offer':
-            ?>
-            <section class="commerce-section campaign-offer-section" id="offers">
-                <div class="container">
-                    <?php
-                    $offerSection = $homepageSections['offer'];
-                    $offerDesktop = $offerSection['image'] ?: 'assets/images/independence-day-offer-banner-v1.png';
-                    $offerMobile = $offerSection['mobile_image'] ?: 'assets/images/independence-day-offer-banner-mobile-v1.png';
-                    $offerCoupon = gawdee_setting('offer_code', 'FREEDOM10');
-                    ?>
-                    <?php if (!empty($offerSection['title']) || !empty($offerSection['eyebrow']) || !empty($offerSection['subtitle'])): ?>
-                        <div class="commerce-section__heading reveal">
-                            <div>
-                                <span class="eyebrow"><i class="ph ph-tag"></i>
-                                    <?= htmlspecialchars($offerSection['eyebrow'] ?: 'Special Offer') ?></span>
-                                <h2><?= htmlspecialchars($offerSection['title'] ?: 'Flat 10% OFF') ?></h2>
-                                <?php if (!empty($offerSection['subtitle'])): ?>
-                                    <p><?= htmlspecialchars($offerSection['subtitle']) ?></p>
-                                <?php endif; ?>
-                            </div>
-                            <?php if (!empty($offerSection['button_label'])): ?>
-                                <div class="commerce-section__actions">
-                                    <a class="button button--primary" href="<?= htmlspecialchars($offerSection['button_url'] ?: '#shop') ?>"
-                                        data-copy-coupon="<?= htmlspecialchars($offerCoupon) ?>">
-                                        <?= htmlspecialchars($offerSection['button_label']) ?> <i class="ph ph-arrow-right"></i>
-                                    </a>
-                                </div>
-                            <?php endif; ?>
-                        </div>
-                    <?php endif; ?>
-                    <a class="independence-image-offer reveal reveal--scale"
-                        href="<?= htmlspecialchars($offerSection['button_url'] ?: '#shop') ?>"
-                        data-copy-coupon="<?= htmlspecialchars($offerCoupon) ?>"
-                        aria-label="<?= htmlspecialchars(($offerSection['title'] ?: 'Flat 10% OFF') . '. ' . ($offerSection['subtitle'] ?: '')) ?>">
-                        <picture>
-                            <?php if ($offerMobile): ?>
-                                <source media="(max-width: 700px)" srcset="<?= htmlspecialchars($offerMobile) ?>"><?php endif; ?>
-                            <img src="<?= htmlspecialchars($offerDesktop) ?>"
-                                alt="<?= htmlspecialchars(($offerSection['title'] ?: 'Flat 10% OFF') . '. ' . ($offerSection['subtitle'] ?: '')) ?>"
-                                loading="lazy">
-                        </picture>
-                    </a>
-                </div>
-            </section>
-            <?php
-            break;
-
-        case 'combos':
-            ?>
-            <section class="commerce-section combo-section">
-                <div class="container">
-                    <div class="commerce-section__heading reveal">
-                        <div>
-                            <span class="eyebrow"><i class="ph ph-gift"></i>
-                                <?= htmlspecialchars($homepageSections['combos']['eyebrow'] ?: 'Value Bundles') ?></span>
-                            <h2><?= htmlspecialchars($homepageSections['combos']['title']) ?></h2>
-                            <p><?= htmlspecialchars($homepageSections['combos']['subtitle']) ?></p>
-                        </div>
-                        <div class="commerce-section__actions">
-                            <a class="text-link" href="#shop">Explore all combos <i class="ph ph-arrow-right"></i></a>
-                            <div class="section-rail-controls home-slider-controls" aria-label="Combo slider controls">
-                                <button type="button" data-scroll-rail="#home-combo-rail" data-scroll-direction="-1"
-                                    aria-label="Previous combos"><i class="ph ph-arrow-left"></i></button>
-                                <button type="button" data-scroll-rail="#home-combo-rail" data-scroll-direction="1"
-                                    aria-label="Next combos"><i class="ph ph-arrow-right"></i></button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="combo-grid home-combo-rail" id="home-combo-rail" data-sliding-rail data-auto-slide="4200"
-                        tabindex="0" aria-label="Product combos">
-                        <?php foreach ($combos as $index => $combo): ?>
-                            <article class="combo-card reveal" data-delay="<?= $index * 70 ?>">
-                                <span class="combo-card__tag"><?= htmlspecialchars($combo['tag']) ?></span>
-                                <div class="combo-card__visual">
-                                    <?php foreach ($combo['items'] as $item): ?><img src="<?= htmlspecialchars($item['image']) ?>"
-                                            alt="<?= htmlspecialchars($item['name']) ?>" loading="lazy"><?php endforeach; ?>
-                                </div>
-                                <div class="combo-card__body">
-                                    <h3><?= htmlspecialchars($combo['title']) ?></h3>
-                                    <div><strong><?= money($combo['price']) ?></strong><s><?= money($combo['original']) ?></s><span
-                                            class="combo-save">Save
-                                            <?= (int) round((1 - $combo['price'] / $combo['original']) * 100) ?>%</span></div>
-                                </div>
-                            </article>
-                        <?php endforeach; ?>
-                    </div>
-                </div>
-            </section>
-            <?php
-            break;
-        case 'reels':
-            break;
-
-        case 'reviews':
-            ?>
-            <section class="content-section testimonial-reference-section" id="reviews" aria-labelledby="testimonial-heading">
-                <div class="container">
-                    <header class="testimonial-reference-head reveal">
-                        <span class="eyebrow"><i class="ph ph-quotes"></i>
-                            <?= htmlspecialchars($homepageSections['reviews']['eyebrow'] ?: 'Customer Love') ?></span>
-                        <h2 id="testimonial-heading"><span><?= htmlspecialchars($homepageSections['reviews']['title']) ?></span>
-                        </h2>
-                        <p><?= htmlspecialchars($homepageSections['reviews']['subtitle']) ?></p>
-                    </header>
-
-                    <div class="testimonial-reference-controls reveal" aria-label="Testimonial slider controls">
-                        <span><i class="ph ph-hand-swipe-left"></i> Real stories from real families</span>
-                        <div class="section-rail-controls">
-                            <button type="button" data-scroll-rail="#testimonial-rail" data-scroll-direction="-1"
-                                aria-label="Previous testimonial"><i class="ph ph-arrow-left"></i></button>
-                            <button type="button" data-scroll-rail="#testimonial-rail" data-scroll-direction="1"
-                                aria-label="Next testimonial"><i class="ph ph-arrow-right"></i></button>
-                        </div>
-                    </div>
-
-                    <div class="testimonial-reference-rail" id="testimonial-rail" data-sliding-rail data-auto-slide="4600"
-                        tabindex="0" aria-label="Customer testimonials">
-                        <?php foreach ($testimonialDeck as $index => $testimonial): ?>
-                            <article class="testimonial-reference-card reveal" data-delay="<?= min($index * 45, 180) ?>">
-                                <div class="testimonial-reference-card__top">
-                                    <?php if (!empty($testimonial['avatar'])): ?>
-                                        <img class="testimonial-reference-avatar" src="<?= htmlspecialchars($testimonial['avatar']) ?>"
-                                            alt="<?= htmlspecialchars($testimonial['name']) ?>" loading="lazy">
-                                    <?php else: ?>
-                                        <span
-                                            class="testimonial-reference-avatar testimonial-reference-avatar--initials"><?= htmlspecialchars($testimonial['initials']) ?></span>
-                                    <?php endif; ?>
-                                    <div class="testimonial-reference-person">
-                                        <h3><?= htmlspecialchars($testimonial['name']) ?></h3>
-                                        <p><i class="ph ph-seal-check"></i> Verified Buyer</p>
-                                    </div>
-                                    <span class="testimonial-reference-quote" aria-hidden="true"><i class="ph ph-quotes"></i></span>
-                                </div>
-                                <div class="testimonial-reference-meta">
-                                    <span class="testimonial-reference-stars"
-                                        aria-label="<?= (int) $testimonial['rating'] ?> out of 5 stars"><?= str_repeat('★', (int) $testimonial['rating']) ?></span>
-                                    <span class="testimonial-reference-product"><?= htmlspecialchars($testimonial['product']) ?></span>
-                                </div>
-                                <blockquote>“<?= htmlspecialchars($testimonial['quote']) ?>”</blockquote>
-                                <footer>
-                                    <a href="product?slug=<?= urlencode($testimonial['slug']) ?>">Read Full Story</a>
-                                    <a class="testimonial-reference-arrow" href="product?slug=<?= urlencode($testimonial['slug']) ?>"
-                                        aria-label="Read <?= htmlspecialchars($testimonial['name']) ?>'s story"><i
-                                            class="ph ph-caret-right"></i></a>
-                                </footer>
-                            </article>
-                        <?php endforeach; ?>
-                    </div>
-                </div>
-            </section>
-            <?php
-            break;
-
-        case 'stories':
-            if (empty($publishedPosts)) {
-                break;
-            }
-            ?>
-            <section class="content-section blog-reference-section" id="stories" aria-labelledby="blog-reference-heading">
-                <div class="container">
-                    <header class="blog-reference-head reveal">
-                        <span class="eyebrow"><i class="ph ph-book-open"></i>
-                            <?= htmlspecialchars($homepageSections['stories']['eyebrow'] ?: 'Wellness Journal') ?></span>
-                        <h2 id="blog-reference-heading"><?= htmlspecialchars($homepageSections['stories']['title']) ?></h2>
-                        <p><?= htmlspecialchars($homepageSections['stories']['subtitle']) ?></p>
-                    </header>
-
-                    <div class="testimonial-reference-controls reveal" aria-label="Journal slider controls">
-                        <span><i class="ph ph-hand-swipe-left"></i> Swipe to explore wellness stories</span>
-                        <div class="section-rail-controls">
-                            <button type="button" data-scroll-rail="#journal-rail" data-scroll-direction="-1"
-                                aria-label="Previous story"><i class="ph ph-arrow-left"></i></button>
-                            <button type="button" data-scroll-rail="#journal-rail" data-scroll-direction="1"
-                                aria-label="Next story"><i class="ph ph-arrow-right"></i></button>
-                        </div>
-                    </div>
-
-                    <div class="journal-rail" id="journal-rail" data-sliding-rail tabindex="0"
-                        aria-label="Wellness journal stories">
-                        <?php foreach ($publishedPosts as $index => $post): ?>
-                            <article class="journal-card reveal" data-delay="<?= ($index % 5) * 45 ?>">
-                                <a class="journal-card__visual" href="blog-post?slug=<?= rawurlencode($post['slug']) ?>">
-                                    <?php if (!empty($post['featured_image'])): ?>
-                                        <img src="<?= htmlspecialchars($post['featured_image']) ?>"
-                                            alt="<?= htmlspecialchars($post['title']) ?>" loading="lazy">
-                                    <?php else: ?>
-                                        <div class="journal-card__placeholder"><i class="ph ph-leaf"></i></div>
-                                    <?php endif; ?>
-                                    <span
-                                        class="journal-card__badge"><?= htmlspecialchars(($post['category'] ?: 'Wellness') . ' · ' . (($post['source'] ?? '') === 'ai' ? 'AI-assisted' : 'Editorial')) ?></span>
-                                </a>
-                                <div class="journal-card__body">
-                                    <div class="journal-card__meta">
-                                        <i class="ph ph-calendar-blank"></i>
-                                        <span><?= htmlspecialchars(date('d M Y', strtotime($post['published_at'] ?: $post['created_at']))) ?></span>
-                                        <span>·</span>
-                                        <span><?= htmlspecialchars($post['author'] ?: 'Gawdee Editorial') ?></span>
-                                    </div>
-                                    <h2><a
-                                            href="blog-post?slug=<?= rawurlencode($post['slug']) ?>"><?= htmlspecialchars($post['title']) ?></a>
-                                    </h2>
-                                    <a class="journal-card__link" href="blog-post?slug=<?= rawurlencode($post['slug']) ?>">Read Story <i
-                                            class="ph ph-arrow-right"></i></a>
-                                </div>
-                            </article>
-                        <?php endforeach; ?>
-                    </div>
-
-                    <div class="blog-reference-footer reveal">
-                        <a class="button button--secondary"
-                            href="<?= htmlspecialchars($homepageSections['stories']['button_url'] ?: 'blog') ?>"><?= htmlspecialchars($homepageSections['stories']['button_label'] ?: 'View All Stories') ?>
-                            <i class="ph ph-arrow-right"></i></a>
-                    </div>
-                </div>
-            </section>
-            <?php
-            break;
-
-        case 'newsletter':
-            ?>
-            <section class="commerce-section newsletter-section reveal">
-                <div class="container">
-                    <div class="newsletter-panel">
-                        <div class="newsletter-panel__icon"><i class="ph ph-envelope-simple"></i></div>
-                        <div>
-                            <span class="eyebrow eyebrow--light"><i class="ph ph-paper-plane-tilt"></i>
-                                <?= htmlspecialchars($homepageSections['newsletter']['eyebrow'] ?: 'Stay Connected') ?></span>
-                            <h2><?= htmlspecialchars($homepageSections['newsletter']['title']) ?></h2>
-                            <p><?= htmlspecialchars($homepageSections['newsletter']['subtitle']) ?></p>
-                        </div>
-                        <form action="#" data-newsletter-form><label class="sr-only" for="newsletter-email">Enter your
-                                email</label><input id="newsletter-email" type="email" placeholder="Enter your email"
-                                required><button
-                                type="submit"><?= htmlspecialchars($homepageSections['newsletter']['button_label'] ?: 'Subscribe') ?>
-                                <i class="ph ph-arrow-right"></i></button></form>
-                        <div class="newsletter-panel__leaf" aria-hidden="true"><i class="ph ph-plant"></i></div>
-                    </div>
-                </div>
-            </section>
-            <?php
-            break;
-    }
-}
-?>
-
-<?php if (gawdee_setting('offer_popup_enabled', '1') === '1'): ?>
-    <?php
-    $offerPopupImage = gawdee_setting('offer_popup_image', 'assets/images/independence-offer-popup-v1.webp');
-    $offerPopupCode = gawdee_setting('offer_code', 'FREEDOM10');
-    $offerPopupPercent = gawdee_setting('offer_percent', '10');
-    $offerPopupTitle = gawdee_setting('offer_popup_title', 'Independence Day Special');
-    $offerPopupRawText = gawdee_setting('offer_popup_text', 'Use code %code% at checkout');
-    $offerPopupLink = gawdee_setting('offer_popup_link', '#shop');
-    $offerPopupBtnText = gawdee_setting('offer_popup_btn_text', 'Shop offer');
-    $offerPopupDelay = min(10000, max(0, (int) gawdee_setting('offer_popup_delay_ms', '850')));
-
-    if (str_contains($offerPopupRawText, '%code%')) {
-        $offerPopupDescription = str_replace(
-            '%code%',
-            '<strong>' . htmlspecialchars($offerPopupCode) . '</strong>',
-            htmlspecialchars($offerPopupRawText, ENT_QUOTES, 'UTF-8')
-        );
-    } else {
-        $offerPopupDescription = htmlspecialchars($offerPopupRawText, ENT_QUOTES, 'UTF-8');
-    }
-
-    $offerPopupKey = substr(hash('sha256', implode('|', [
-        $offerPopupImage,
-        $offerPopupCode,
-        $offerPopupPercent,
-        $offerPopupTitle,
-        $offerPopupRawText,
-        $offerPopupLink,
-        $offerPopupBtnText,
-        $offerPopupDelay
-    ])), 0, 14);
-    ?>
-    <div class="offer-popup" data-offer-popup data-popup-key="<?= htmlspecialchars($offerPopupKey) ?>"
-        data-popup-delay="<?= $offerPopupDelay ?>" hidden>
-        <section class="offer-popup__dialog" role="dialog" aria-modal="true" aria-labelledby="independence-offer-title"
-            aria-describedby="independence-offer-description">
-            <div class="offer-popup__flag" aria-hidden="true"><span></span><span></span><span></span></div>
-            <button class="offer-popup__close" type="button" data-offer-popup-close aria-label="Close offer popup"><i
-                    class="ph ph-x"></i></button>
-            <a class="offer-popup__art" href="<?= htmlspecialchars($offerPopupLink) ?>" data-offer-popup-shop>
-                <img src="<?= htmlspecialchars($offerPopupImage) ?>"
-                    alt="<?= htmlspecialchars($offerPopupTitle) ?>. Flat <?= htmlspecialchars($offerPopupPercent) ?> percent off with code <?= htmlspecialchars($offerPopupCode) ?>.">
-            </a>
-            <div class="offer-popup__actions">
-                <div class="offer-popup__copy">
-                    <span id="independence-offer-title"><?= htmlspecialchars($offerPopupTitle) ?></span>
-                    <p id="independence-offer-description"><?= $offerPopupDescription ?></p>
-                </div>
-                <?php if (!empty($offerPopupCode)): ?>
-                    <button type="button" class="offer-popup__code" data-copy-offer="<?= htmlspecialchars($offerPopupCode) ?>"
-                        aria-label="Copy offer code <?= htmlspecialchars($offerPopupCode) ?>"><strong><?= htmlspecialchars($offerPopupCode) ?></strong><span><i
-                                class="ph ph-copy"></i> Copy code</span></button>
-                <?php endif; ?>
-                <a class="offer-popup__shop" href="<?= htmlspecialchars($offerPopupLink) ?>"
-                    data-offer-popup-shop><?= htmlspecialchars($offerPopupBtnText) ?> <i class="ph ph-arrow-right"></i></a>
-            </div>
-        </section>
+<?php if ($homepageSections['categories']['is_active'] ?? 1): ?>
+<section class="gawdee-section gawdee-category-section container" id="categories" aria-labelledby="category-title">
+    <header class="gawdee-section-title reveal">
+        <span class="gawdee-title-leaf" aria-hidden="true"><i class="ph ph-plant"></i></span>
+        <h2 id="category-title"><?= htmlspecialchars($homepageSections['categories']['title'] ?: 'Shop by Category') ?></h2>
+        <span class="gawdee-title-leaf is-right" aria-hidden="true"><i class="ph ph-plant"></i></span>
+    </header>
+    <div class="gawdee-category-grid">
+        <?php foreach ($categories as $index => $category): ?>
+        <a class="gawdee-category-card <?= htmlspecialchars($category['class']) ?> reveal" data-delay="<?= $index * 45 ?>" href="products.php?category=<?= rawurlencode($category['filter']) ?>" data-category-link="<?= htmlspecialchars($category['filter']) ?>">
+            <span class="gawdee-category-card__copy"><strong><?= htmlspecialchars($category['name']) ?></strong><small><?= htmlspecialchars($category['subtitle']) ?></small></span>
+            <img src="<?= htmlspecialchars($homePackshot($category['product'])) ?>" alt="<?= htmlspecialchars($category['product']['name']) ?>" loading="lazy">
+            <span class="gawdee-mini-cta">Shop Now <i class="ph ph-arrow-right"></i></span>
+        </a>
+        <?php endforeach; ?>
     </div>
+</section>
+<?php endif; ?>
+
+<?php if ($homepageSections['process']['is_active'] ?? 1): ?>
+<section class="gawdee-section gawdee-process container" id="farms" aria-labelledby="process-title">
+    <header class="gawdee-section-title gawdee-section-title--compact reveal"><h2 id="process-title"><?= htmlspecialchars($homepageSections['process']['title'] ?: 'From Our Farms to Your Family') ?></h2></header>
+    <div class="gawdee-process__track">
+        <?php foreach ($processItems as $index => $step): ?>
+        <div class="gawdee-process__step reveal" data-delay="<?= $index * 45 ?>">
+            <span class="gawdee-process__icon"><?php if ($step['image']): ?><img src="<?= htmlspecialchars($step['image']) ?>" alt="" loading="lazy"><?php else: ?><i class="ph <?= htmlspecialchars($step['icon']) ?>"></i><?php endif; ?></span>
+            <strong><?= htmlspecialchars($step['title']) ?></strong>
+            <small><?= htmlspecialchars($step['subtitle']) ?></small>
+        </div>
+        <?php if ($index < count($processItems) - 1): ?><i class="ph ph-arrow-right gawdee-process__arrow" aria-hidden="true"></i><?php endif; ?>
+        <?php endforeach; ?>
+    </div>
+</section>
+<?php endif; ?>
+
+<?php if ($homepageSections['shop']['is_active'] ?? 1): ?>
+<section class="gawdee-section gawdee-products container" id="shop" aria-labelledby="bestseller-title">
+    <header class="gawdee-section-title reveal">
+        <span class="gawdee-title-leaf" aria-hidden="true"><i class="ph ph-plant"></i></span>
+        <h2 id="bestseller-title"><?= htmlspecialchars($homepageSections['shop']['title'] ?: 'Best Sellers') ?></h2>
+        <span class="gawdee-title-leaf is-right" aria-hidden="true"><i class="ph ph-plant"></i></span>
+        <a href="<?= htmlspecialchars($homepageSections['shop']['button_url'] ?: 'products.php') ?>"><?= htmlspecialchars($homepageSections['shop']['button_label'] ?: 'View all products') ?> <i class="ph ph-arrow-right"></i></a>
+    </header>
+    <div class="gawdee-product-grid" data-product-grid>
+        <?php foreach ($featuredProducts as $index => $product): ?>
+        <article class="gawdee-product-card reveal" data-delay="<?= $index * 40 ?>" data-category="<?= htmlspecialchars($product['category_key']) ?>" data-search-name="<?= htmlspecialchars(strtolower($product['full_name'] . ' ' . $product['category'])) ?>">
+            <?php if ($index < 3): ?><span class="gawdee-product-card__badge <?= $index === 1 ? 'is-sale' : '' ?>"><?= $index === 0 ? 'Bestseller' : ($index === 1 ? 'Sale' : 'New') ?></span><?php endif; ?>
+            <a class="gawdee-product-card__media" href="product.php?slug=<?= urlencode($product['slug']) ?>"><img src="<?= htmlspecialchars($homePackshot($product)) ?>" alt="<?= htmlspecialchars($product['full_name']) ?>" loading="lazy"></a>
+            <div class="gawdee-product-card__body">
+                <h3><a href="product.php?slug=<?= urlencode($product['slug']) ?>"><?= htmlspecialchars($product['name']) ?></a></h3>
+                <small><?= htmlspecialchars($product['weight']) ?></small>
+                <div class="gawdee-rating" aria-label="4.9 out of 5 stars"><span>4.9</span> ★★★★★ <small>(<?= 95 + ($index * 47) ?>)</small></div>
+                <div class="gawdee-product-card__price"><strong><?= money($product['price']) ?></strong><s><?= money($product['original_price']) ?></s></div>
+                <button type="button" data-add-to-cart data-id="<?= htmlspecialchars($product['id']) ?>" data-name="<?= htmlspecialchars($product['full_name']) ?>" data-price="<?= (int) $product['price'] ?>" data-image="<?= htmlspecialchars($product['image']) ?>">Add to Cart <i class="ph ph-shopping-cart"></i></button>
+            </div>
+        </article>
+        <?php endforeach; ?>
+    </div>
+    <p class="product-empty" data-product-empty hidden>No products match your search.</p>
+</section>
+<?php endif; ?>
+
+<?php if ($homepageSections['combos']['is_active'] ?? 1): ?>
+<section class="gawdee-section container" id="offers">
+    <div class="gawdee-combo-banner reveal">
+        <div class="gawdee-combo-banner__copy"><h2><?= htmlspecialchars($homepageSections['combos']['title'] ?: 'Healthy Combos for a Better You!') ?></h2><p><?= htmlspecialchars($homepageSections['combos']['subtitle'] ?: 'Pure • Natural • Nutritious • Trusted') ?></p><a class="button button--primary" href="<?= htmlspecialchars($homepageSections['combos']['button_url'] ?: 'products.php') ?>"><?= htmlspecialchars($homepageSections['combos']['button_label'] ?: 'Explore Combos') ?> <i class="ph ph-arrow-right"></i></a></div>
+        <div class="gawdee-combo-banner__products" aria-label="Featured Gawdee combo"><img src="<?= htmlspecialchars($ghee['image']) ?>" alt="<?= htmlspecialchars($ghee['name']) ?>" loading="lazy"><img src="<?= htmlspecialchars($honey['image']) ?>" alt="<?= htmlspecialchars($honey['name']) ?>" loading="lazy"><img src="<?= htmlspecialchars($nutrition['image']) ?>" alt="<?= htmlspecialchars($nutrition['name']) ?>" loading="lazy"></div>
+        <div class="gawdee-combo-banner__points"><span><i class="ph ph-coins"></i><strong>Save More</strong>with Combos</span><span><i class="ph ph-leaf"></i><strong>100% Natural</strong>Ingredients</span><span><i class="ph ph-users-three"></i><strong>Perfect for</strong>Your Family</span></div>
+    </div>
+</section>
+<?php endif; ?>
+
+<?php if ($homepageSections['assurance']['is_active'] ?? 1): ?>
+<section class="gawdee-assurance-band container reveal" aria-label="<?= htmlspecialchars($homepageSections['assurance']['title'] ?: 'Why families trust Gawdee') ?>">
+    <?php foreach ($assuranceItems as $item): ?><div><?php if ($item['image']): ?><img src="<?= htmlspecialchars($item['image']) ?>" alt="" loading="lazy"><?php else: ?><i class="ph <?= htmlspecialchars($item['icon']) ?>"></i><?php endif; ?><span><strong><?= htmlspecialchars($item['title']) ?></strong><?= htmlspecialchars($item['subtitle']) ?></span></div><?php endforeach; ?>
+</section>
+<?php endif; ?>
+
+<?php if (($homepageSections['about']['is_active'] ?? 1) || ($homepageSections['why']['is_active'] ?? 1) || ($homepageSections['reviews']['is_active'] ?? 1)): ?>
+<section class="gawdee-section gawdee-story-grid container" id="about" aria-label="The Gawdee difference">
+    <?php if ($homepageSections['about']['is_active'] ?? 1): ?><article class="gawdee-story-card gawdee-story-card--ingredients reveal"><div><h2><?= htmlspecialchars($homepageSections['about']['title'] ?: 'Natural Ingredients. No Shortcuts.') ?></h2><p><?= htmlspecialchars($homepageSections['about']['body'] ?: $homepageSections['about']['subtitle']) ?></p><a href="<?= htmlspecialchars($homepageSections['about']['button_url'] ?: 'blog.php') ?>"><?= htmlspecialchars($homepageSections['about']['button_label'] ?: 'Know Our Story') ?> <i class="ph ph-arrow-right"></i></a></div><img src="<?= htmlspecialchars($homepageSections['about']['image'] ?: 'assets/images/blogs/quality-over-quantity-v1.webp') ?>" alt="Natural ingredients sourced with care" loading="lazy"></article><?php endif; ?>
+    <?php if ($homepageSections['why']['is_active'] ?? 1): ?><article class="gawdee-story-card gawdee-story-card--why reveal" data-delay="60"><h2><?= htmlspecialchars($homepageSections['why']['title'] ?: 'Why Choose Gawdee?') ?></h2><div class="gawdee-why-list"><?php foreach ($whyItems as $item): ?><span><i class="ph <?= htmlspecialchars($item['icon']) ?>"></i> <?= htmlspecialchars($item['title']) ?></span><?php endforeach; ?></div></article><?php endif; ?>
+    <?php if ($homepageSections['reviews']['is_active'] ?? 1): ?><article class="gawdee-story-card gawdee-story-card--reviews reveal" data-delay="120"><h2><?= htmlspecialchars($homepageSections['reviews']['title'] ?: 'Loved by Thousands of Families') ?></h2><p><?= htmlspecialchars($homepageSections['reviews']['subtitle'] ?: '4.9/5 from 10,000+ happy customers worldwide') ?></p><div class="gawdee-stars">★★★★★</div><a href="<?= htmlspecialchars($homepageSections['reviews']['button_url'] ?: '#reviews') ?>"><?= htmlspecialchars($homepageSections['reviews']['button_label'] ?: 'Read Reviews') ?> <i class="ph ph-arrow-right"></i></a></article><?php endif; ?>
+</section>
+<?php endif; ?>
+
+<?php if (($homepageSections['reviews']['is_active'] ?? 1) && $testimonials): ?>
+<section class="gawdee-testimonials container" id="reviews" aria-label="Customer reviews">
+    <?php foreach ($testimonials as $index => $testimonial): ?>
+    <article class="gawdee-testimonial reveal" data-delay="<?= $index * 55 ?>">
+        <?php if ($testimonial['avatar']): ?><img src="<?= htmlspecialchars($testimonial['avatar']) ?>" alt="<?= htmlspecialchars($testimonial['name']) ?>" loading="lazy"><?php else: ?><span class="gawdee-testimonial__initials"><?= htmlspecialchars($testimonial['initials']) ?></span><?php endif; ?>
+        <div><strong><?= htmlspecialchars($testimonial['name']) ?></strong><small><?= htmlspecialchars($testimonial['location']) ?></small><div class="gawdee-stars" aria-label="<?= $testimonial['rating'] ?> out of 5 stars"><?= str_repeat('★', $testimonial['rating']) ?></div><blockquote>“<?= htmlspecialchars($testimonial['quote']) ?>”</blockquote></div>
+    </article>
+    <?php endforeach; ?>
+</section>
+<?php endif; ?>
+
+<?php if (($homepageSections['video_testimonials']['is_active'] ?? 1) && $videoTestimonials): ?>
+<section class="gawdee-section gawdee-video-testimonials container" id="video-testimonials" aria-labelledby="video-testimonials-title">
+    <header class="gawdee-section-title gawdee-section-title--stacked reveal">
+        <?php if ($homepageSections['video_testimonials']['eyebrow']): ?><span class="gawdee-kicker"><?= htmlspecialchars($homepageSections['video_testimonials']['eyebrow']) ?></span><?php endif; ?>
+        <h2 id="video-testimonials-title"><?= htmlspecialchars($homepageSections['video_testimonials']['title'] ?: 'Real families. Real Gawdee experiences.') ?></h2>
+        <?php if ($homepageSections['video_testimonials']['subtitle']): ?><p><?= htmlspecialchars($homepageSections['video_testimonials']['subtitle']) ?></p><?php endif; ?>
+    </header>
+    <div class="gawdee-video-testimonials__grid">
+        <?php foreach ($videoTestimonials as $index => $item): $embedUrl = $item['video_type'] === 'external_video' ? $videoEmbedUrl((string) $item['external_url']) : ''; ?>
+        <article class="gawdee-video-testimonial reveal" data-delay="<?= min($index * 55, 220) ?>">
+            <div class="gawdee-video-testimonial__media">
+                <?php if ($item['video_type'] === 'upload'): ?>
+                    <video controls preload="metadata" <?= $item['poster_path'] ? 'poster="' . htmlspecialchars($item['poster_path']) . '"' : '' ?>><source src="<?= htmlspecialchars($item['video_path']) ?>"></video>
+                <?php elseif ($embedUrl !== ''): ?>
+                    <iframe src="<?= htmlspecialchars($embedUrl) ?>" title="Video testimonial from <?= htmlspecialchars($item['name']) ?>" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+                <?php else: ?>
+                    <a href="<?= htmlspecialchars($item['external_url']) ?>" target="_blank" rel="noopener" <?= $item['poster_path'] ? 'style="background-image:url(' . htmlspecialchars($item['poster_path']) . ')"' : '' ?>><i class="ph ph-play-circle"></i><span>Watch testimonial</span></a>
+                <?php endif; ?>
+            </div>
+            <div class="gawdee-video-testimonial__body"><div class="gawdee-stars" aria-label="<?= (int) $item['rating'] ?> out of 5 stars"><?= str_repeat('★', (int) $item['rating']) ?></div><blockquote>“<?= htmlspecialchars($item['quote']) ?>”</blockquote><strong><?= htmlspecialchars($item['name']) ?></strong><?php if ($item['role_location']): ?><small><?= htmlspecialchars($item['role_location']) ?></small><?php endif; ?></div>
+        </article>
+        <?php endforeach; ?>
+    </div>
+</section>
+<?php endif; ?>
+
+<?php if ($homepageSections['reels']['is_active'] ?? 1): ?>
+<section class="gawdee-section gawdee-instagram container" aria-labelledby="instagram-title">
+    <header class="gawdee-section-title gawdee-section-title--stacked reveal"><h2 id="instagram-title"><?= htmlspecialchars($homepageSections['reels']['title'] ?: 'From Our Instagram') ?></h2><small><?= htmlspecialchars($homepageSections['reels']['subtitle'] ?: '@gawdee_organic') ?></small></header>
+    <div class="gawdee-instagram__rail">
+        <?php foreach ($instagramFeed as $index => $media): ?>
+        <a href="<?= htmlspecialchars($media['link']) ?>" <?= str_starts_with($media['link'], 'http') ? 'target="_blank" rel="noopener"' : '' ?> class="reveal" data-delay="<?= min($index * 35, 175) ?>"><img src="<?= htmlspecialchars($media['image']) ?>" alt="<?= htmlspecialchars($media['title']) ?>" loading="lazy"><i class="ph ph-instagram-logo" aria-hidden="true"></i></a>
+        <?php endforeach; ?>
+    </div>
+    <a class="gawdee-instagram__follow" href="https://www.instagram.com/gawdee_organic/" target="_blank" rel="noopener">Follow us on Instagram <i class="ph ph-arrow-right"></i></a>
+</section>
+<?php endif; ?>
+
+<?php if ($homepageSections['newsletter']['is_active'] ?? 1): ?>
+<section class="gawdee-newsletter reveal"><div class="container gawdee-newsletter__inner"><i class="ph ph-envelope-simple-open gawdee-newsletter__icon" aria-hidden="true"></i><div><h2><?= htmlspecialchars($homepageSections['newsletter']['title'] ?: 'Join the Gawdee Family') ?></h2><p><?= htmlspecialchars($homepageSections['newsletter']['subtitle'] ?: 'Get farm news, tips & offers! Plus, be a part of something pure.') ?></p></div><form action="#" data-newsletter-form><label class="sr-only" for="newsletter-email">Email address</label><input id="newsletter-email" type="email" placeholder="Enter your e-mail address" required><button type="submit"><?= htmlspecialchars($homepageSections['newsletter']['button_label'] ?: 'Subscribe') ?></button></form><div class="gawdee-newsletter__perks"><?php foreach ($newsletterPerks as $item): ?><span><i class="ph <?= htmlspecialchars($item['icon']) ?>"></i> <?= htmlspecialchars($item['title']) ?></span><?php endforeach; ?></div></div></section>
 <?php endif; ?>
 
 <?php require __DIR__ . '/includes/footer.php'; ?>
