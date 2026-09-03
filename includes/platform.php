@@ -17,42 +17,44 @@ function gawdee_load_env(?string $path = null): void
     }
 
     $envPath = $path ?? (GAWDEE_ROOT . '/.env');
-    if (!file_exists($envPath)) {
-        return;
-    }
+    if (file_exists($envPath)) {
+        $lines = file($envPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        if ($lines !== false) {
+            foreach ($lines as $line) {
+                $line = trim($line);
+                if ($line === '' || str_starts_with($line, '#')) {
+                    continue;
+                }
 
-    $lines = file($envPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-    if ($lines === false) {
-        return;
-    }
+                if (str_contains($line, '=')) {
+                    [$name, $value] = explode('=', $line, 2);
+                    $name = trim($name);
+                    $value = trim($value);
 
-    foreach ($lines as $line) {
-        $line = trim($line);
-        if ($line === '' || str_starts_with($line, '#')) {
-            continue;
-        }
+                    if (
+                        (str_starts_with($value, '"') && str_ends_with($value, '"')) ||
+                        (str_starts_with($value, "'") && str_ends_with($value, "'"))
+                    ) {
+                        $value = substr($value, 1, -1);
+                    }
 
-        if (str_contains($line, '=')) {
-            [$name, $value] = explode('=', $line, 2);
-            $name = trim($name);
-            $value = trim($value);
-
-            if (
-                (str_starts_with($value, '"') && str_ends_with($value, '"')) ||
-                (str_starts_with($value, "'") && str_ends_with($value, "'"))
-            ) {
-                $value = substr($value, 1, -1);
-            }
-
-            if (!array_key_exists($name, $_SERVER) && !array_key_exists($name, $_ENV)) {
-                putenv("{$name}={$value}");
-                $_ENV[$name] = $value;
-                $_SERVER[$name] = $value;
+                    if (!array_key_exists($name, $_SERVER) && !array_key_exists($name, $_ENV)) {
+                        putenv("{$name}={$value}");
+                        $_ENV[$name] = $value;
+                        $_SERVER[$name] = $value;
+                    }
+                }
             }
         }
     }
 
     $loaded = true;
+
+    if (filter_var(getenv('APP_DEBUG') ?: ($_ENV['APP_DEBUG'] ?? true), FILTER_VALIDATE_BOOLEAN)) {
+        ini_set('display_errors', '1');
+        ini_set('display_startup_errors', '1');
+        error_reporting(E_ALL);
+    }
 }
 
 /**
@@ -103,50 +105,83 @@ function gawdee_db(): PDO
         return $pdo;
     }
 
-    $driver = gawdee_db_driver();
+    try {
+        $driver = gawdee_db_driver();
 
-    if ($driver === 'mysql') {
-        $host = (string) gawdee_env('DB_HOST', '127.0.0.1');
-        $port = (string) gawdee_env('DB_PORT', '3306');
-        $dbname = (string) gawdee_env('DB_NAME', 'gawdee');
-        $username = (string) gawdee_env('DB_USER', 'root');
-        $password = (string) gawdee_env('DB_PASSWORD', '');
-        $charset = (string) gawdee_env('DB_CHARSET', 'utf8mb4');
+        if ($driver === 'mysql') {
+            $host = (string) gawdee_env('DB_HOST', '127.0.0.1');
+            $port = (string) gawdee_env('DB_PORT', '3306');
+            $dbname = (string) gawdee_env('DB_NAME', 'gawdee');
+            $username = (string) gawdee_env('DB_USER', 'root');
+            $password = (string) gawdee_env('DB_PASSWORD', '');
+            $charset = (string) gawdee_env('DB_CHARSET', 'utf8mb4');
 
-        $dsn = "mysql:host={$host};port={$port};dbname={$dbname};charset={$charset}";
-        $options = [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-            PDO::ATTR_EMULATE_PREPARES => false,
-        ];
+            $dsn = "mysql:host={$host};port={$port};dbname={$dbname};charset={$charset}";
+            $options = [
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                PDO::ATTR_EMULATE_PREPARES => false,
+            ];
 
-        if (defined('PDO::MYSQL_ATTR_INIT_COMMAND')) {
-            $options[PDO::MYSQL_ATTR_INIT_COMMAND] = "SET NAMES {$charset} COLLATE utf8mb4_unicode_ci";
+            if (defined('PDO::MYSQL_ATTR_INIT_COMMAND')) {
+                $options[PDO::MYSQL_ATTR_INIT_COMMAND] = "SET NAMES {$charset} COLLATE utf8mb4_unicode_ci";
+            }
+
+            $pdo = new PDO($dsn, $username, $password, $options);
+        } else {
+            if (!is_dir(GAWDEE_STORAGE)) {
+                @mkdir(GAWDEE_STORAGE, 0755, true);
+            }
+            $dbFile = (string) gawdee_env('DB_FILE', GAWDEE_DB);
+            if (!str_starts_with($dbFile, '/') && !preg_match('/^[a-zA-Z]:\\\\/', $dbFile)) {
+                $dbFile = GAWDEE_ROOT . '/' . ltrim($dbFile, '/\\');
+            }
+
+            $pdo = new PDO('sqlite:' . $dbFile, null, null, [
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                PDO::ATTR_EMULATE_PREPARES => false,
+            ]);
+            $pdo->exec('PRAGMA foreign_keys = ON');
+            $pdo->exec('PRAGMA journal_mode = WAL');
+            $pdo->exec('PRAGMA busy_timeout = 5000');
         }
 
-        $pdo = new PDO($dsn, $username, $password, $options);
-    } else {
-        if (!is_dir(GAWDEE_STORAGE)) {
-            mkdir(GAWDEE_STORAGE, 0750, true);
-        }
-        $dbFile = (string) gawdee_env('DB_FILE', GAWDEE_DB);
-        if (!str_starts_with($dbFile, '/') && !preg_match('/^[a-zA-Z]:\\\\/', $dbFile)) {
-            $dbFile = GAWDEE_ROOT . '/' . ltrim($dbFile, '/\\');
-        }
+        gawdee_migrate($pdo);
 
-        $pdo = new PDO('sqlite:' . $dbFile, null, null, [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-            PDO::ATTR_EMULATE_PREPARES => false,
-        ]);
-        $pdo->exec('PRAGMA foreign_keys = ON');
-        $pdo->exec('PRAGMA journal_mode = WAL');
-        $pdo->exec('PRAGMA busy_timeout = 5000');
+        return $pdo;
+    } catch (Throwable $e) {
+        $envExists = file_exists(GAWDEE_ROOT . '/.env');
+        http_response_code(500);
+        echo "<!doctype html><html><head><title>Database Connection Error</title>";
+        echo "<style>body{font-family:system-ui,-apple-system,sans-serif;background:#f8fafc;color:#1e293b;padding:2rem;line-height:1.6}";
+        echo ".card{max-width:680px;margin:2rem auto;background:#fff;padding:2rem;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.08);border:1px solid #e2e8f0}";
+        echo "h2{color:#dc2626;margin-top:0}.badge{display:inline-block;padding:4px 10px;background:#fee2e2;color:#991b1b;border-radius:6px;font-weight:600;font-size:0.875rem}";
+        echo "code{background:#f1f5f9;padding:2px 6px;border-radius:4px;font-size:0.9em;color:#0f172a}ul{padding-left:1.2rem}</style></head><body>";
+        echo "<div class='card'>";
+        echo "<h2>Gawdee — Setup / Database Connection Required</h2>";
+        echo "<p><span class='badge'>Error</span> " . htmlspecialchars($e->getMessage()) . "</p>";
+        echo "<p><strong>Current Driver Configured:</strong> <code>" . htmlspecialchars(gawdee_db_driver()) . "</code></p>";
+        echo "<p><strong>.env File Found:</strong> " . ($envExists ? "<span style='color:green'>YES</span>" : "<span style='color:red'>NO (Missing in project root folder)</span>") . "</p>";
+        echo "<hr style='border:none;border-top:1px solid #e2e8f0;margin:1.5rem 0;'>";
+        echo "<h3>Quick Fix Instructions for cPanel:</h3>";
+        echo "<ol>";
+        echo "<li><strong>Create `.env` file</strong> in your project folder on cPanel (<code>/public_html/gawdeenew/.env</code>).</li>";
+        echo "<li>Copy settings from <code>.env.example</code> into <code>.env</code> and set your cPanel MySQL details:<br>";
+        echo "<pre style='background:#f8fafc;padding:12px;border-radius:6px;font-size:13px;'>";
+        echo "DB_DRIVER=mysql\n";
+        echo "DB_HOST=localhost\n";
+        echo "DB_NAME=mixmepowder_gawdee (your cPanel DB name)\n";
+        echo "DB_USER=mixmepowder_user (your cPanel DB user)\n";
+        echo "DB_PASSWORD=your_password\n";
+        echo "</pre></li>";
+        echo "<li><strong>Create MySQL DB & User</strong> in cPanel -> <i>MySQL Database Wizard</i> and assign <strong>ALL PRIVILEGES</strong>.</li>";
+        echo "<li><strong>Import SQL dump</strong>: Go to cPanel -> <i>phpMyAdmin</i> -> select your database -> click <i>Import</i> -> upload <code>gawdee_mysql_dump.sql</code>.</li>";
+        echo "</ol>";
+        echo "<p style='margin-top:1.5rem;font-size:0.9rem;color:#64748b;'>For diagnostic check, visit: <a href='check.php'>check.php</a></p>";
+        echo "</div></body></html>";
+        exit;
     }
-
-    gawdee_migrate($pdo);
-
-    return $pdo;
 }
 
 function gawdee_get_table_columns(PDO $db, string $table): array

@@ -1,4 +1,6 @@
-Options -Indexes
+<IfModule mod_autoindex.c>
+    Options -Indexes
+</IfModule>
 
 <IfModule mod_rewrite.c>
 RewriteEngine On

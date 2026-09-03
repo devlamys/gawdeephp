@@ -7,7 +7,7 @@ Thumbs.db
 .env.local
 storage/*.sqlite*
 storage/.app_key
-gawdee_mysql_dump.sql
+# gawdee_mysql_dump.sql
 assets/uploads/*
 !assets/uploads/.gitkeep
 !assets/uploads/banners/

@@ -17,13 +17,13 @@ $heroTitleParts = preg_split('/(?=Trusted\b)/', $heroTitle, 2) ?: [$heroTitle];
 $heroLead = rtrim((string) ($heroTitleParts[0] ?? $heroTitle));
 $heroRest = trim((string) ($heroTitleParts[1] ?? ''));
 
-$firstProductIn = static function (string $category) use ($products): array {
+$firstProductIn = static function (string $category) use ($products): ?array {
     foreach ($products as $product) {
         if (($product['category_key'] ?? '') === $category) {
             return $product;
         }
     }
-    return $products[0];
+    return $products[0] ?? null;
 };
 
 $ghee = $firstProductIn('ghee');
@@ -32,13 +32,16 @@ $sugar = $firstProductIn('sugar');
 $nutrition = $firstProductIn('nutrition');
 $wellness = $firstProductIn('wellness');
 
-$homePackshot = static function (array $product): string {
+$homePackshot = static function (?array $product): string {
+    if (!$product) {
+        return 'assets/images/logo.png';
+    }
     return match ((string) ($product['id'] ?? '')) {
         'ghee-500' => 'assets/images/hero-products/ghee-cutout-v1.png',
         'burra-sugar' => 'assets/images/hero-products/sugar-cutout-v1.png',
         'mixme-choco' => 'assets/images/products/mixme-choco.webp',
         'mixme-elaichi' => 'assets/images/products/mixme-elaichi.webp',
-        default => (string) $product['image'],
+        default => (string) ($product['image'] ?? 'assets/images/logo.png'),
     };
 };
 
@@ -54,12 +57,12 @@ $featuredProducts = array_slice($products, 0, 5);
 
 $testimonials = [];
 foreach (array_slice(gawdee_testimonials(), 0, 3) as $story) {
-    $relatedProduct = product_by_slug($products, (string) $story['product_slug']) ?? $products[0];
+    $relatedProduct = product_by_slug($products, (string) $story['product_slug']) ?? ($products[0] ?? null);
     $testimonials[] = [
         'name' => $story['name'],
         'avatar' => $story['avatar'],
         'initials' => $story['initials'],
-        'location' => $story['product_name'] ?: $relatedProduct['name'],
+        'location' => $story['product_name'] ?: ($relatedProduct['name'] ?? 'Gawdee Customer'),
         'quote' => $story['quote'],
         'rating' => (int) $story['rating'],
     ];
@@ -161,7 +164,7 @@ require __DIR__ . '/includes/header.php';
         <?php foreach ($categories as $index => $category): ?>
         <a class="gawdee-category-card <?= htmlspecialchars($category['class']) ?> reveal" data-delay="<?= $index * 45 ?>" href="products.php?category=<?= rawurlencode($category['filter']) ?>" data-category-link="<?= htmlspecialchars($category['filter']) ?>">
             <span class="gawdee-category-card__copy"><strong><?= htmlspecialchars($category['name']) ?></strong><small><?= htmlspecialchars($category['subtitle']) ?></small></span>
-            <img src="<?= htmlspecialchars($homePackshot($category['product'])) ?>" alt="<?= htmlspecialchars($category['product']['name']) ?>" loading="lazy">
+            <img src="<?= htmlspecialchars($homePackshot($category['product'])) ?>" alt="<?= htmlspecialchars($category['product']['name'] ?? $category['name']) ?>" loading="lazy">
             <span class="gawdee-mini-cta">Shop Now <i class="ph ph-arrow-right"></i></span>
         </a>
         <?php endforeach; ?>
