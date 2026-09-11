@@ -120,6 +120,15 @@ body {
   padding-top: 114px;
 }
 
+@media (min-width: 1024px) {
+  body {
+    padding-top: 0 !important;
+  }
+  #main-content {
+    padding-top: 0 !important;
+  }
+}
+
 body.is-locked {
   overflow: hidden;
 }
@@ -410,25 +419,36 @@ em {
    Header Announcement & Navigation System
    -------------------------------------------------------------------------- */
 .header-announcement {
-  background: var(--gawdee-primary-dark);
-  color: #e2ece6;
+  position: absolute;
+  z-index: 102;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(1420px, 84%);
+  min-height: 44px;
+  padding: 9px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  color: white;
+  background: linear-gradient(105deg, #244b159e, #006765aa, #13470ba6);
+  border: 1px solid #ffffff40;
+  border-top: 0;
+  border-radius: 0 0 15px 15px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   font-family: var(--font-sans);
   font-size: 0.8rem;
-  border-bottom: 1px solid rgba(217, 184, 108, 0.2);
-  transition:
-    max-height 0.4s cubic-bezier(0.16, 1, 0.3, 1),
-    opacity 0.35s ease,
-    padding 0.35s ease;
-  max-height: 42px;
-  overflow: hidden;
+  transition: transform 0.4s ease, opacity 0.35s ease, pointer-events 0.35s ease;
 }
 
 .header-announcement__content {
-  height: 40px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   gap: 16px;
+  width: 100%;
 }
 
 .announcement-text {
@@ -477,28 +497,35 @@ em {
   left: 0;
   width: 100%;
   z-index: 1000;
-  background: var(--gawdee-cream) !important;
-  background-color: var(--gawdee-cream) !important;
+  background: transparent !important;
+  background-color: transparent !important;
   color: var(--gawdee-dark);
-  border-bottom: 1px solid rgba(44, 70, 22, 0.12);
-  box-shadow: 0 2px 16px rgba(33, 51, 18, 0.08);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  transition:
-    background-color 0.4s ease,
-    background 0.4s ease,
-    color 0.4s ease,
-    box-shadow 0.4s ease,
-    border-color 0.4s ease;
+  border-bottom: none;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  pointer-events: none;
+  transition: none;
 }
 
 .commerce-header__main {
-  height: 72px;
+  pointer-events: auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 20px;
-  transition: height 0.35s ease;
+  gap: 18px;
+  width: min(1440px, calc(100% - 32px));
+  height: 76px;
+  min-height: 76px;
+  margin: 60px auto 10px;
+  padding: 10px 22px;
+  border: 1px solid rgba(0,92,78,0.15);
+  border-radius: 999px;
+  background: rgba(255,255,255,.88);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 8px 25px rgba(0,92,78,0.12);
+  transition: all 0.35s ease;
 }
 
 .commerce-logo img {
@@ -698,18 +725,20 @@ em {
    SCROLLED STICKY HEADER STATE
    ========================================================================== */
 .commerce-header.is-scrolled {
-  box-shadow: 0 4px 24px rgba(3, 31, 22, 0.12);
+  box-shadow: none;
 }
 
 .commerce-header.is-scrolled .header-announcement {
-  max-height: 0;
+  transform: translate(-50%, -100%);
   opacity: 0;
-  padding: 0;
-  border-bottom: none;
+  pointer-events: none;
 }
 
 .commerce-header.is-scrolled .commerce-header__main {
-  height: 64px;
+  margin-top: 10px;
+  height: 76px;
+  background: rgba(255,255,255,.96);
+  box-shadow: 0 10px 30px rgba(0,92,78,0.18);
 }
 
 .commerce-header.is-scrolled .desktop-main-nav .nav-link {
