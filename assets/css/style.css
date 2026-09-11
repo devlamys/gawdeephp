@@ -15,12 +15,12 @@
   /* ---- New Brand Color Tokens (mapped to canonical theme) ---- */
   --color-primary: #009a84;
   --color-primary-dark: #005c4e;
-  --color-primary-light: #E6F5F2;
+  --color-primary-light: #e6f5f2;
 
   --color-dark: #005c4e;
   --color-dark-soft: #00705e;
 
-  --color-white: #FFFFFF;
+  --color-white: #ffffff;
   --color-gray-50: #fff8f1;
   --color-gray-100: #e8f1eb;
   --color-gray-500: rgba(0, 92, 78, 0.75);
@@ -249,7 +249,7 @@ em {
   text-transform: uppercase;
 }
 .eyebrow--light {
-  color: var(--gawdee-accent);
+  color: var(--color-primary-light);
 }
 
 .text-link {
@@ -440,7 +440,10 @@ em {
   -webkit-backdrop-filter: blur(12px);
   font-family: var(--font-sans);
   font-size: 0.8rem;
-  transition: transform 0.4s ease, opacity 0.35s ease, pointer-events 0.35s ease;
+  transition:
+    transform 0.4s ease,
+    opacity 0.35s ease,
+    pointer-events 0.35s ease;
 }
 
 .header-announcement__content {
@@ -519,12 +522,12 @@ em {
   min-height: 76px;
   margin: 60px auto 10px;
   padding: 10px 22px;
-  border: 1px solid rgba(0,92,78,0.15);
+  border: 1px solid rgba(0, 92, 78, 0.15);
   border-radius: 999px;
-  background: rgba(255,255,255,.88);
+  background: rgba(255, 255, 255, 0.88);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  box-shadow: 0 8px 25px rgba(0,92,78,0.12);
+  box-shadow: 0 8px 25px rgba(0, 92, 78, 0.12);
   transition: all 0.35s ease;
 }
 
@@ -737,8 +740,8 @@ em {
 .commerce-header.is-scrolled .commerce-header__main {
   margin-top: 10px;
   height: 76px;
-  background: rgba(255,255,255,.96);
-  box-shadow: 0 10px 30px rgba(0,92,78,0.18);
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 10px 30px rgba(0, 92, 78, 0.18);
 }
 
 .commerce-header.is-scrolled .desktop-main-nav .nav-link {
@@ -858,7 +861,9 @@ em {
   font-size: 0.82rem;
   font-weight: 800;
   cursor: pointer;
-  transition: background 0.2s ease, transform 0.2s ease;
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
 }
 
 .mobile-nav-close-btn:hover,
@@ -897,16 +902,36 @@ em {
   transform: translateY(0);
 }
 
-.commerce-mobile-nav.is-open a:nth-child(1) { transition-delay: 40ms, 40ms, 0s, 0s, 0s; }
-.commerce-mobile-nav.is-open a:nth-child(2) { transition-delay: 70ms, 70ms, 0s, 0s, 0s; }
-.commerce-mobile-nav.is-open a:nth-child(3) { transition-delay: 100ms, 100ms, 0s, 0s, 0s; }
-.commerce-mobile-nav.is-open a:nth-child(4) { transition-delay: 130ms, 130ms, 0s, 0s, 0s; }
-.commerce-mobile-nav.is-open a:nth-child(5) { transition-delay: 160ms, 160ms, 0s, 0s, 0s; }
-.commerce-mobile-nav.is-open a:nth-child(6) { transition-delay: 190ms, 190ms, 0s, 0s, 0s; }
-.commerce-mobile-nav.is-open a:nth-child(7) { transition-delay: 220ms, 220ms, 0s, 0s, 0s; }
-.commerce-mobile-nav.is-open a:nth-child(8) { transition-delay: 250ms, 250ms, 0s, 0s, 0s; }
-.commerce-mobile-nav.is-open a:nth-child(9) { transition-delay: 280ms, 280ms, 0s, 0s, 0s; }
-.commerce-mobile-nav.is-open a:nth-child(10) { transition-delay: 310ms, 310ms, 0s, 0s, 0s; }
+.commerce-mobile-nav.is-open a:nth-child(1) {
+  transition-delay: 40ms, 40ms, 0s, 0s, 0s;
+}
+.commerce-mobile-nav.is-open a:nth-child(2) {
+  transition-delay: 70ms, 70ms, 0s, 0s, 0s;
+}
+.commerce-mobile-nav.is-open a:nth-child(3) {
+  transition-delay: 100ms, 100ms, 0s, 0s, 0s;
+}
+.commerce-mobile-nav.is-open a:nth-child(4) {
+  transition-delay: 130ms, 130ms, 0s, 0s, 0s;
+}
+.commerce-mobile-nav.is-open a:nth-child(5) {
+  transition-delay: 160ms, 160ms, 0s, 0s, 0s;
+}
+.commerce-mobile-nav.is-open a:nth-child(6) {
+  transition-delay: 190ms, 190ms, 0s, 0s, 0s;
+}
+.commerce-mobile-nav.is-open a:nth-child(7) {
+  transition-delay: 220ms, 220ms, 0s, 0s, 0s;
+}
+.commerce-mobile-nav.is-open a:nth-child(8) {
+  transition-delay: 250ms, 250ms, 0s, 0s, 0s;
+}
+.commerce-mobile-nav.is-open a:nth-child(9) {
+  transition-delay: 280ms, 280ms, 0s, 0s, 0s;
+}
+.commerce-mobile-nav.is-open a:nth-child(10) {
+  transition-delay: 310ms, 310ms, 0s, 0s, 0s;
+}
 
 .commerce-mobile-nav a span {
   flex: 1;
@@ -1510,7 +1535,7 @@ em {
   padding: 4px 12px;
   border-radius: 999px;
   background: var(--gawdee-primary);
-  color: var(--gawdee-accent);
+  color: var(--color-primary-light);
   font-family: var(--font-sans);
   font-size: 0.72rem;
   font-weight: 800;
@@ -5187,7 +5212,7 @@ em {
 }
 
 .customer-auth-visual__copy .eyebrow--light {
-  color: var(--gawdee-accent);
+  color: var(--color-primary-light);
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;

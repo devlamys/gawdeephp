@@ -112,7 +112,8 @@ foreach ($homepageSections as $sectionKey => $section) {
                         </div>
                     </div>
 
-                    <div class="compact-product-grid home-product-rail" id="home-product-rail" data-product-grid aria-label="Bestselling products">
+                    <div class="compact-product-grid home-product-rail" id="home-product-rail" data-product-grid
+                        aria-label="Bestselling products">
                         <?php foreach ($featuredProducts as $index => $product): ?>
                             <article class="compact-product-card reveal" data-delay="<?= $index * 45 ?>"
                                 data-category="<?= htmlspecialchars($product['category_key']) ?>"
@@ -214,8 +215,12 @@ foreach ($homepageSections as $sectionKey => $section) {
             <section class="commerce-section brand-story-section reveal" id="why-gawdee">
                 <div class="container">
                     <div class="brand-story-header">
-                        <span class="eyebrow"><i class="ph ph-plant"></i>
-                            <?= htmlspecialchars($section['eyebrow'] ?: 'Why Gawdee') ?></span>
+                        <span class="eyebrow eyebrow--light">
+                            <i class="ph ph-plant"></i>
+
+                            <?= htmlspecialchars($section['eyebrow'] ?: 'Why Gawdee') ?>
+
+                        </span>
                         <h2><?= htmlspecialchars($section['title'] ?: 'Food should feel closer to nature.') ?></h2>
                         <p><?= htmlspecialchars($section['subtitle'] ?: 'We believe everyday food should be pure, unadulterated, and made with traditional Indian care for modern families.') ?>
                         </p>

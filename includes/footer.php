@@ -63,56 +63,57 @@
 </footer>
 
 <?php if (gawdee_setting('ai_chat_enabled', '1') === '1'): ?>
-            <button class="ai-float" type="button" data-ai-toggle aria-label="Open Gawdee AI wellness assistant"
-                aria-expanded="false">
-                <span class="ai-float__orb"><img src="assets/images/gawdee-ai-robot-v1.png" alt="" aria-hidden="true"></span>
-                <span class="ai-float__online" aria-hidden="true"></span>
-            </button>
-            <aside class="ai-chat" data-ai-chat aria-hidden="true" aria-labelledby="ai-chat-title">
-                <header>
-                    <span class="ai-chat__mark"><img src="assets/images/gawdee-ai-robot-v1.png" alt="" aria-hidden="true"></span>
-                    <div><strong id="ai-chat-title">Ask Gawdee AI</strong><small><span></span> Online ·
-                            <?= htmlspecialchars(ucfirst(gawdee_setting('ai_provider', 'groq'))) ?> powered</small></div>
-                    <button type="button" data-ai-close aria-label="Close assistant"><i class="ph ph-x"></i></button>
-                </header>
-                <?php if (gawdee_setting('offer_popup_enabled', '1') === '1'): ?>
-                    <?php
-                    $aiOfferCode    = gawdee_setting('offer_code', 'FREEDOM10');
-                    $aiOfferPercent = gawdee_setting('offer_percent', '10');
-                    $aiOfferTitle   = gawdee_setting('offer_popup_title', 'Independence Day Special');
-                    $aiOfferImage   = gawdee_setting('offer_popup_image', 'assets/images/hero-slide-independence-v5.webp');
-                    $aiOfferLink    = gawdee_setting('offer_popup_link', 'index#offers');
-                    ?>
-                    <article class="ai-offer-card" aria-label="Latest offer">
-                        <a class="ai-offer-card__media" href="<?= htmlspecialchars($aiOfferLink) ?>" aria-label="View offer">
-                            <img src="<?= htmlspecialchars($aiOfferImage) ?>"
-                                alt="<?= htmlspecialchars($aiOfferTitle) ?>" loading="lazy">
-                            <span><i class="ph ph-sparkle"></i> Special offer</span>
-                        </a>
-                        <div class="ai-offer-card__body">
-                            <div><small><?= htmlspecialchars($aiOfferTitle) ?></small><strong>Flat <?= htmlspecialchars($aiOfferPercent) ?>% OFF <em>on all products</em></strong></div>
-                            <?php if (!empty($aiOfferCode)): ?>
-                                <button type="button" data-copy-offer="<?= htmlspecialchars($aiOfferCode) ?>"
-                                    aria-label="Copy offer code <?= htmlspecialchars($aiOfferCode) ?>"><strong><?= htmlspecialchars($aiOfferCode) ?></strong><span><i
-                                            class="ph ph-copy"></i> Copy</span></button>
-                            <?php endif; ?>
-                        </div>
-                    </article>
-                <?php endif; ?>
-                <div class="ai-chat__messages" data-ai-messages>
-                    <div class="ai-message ai-message--assistant">Namaste! How can I assist your wellness choices today?</div>
+    <button class="ai-float" type="button" data-ai-toggle aria-label="Open Gawdee AI wellness assistant"
+        aria-expanded="false">
+        <span class="ai-float__orb"><img src="assets/images/gawdee-ai-robot-v1.png" alt="" aria-hidden="true"></span>
+        <!-- <span class="ai-float__online" aria-hidden="true"></span> -->
+    </button>
+    <aside class="ai-chat" data-ai-chat aria-hidden="true" aria-labelledby="ai-chat-title">
+        <header>
+            <span class="ai-chat__mark"><img src="assets/images/gawdee-ai-robot-v1.png" alt="" aria-hidden="true"></span>
+            <div><strong id="ai-chat-title">Ask Gawdee AI</strong><small><span></span> Online ·
+                    <?= htmlspecialchars(ucfirst(gawdee_setting('ai_provider', 'groq'))) ?> powered</small></div>
+            <button type="button" data-ai-close aria-label="Close assistant"><i class="ph ph-x"></i></button>
+        </header>
+        <?php if (gawdee_setting('offer_popup_enabled', '1') === '1'): ?>
+            <?php
+            $aiOfferCode = gawdee_setting('offer_code', 'FREEDOM10');
+            $aiOfferPercent = gawdee_setting('offer_percent', '10');
+            $aiOfferTitle = gawdee_setting('offer_popup_title', 'Independence Day Special');
+            $aiOfferImage = gawdee_setting('offer_popup_image', 'assets/images/hero-slide-independence-v5.webp');
+            $aiOfferLink = gawdee_setting('offer_popup_link', 'index#offers');
+            ?>
+            <article class="ai-offer-card" aria-label="Latest offer">
+                <a class="ai-offer-card__media" href="<?= htmlspecialchars($aiOfferLink) ?>" aria-label="View offer">
+                    <img src="<?= htmlspecialchars($aiOfferImage) ?>" alt="<?= htmlspecialchars($aiOfferTitle) ?>"
+                        loading="lazy">
+                    <span><i class="ph ph-sparkle"></i> Special offer</span>
+                </a>
+                <div class="ai-offer-card__body">
+                    <div><small><?= htmlspecialchars($aiOfferTitle) ?></small><strong>Flat
+                            <?= htmlspecialchars($aiOfferPercent) ?>% OFF <em>on all products</em></strong></div>
+                    <?php if (!empty($aiOfferCode)): ?>
+                        <button type="button" data-copy-offer="<?= htmlspecialchars($aiOfferCode) ?>"
+                            aria-label="Copy offer code <?= htmlspecialchars($aiOfferCode) ?>"><strong><?= htmlspecialchars($aiOfferCode) ?></strong><span><i
+                                    class="ph ph-copy"></i> Copy</span></button>
+                    <?php endif; ?>
                 </div>
-                <div class="ai-chat__suggestions"><button type="button"
-                        data-ai-suggestion="Which Gawdee products are best for an everyday family pantry?"><i
-                            class="ph ph-house-line"></i> Family pantry</button><button type="button"
-                        data-ai-suggestion="Tell me about Gawdee A2 Gir Cow Ghee."><i class="ph ph-bowl-steam"></i> A2
-                        Ghee</button><button type="button" data-ai-suggestion="How does delivery work?"><i class="ph ph-truck"></i>
-                        Delivery</button></div>
-                <form data-ai-form><label class="sr-only" for="ai-question">Ask Gawdee AI</label><input id="ai-question"
-                        maxlength="700" placeholder="Ask Gawdee anything…" autocomplete="off" required><button type="submit"
-                        aria-label="Send message"><i class="ph ph-arrow-up"></i></button></form>
-                <p><i class="ph ph-info"></i> AI guidance may vary. Always review product labels.</p>
-            </aside>
+            </article>
+        <?php endif; ?>
+        <div class="ai-chat__messages" data-ai-messages>
+            <div class="ai-message ai-message--assistant">Namaste! How can I assist your wellness choices today?</div>
+        </div>
+        <div class="ai-chat__suggestions"><button type="button"
+                data-ai-suggestion="Which Gawdee products are best for an everyday family pantry?"><i
+                    class="ph ph-house-line"></i> Family pantry</button><button type="button"
+                data-ai-suggestion="Tell me about Gawdee A2 Gir Cow Ghee."><i class="ph ph-bowl-steam"></i> A2
+                Ghee</button><button type="button" data-ai-suggestion="How does delivery work?"><i class="ph ph-truck"></i>
+                Delivery</button></div>
+        <form data-ai-form><label class="sr-only" for="ai-question">Ask Gawdee AI</label><input id="ai-question"
+                maxlength="700" placeholder="Ask Gawdee anything…" autocomplete="off" required><button type="submit"
+                aria-label="Send message"><i class="ph ph-arrow-up"></i></button></form>
+        <p><i class="ph ph-info"></i> AI guidance may vary. Always review product labels.</p>
+    </aside>
 <?php endif; ?>
 
 <?php
@@ -120,9 +121,8 @@ $waNumber = preg_replace('/\D+/', '', gawdee_setting('whatsapp_number', '9170552
 $waText = "Hi Gawdee Team! 👋 I’m interested in Gawdee products and would like to know more. Please assist me.";
 $waUrl = 'https://wa.me/' . $waNumber . '?text=' . rawurlencode($waText);
 ?>
-<a class="whatsapp-float"
-    href="<?= htmlspecialchars($waUrl) ?>"
-    target="_blank" rel="noopener" aria-label="Chat with Gawdee on WhatsApp"><i class="ph ph-whatsapp-logo"></i></a>
+<a class="whatsapp-float" href="<?= htmlspecialchars($waUrl) ?>" target="_blank" rel="noopener"
+    aria-label="Chat with Gawdee on WhatsApp"><i class="ph ph-whatsapp-logo"></i></a>
 <script src="assets/js/app.js" defer></script>
 </body>
 
