@@ -139,14 +139,14 @@ function gawdee_db(): PDO
     }
 
     gawdee_load_env();
-    $driver = strtolower((string) gawdee_env('DB_DRIVER', gawdee_env('DB_CONNECTION', 'sqlite')));
+    $driver = strtolower((string) gawdee_env('DB_DRIVER'));
 
     if ($driver === 'mysql') {
-        $host = (string) gawdee_env('DB_HOST', '127.0.0.1');
-        $port = (string) gawdee_env('DB_PORT', '3306');
-        $dbname = (string) gawdee_env('DB_DATABASE', 'gawdee');
-        $username = (string) gawdee_env('DB_USERNAME', 'root');
-        $password = (string) gawdee_env('DB_PASSWORD', '');
+        $host = (string) gawdee_env('DB_HOST');
+        $port = (string) gawdee_env('DB_PORT');
+        $dbname = (string) gawdee_env('DB_DATABASE');
+        $username = (string) gawdee_env('DB_USERNAME');
+        $password = (string) gawdee_env('DB_PASSWORD');
 
         try {
             $initDsn = "mysql:host={$host};port={$port};charset=utf8mb4";
