@@ -1,18 +1,31 @@
 :root {
-  /* ---- New Brand Color Tokens ---- */
-  --color-primary: #009A84;
-  --color-primary-dark: #007D6B;
+  /* ---- Canonical Gawdee theme: single source of truth, uniform across
+     storefront, animated hero and admin. Do not hardcode palette hexes;
+     consume these tokens (or the --gawdee-* aliases below). ---- */
+  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --gx-cream: #fff8f1;
+  --gx-sage: #9dd0b6;
+  --gx-ink: #009a84;
+  --gx-espresso: #005c4e;
+  --gx-gold: #c19a3d;
+  --gx-surface: #ffffff;
+  --gx-muted: rgba(0, 92, 78, 0.75);
+  --gx-border: rgba(0, 92, 78, 0.15);
+
+  /* ---- New Brand Color Tokens (mapped to canonical theme) ---- */
+  --color-primary: #009a84;
+  --color-primary-dark: #005c4e;
   --color-primary-light: #E6F5F2;
 
-  --color-dark: #2B2A29;
-  --color-dark-soft: #3A3937;
+  --color-dark: #005c4e;
+  --color-dark-soft: #00705e;
 
   --color-white: #FFFFFF;
-  --color-gray-50: #F5F5F3;
-  --color-gray-100: #EDEDEB;
-  --color-gray-500: #777572;
+  --color-gray-50: #fff8f1;
+  --color-gray-100: #e8f1eb;
+  --color-gray-500: rgba(0, 92, 78, 0.75);
 
-  --color-border: #E1E4E1;
+  --color-border: rgba(0, 92, 78, 0.15);
 
   /* ---- Theme Token Mappings ---- */
   --gawdee-primary: var(--color-primary);
@@ -34,7 +47,7 @@
   --gawdee-accent: var(--color-primary);
 
   --gawdee-border: var(--color-border);
-  --gawdee-line: rgba(0, 154, 132, 0.22);
+  --gawdee-line: var(--gx-border);
   --gawdee-line-light: var(--color-border);
   --gawdee-shadow: 0 24px 60px rgba(43, 42, 41, 0.12);
   --gawdee-shadow-sm: none;
@@ -65,15 +78,17 @@
   --forest: var(--gawdee-primary);
   --forest-deep: var(--gawdee-dark);
   --green: var(--gawdee-secondary);
-  --mint: #e2ecd2;
+  --mint: var(--color-primary-light);
   --cream: var(--gawdee-cream);
   --paper: var(--gawdee-bg);
-  --gold: var(--gawdee-accent);
+  --gold: var(--gx-gold);
   --line: var(--gawdee-line-light);
   --shadow: var(--gawdee-shadow);
   --radius-sm-legacy: 14px;
   --radius-md-legacy: 24px;
   --radius-lg-legacy: 38px;
+  /* Display face follows the uniform sans stack (no serif/special faces). */
+  --font-display: var(--font-sans);
 }
 
 /* --------------------------------------------------------------------------
@@ -96,7 +111,7 @@ body {
   margin: 0;
   color: var(--gawdee-dark);
   background: var(--gawdee-bg);
-  font-family: "DM Sans", sans-serif;
+  font-family: var(--font-sans);
   font-size: 1rem;
   line-height: 1.65;
   -webkit-font-smoothing: antialiased;
@@ -144,7 +159,7 @@ p {
 h1,
 h2,
 h3 {
-  font-family: "Lora", serif;
+  font-family: var(--font-sans);
   letter-spacing: -0.02em;
   color: var(--gawdee-dark);
 }
@@ -152,14 +167,14 @@ h3 {
 .eyebrow-heading,
 h1.editorial-title,
 h2.editorial-title {
-  font-family: "Lora", serif;
+  font-family: var(--font-sans);
 }
 
 h4,
 h5,
 h6,
 .ui-heading {
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   letter-spacing: -0.03em;
 }
 
@@ -218,7 +233,7 @@ em {
   gap: 8px;
   margin-bottom: 2px;
   color: var(--gawdee-secondary);
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.78rem;
   font-weight: 800;
   letter-spacing: 0.16em;
@@ -233,7 +248,7 @@ em {
   align-items: center;
   gap: 8px;
   color: var(--gawdee-primary);
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-weight: 700;
   font-size: 0.92rem;
   border-bottom: 1.5px solid var(--gawdee-secondary);
@@ -261,7 +276,7 @@ em {
   border: 1px solid transparent;
   border-radius: 999px;
   padding: 0 28px;
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.94rem;
   font-weight: 750;
   cursor: pointer;
@@ -397,7 +412,7 @@ em {
 .header-announcement {
   background: var(--gawdee-primary-dark);
   color: #e2ece6;
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.8rem;
   border-bottom: 1px solid rgba(217, 184, 108, 0.2);
   transition:
@@ -504,7 +519,7 @@ em {
 }
 
 .desktop-main-nav .nav-link {
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.88rem;
   font-weight: 700;
   color: #14231c;
@@ -603,7 +618,7 @@ em {
   background: var(--gawdee-surface-light);
   border: 1px solid var(--gawdee-border);
   color: var(--gawdee-dark);
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.86rem;
   font-weight: 700;
   cursor: pointer;
@@ -661,7 +676,7 @@ em {
   border-radius: 999px;
   background: var(--gawdee-accent);
   color: var(--gawdee-dark);
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.82rem;
   font-weight: 800;
   letter-spacing: 0.02em;
@@ -785,7 +800,7 @@ em {
 }
 
 .mobile-nav-title {
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.85rem;
   font-weight: 800;
   color: var(--gawdee-accent, #d9b86c);
@@ -805,7 +820,7 @@ em {
   background: rgba(255, 255, 255, 0.15);
   border: 1px solid rgba(255, 255, 255, 0.25);
   color: #ffffff;
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.82rem;
   font-weight: 800;
   cursor: pointer;
@@ -824,7 +839,7 @@ em {
   display: flex;
   align-items: center;
   gap: 12px;
-  font-family: "Manrope", "DM Sans", sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.96rem;
   font-weight: 700;
   color: var(--gawdee-cream, #faf6ee);
@@ -1015,7 +1030,7 @@ em {
 
 .hero-scrub-eyebrow {
   color: var(--gawdee-accent);
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.88rem;
   font-weight: 800;
   letter-spacing: 0.18em;
@@ -1027,7 +1042,7 @@ em {
 }
 
 .hero-scrub-title {
-  font-family: "Lora", serif;
+  font-family: var(--font-sans);
   font-size: clamp(2.6rem, 5.5vw + 1rem, 4.8rem);
   line-height: 1.1;
   max-width: 820px;
@@ -1036,7 +1051,7 @@ em {
 }
 
 .hero-scrub-subtitle {
-  font-family: "DM Sans", sans-serif;
+  font-family: var(--font-sans);
   font-size: clamp(1.05rem, 1.6vw, 1.3rem);
   color: var(--gawdee-cream);
   max-width: 600px;
@@ -1063,7 +1078,7 @@ em {
   align-items: center;
   gap: 6px;
   color: var(--gawdee-accent);
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.78rem;
   font-weight: 750;
   letter-spacing: 0.08em;
@@ -1166,7 +1181,7 @@ em {
   align-items: center;
   gap: 8px;
   color: var(--gawdee-accent);
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.85rem;
   font-weight: 800;
   letter-spacing: 0.18em;
@@ -1174,7 +1189,7 @@ em {
   margin-bottom: 16px;
 }
 .hero-slide__title {
-  font-family: "Lora", serif;
+  font-family: var(--font-sans);
   font-size: clamp(2.4rem, 5vw + 1rem, 4.6rem);
   line-height: 1.1;
   color: var(--gawdee-white);
@@ -1183,7 +1198,7 @@ em {
   text-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
 }
 .hero-slide__subtitle {
-  font-family: "DM Sans", sans-serif;
+  font-family: var(--font-sans);
   font-size: clamp(1rem, 1.5vw, 1.25rem);
   color: var(--gawdee-cream);
   max-width: 580px;
@@ -1326,7 +1341,7 @@ em {
   font-size: 0.84rem;
 }
 .trust-item strong {
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.94rem;
   color: var(--gawdee-white);
 }
@@ -1462,7 +1477,7 @@ em {
   border-radius: 999px;
   background: var(--gawdee-primary);
   color: var(--gawdee-accent);
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.06em;
@@ -1484,7 +1499,7 @@ em {
   flex: 1;
 }
 .compact-product-card__body h3 {
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 1.05rem;
   font-weight: 750;
   line-height: 1.35;
@@ -1506,7 +1521,7 @@ em {
   margin-bottom: 16px;
 }
 .compact-product-card__price strong {
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 1.25rem;
   font-weight: 800;
   color: var(--gawdee-primary);
@@ -1526,7 +1541,7 @@ em {
   border-radius: 999px;
   background: var(--gawdee-primary);
   color: #fff;
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.88rem;
   font-weight: 750;
   cursor: pointer;
@@ -1624,7 +1639,7 @@ em {
   color: var(--gawdee-primary);
 }
 .category-card strong {
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.82rem;
   font-weight: 750;
   color: var(--gawdee-dark);
@@ -1776,7 +1791,7 @@ em {
   border-color: var(--gawdee-accent);
 }
 .story-pillar-num {
-  font-family: "Lora", serif;
+  font-family: var(--font-sans);
   font-size: 2.2rem;
   font-weight: 700;
   color: var(--gawdee-dark);
@@ -1786,7 +1801,7 @@ em {
 }
 .story-pillar-card h3,
 .story-pillar-card h4 {
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 1.25rem;
   font-weight: 750;
   color: var(--gawdee-dark);
@@ -1837,7 +1852,7 @@ em {
   border-radius: 999px;
   background: var(--gawdee-cream);
   color: var(--gawdee-primary);
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.75rem;
   font-weight: 800;
   text-transform: uppercase;
@@ -1857,7 +1872,7 @@ em {
   object-fit: contain;
 }
 .combo-card__body h3 {
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 1.1rem;
   font-weight: 750;
   margin-bottom: 12px;
@@ -1984,7 +1999,7 @@ em {
   overflow: hidden;
 }
 .reel-card__product h3 {
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.9rem;
   color: #fff;
   margin: 0 0 2px;
@@ -2098,12 +2113,12 @@ em {
   place-items: center;
   background: var(--gawdee-primary);
   color: var(--gawdee-accent);
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-weight: 800;
   font-size: 1.1rem;
 }
 .testimonial-reference-person h3 {
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 1.05rem;
   margin: 0;
 }
@@ -2139,7 +2154,7 @@ em {
 
 .testimonial-reference-card blockquote {
   margin: 0;
-  font-family: "Lora", serif;
+  font-family: var(--font-sans);
   font-size: 1.08rem;
   line-height: 1.6;
   color: var(--gawdee-dark);
@@ -2153,7 +2168,7 @@ em {
   justify-content: space-between;
   border-top: 1px solid var(--gawdee-line-light);
   padding-top: 16px;
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.88rem;
   font-weight: 750;
   color: var(--gawdee-primary);
@@ -2266,14 +2281,14 @@ em {
   border-radius: 999px;
   background: var(--gawdee-secondary);
   color: #fff;
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.75rem;
   font-weight: 800;
   text-transform: uppercase;
   margin-bottom: 12px;
 }
 .blog-reference-card__content h3 {
-  font-family: "Lora", serif;
+  font-family: var(--font-sans);
   font-size: 1.25rem;
   line-height: 1.35;
   color: #fff;
@@ -2290,7 +2305,7 @@ em {
   align-items: center;
   gap: 6px;
   color: var(--gawdee-accent);
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.88rem;
   font-weight: 800;
 }
@@ -2364,7 +2379,7 @@ em {
   border-radius: 999px;
   background: var(--gawdee-accent);
   color: var(--gawdee-dark);
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-weight: 800;
   font-size: 0.92rem;
   cursor: pointer;
@@ -2415,7 +2430,7 @@ em {
   color: var(--gawdee-muted);
 }
 .assurance-card strong {
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.9rem;
   color: #fff;
 }
@@ -2472,7 +2487,7 @@ em {
 
 .commerce-footer__links h2,
 .commerce-footer__signup h2 {
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 1rem;
   font-weight: 800;
   color: #fff;
@@ -2547,7 +2562,7 @@ em {
   padding: 4px 10px;
   border-radius: 4px;
   background: rgba(255, 255, 255, 0.08);
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.75rem;
   font-weight: 800;
   color: #fff;
@@ -2633,7 +2648,7 @@ em {
   flex: 1;
 }
 .cart-item h3 {
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.95rem;
   color: #fff;
   margin-bottom: 4px;
@@ -2798,7 +2813,7 @@ em {
 }
 .ai-chat header strong {
   display: block;
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.95rem;
   color: #fff;
 }
@@ -3013,7 +3028,7 @@ em {
   border: 1.5px dashed var(--gawdee-accent);
   background: rgba(217, 184, 108, 0.1);
   color: var(--gawdee-accent);
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   cursor: pointer;
   margin-bottom: 16px;
 }
@@ -3084,7 +3099,7 @@ em {
   border: 1.5px solid var(--gawdee-line-light);
   background: var(--gawdee-cream);
   color: var(--gawdee-dark);
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.88rem;
   font-weight: 750;
   cursor: pointer;
@@ -3142,7 +3157,7 @@ em {
   margin-left: 10px;
   width: 100%;
   color: var(--gawdee-dark);
-  font-family: "DM Sans", sans-serif;
+  font-family: var(--font-sans);
 }
 
 .catalog-results-head {
@@ -3223,7 +3238,7 @@ em {
   border-radius: 999px;
   background: var(--gawdee-primary);
   color: var(--color-white);
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.72rem;
   font-weight: 800;
   text-transform: uppercase;
@@ -3238,7 +3253,7 @@ em {
   border-radius: 999px;
   background: #fff3e0;
   color: #e65100;
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.72rem;
   font-weight: 800;
 }
@@ -3254,7 +3269,7 @@ em {
   flex: 1;
 }
 .product-card__meta {
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.78rem;
   font-weight: 800;
   color: var(--gawdee-secondary);
@@ -3267,7 +3282,7 @@ em {
 }
 
 .product-card__body h3 {
-  font-family: "Lora", serif;
+  font-family: var(--font-sans);
   font-size: 1.25rem;
   line-height: 1.3;
   margin-bottom: 8px;
@@ -3322,7 +3337,7 @@ em {
   gap: 8px;
 }
 .product-card__price strong {
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 1.15rem;
   font-weight: 850;
   color: var(--gawdee-primary);
@@ -3337,7 +3352,7 @@ em {
   border-radius: 999px;
   background: var(--gawdee-primary);
   color: #fff;
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-weight: 800;
   font-size: 0.88rem;
   cursor: pointer;
@@ -3469,7 +3484,7 @@ em {
   border-radius: 999px;
   background: var(--gawdee-primary);
   color: var(--gawdee-accent);
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.75rem;
   font-weight: 800;
   text-transform: uppercase;
@@ -3491,7 +3506,7 @@ em {
   margin-bottom: 12px;
 }
 .journal-card__body h2 {
-  font-family: "Lora", serif;
+  font-family: var(--font-sans);
   font-size: 1.35rem;
   line-height: 1.35;
   margin-bottom: 12px;
@@ -3515,7 +3530,7 @@ em {
   align-items: center;
   gap: 8px;
   color: var(--gawdee-primary);
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-weight: 800;
   font-size: 0.9rem;
 }
@@ -3550,7 +3565,7 @@ em {
   align-items: center;
   gap: 8px;
   color: var(--gawdee-primary);
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-weight: 750;
   font-size: 0.9rem;
   margin-bottom: 20px;
@@ -3611,7 +3626,7 @@ em {
   margin-block: 36px;
   background: var(--gawdee-cream);
   border-radius: 0 var(--radius-md) var(--radius-md) 0;
-  font-family: "Lora", serif;
+  font-family: var(--font-sans);
   font-size: 1.25rem;
   font-style: italic;
   color: var(--gawdee-dark);
@@ -3735,7 +3750,7 @@ em {
   border-radius: 999px;
   background: var(--gawdee-primary);
   color: var(--gawdee-accent);
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.75rem;
   font-weight: 800;
   text-transform: uppercase;
@@ -3786,7 +3801,7 @@ em {
 }
 .ref-rating strong {
   color: var(--gawdee-dark);
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
 }
 .ref-rating b {
   padding: 2px 8px;
@@ -3810,7 +3825,7 @@ em {
   margin-bottom: 6px;
 }
 .ref-price strong {
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 2.2rem;
   font-weight: 850;
   color: var(--gawdee-primary);
@@ -3839,7 +3854,7 @@ em {
   padding: 8px 20px;
   border-radius: 999px;
   border: 1.5px solid var(--gawdee-line-light);
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.9rem;
   font-weight: 750;
   color: var(--gawdee-dark);
@@ -3861,7 +3876,7 @@ em {
   margin-bottom: 28px;
 }
 .ref-quantity-row strong {
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.88rem;
   font-weight: 800;
   text-transform: uppercase;
@@ -3881,7 +3896,7 @@ em {
   color: var(--gawdee-primary);
 }
 .ref-quantity span {
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-weight: 800;
   font-size: 1rem;
   min-width: 24px;
@@ -3919,7 +3934,7 @@ em {
   background: var(--gawdee-primary);
   color: #ffffff;
   border: 0;
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-weight: 800;
   font-size: 0.95rem;
   cursor: pointer;
@@ -3945,7 +3960,7 @@ em {
   min-height: 44px;
   border-radius: 999px;
   border: 1px solid var(--gawdee-line-light);
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-weight: 750;
   font-size: 0.88rem;
   color: var(--muted);
@@ -3993,7 +4008,7 @@ em {
   color: var(--muted);
 }
 .ref-trust-strip strong {
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.92rem;
   color: var(--gawdee-dark);
 }
@@ -4015,7 +4030,7 @@ em {
 }
 .ref-tabs button {
   padding: 12px 24px;
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.95rem;
   font-weight: 800;
   color: var(--muted);
@@ -4070,7 +4085,7 @@ em {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-family: "Lora", serif;
+  font-family: var(--font-sans);
   font-size: 1.15rem;
   margin-bottom: 16px;
   color: var(--gawdee-dark);
@@ -4107,13 +4122,13 @@ em {
 .ref-nutrition div span {
   color: var(--muted);
   font-weight: 600;
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.84rem;
 }
 .ref-nutrition div b {
   color: var(--gawdee-primary);
   font-weight: 800;
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   background: rgba(92, 135, 51, 0.1);
   padding: 4px 12px;
   border-radius: 20px;
@@ -4167,7 +4182,7 @@ em {
 .ref-method-card strong {
   position: relative;
   z-index: 2;
-  font-family: "Lora", serif;
+  font-family: var(--font-sans);
   font-size: 1.2rem;
   color: #fff;
 }
@@ -4176,7 +4191,7 @@ em {
   z-index: 2;
   font-size: 0.82rem;
   color: var(--gawdee-cream);
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-weight: 700;
 }
 
@@ -4208,7 +4223,7 @@ em {
   color: var(--gawdee-secondary);
 }
 .ref-purity-icons article strong {
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 1rem;
   color: var(--gawdee-dark);
 }
@@ -4271,7 +4286,7 @@ em {
 .ref-watch header a {
   color: var(--gawdee-primary);
   font-weight: 750;
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.92rem;
   display: inline-flex;
   align-items: center;
@@ -4319,7 +4334,7 @@ em {
 }
 .ref-why article strong {
   display: block;
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.95rem;
   color: var(--gawdee-dark);
   margin-bottom: 2px;
@@ -4371,13 +4386,13 @@ em {
   border-radius: 999px;
   background: var(--gawdee-primary);
   color: var(--gawdee-accent);
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.72rem;
   font-weight: 800;
   text-transform: uppercase;
 }
 .ref-related__grid article h3 {
-  font-family: "Lora", serif;
+  font-family: var(--font-sans);
   font-size: 1.05rem;
   margin: 0 0 4px;
   line-height: 1.3;
@@ -4395,7 +4410,7 @@ em {
   margin-top: auto;
 }
 .ref-related__grid article p strong {
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 1.15rem;
   color: var(--gawdee-primary);
 }
@@ -4409,7 +4424,7 @@ em {
   border-radius: 999px;
   background: var(--gawdee-primary);
   color: #fff;
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.88rem;
   font-weight: 800;
   border: none;
@@ -4457,7 +4472,7 @@ em {
   text-align: center;
 }
 .ref-review-score strong {
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 1.8rem;
   font-weight: 850;
   color: var(--gawdee-primary);
@@ -4541,7 +4556,7 @@ em {
   border-radius: 999px;
   background: var(--gawdee-primary);
   color: #fff;
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.82rem;
   font-weight: 800;
   transition: background 0.2s ease;
@@ -4557,7 +4572,7 @@ em {
   padding-top: 16px;
 }
 .ref-write-review summary {
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.88rem;
   font-weight: 800;
   color: var(--gawdee-primary);
@@ -4599,7 +4614,7 @@ em {
   border-radius: var(--radius-sm);
   border: 1px solid var(--gawdee-line-light);
   background: #faf8f3;
-  font-family: "DM Sans", sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.85rem;
   outline: none;
   transition: border-color 0.2s ease;
@@ -4618,7 +4633,7 @@ em {
   border-radius: 999px;
   background: var(--gawdee-primary);
   color: #fff;
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.88rem;
   font-weight: 800;
   border: none;
@@ -4667,7 +4682,7 @@ em {
   border-radius: 50%;
   background: var(--gawdee-primary);
   color: var(--gawdee-accent);
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.9rem;
   font-weight: 800;
   display: grid;
@@ -4676,7 +4691,7 @@ em {
 }
 .ref-review-meta strong {
   display: block;
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.9rem;
   color: var(--gawdee-dark);
 }
@@ -4732,7 +4747,7 @@ em {
   transform: rotate(180deg);
 }
 .ref-faq summary {
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 1.05rem;
   font-weight: 750;
   color: var(--gawdee-dark);
@@ -4797,7 +4812,7 @@ em {
   border: 1px solid rgba(255, 255, 255, 0.2);
   background: rgba(255, 255, 255, 0.1);
   color: #fff;
-  font-family: "DM Sans", sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.95rem;
   outline: none;
 }
@@ -4810,7 +4825,7 @@ em {
   border-radius: 999px;
   background: var(--gawdee-accent);
   color: var(--gawdee-dark);
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.95rem;
   font-weight: 800;
   border: none;
@@ -4912,7 +4927,7 @@ em {
   font-weight: 700;
   padding: 8px 18px;
   border-radius: 30px;
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   align-self: flex-start;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
 }
@@ -4954,7 +4969,7 @@ em {
 }
 
 .customer-auth-product-collage__card figcaption {
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.76rem;
   font-weight: 700;
   color: #ffffff;
@@ -5026,7 +5041,7 @@ em {
 }
 
 .customer-auth-product-collage__rating strong {
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 1.2rem;
   font-weight: 800;
   color: var(--gawdee-primary);
@@ -5060,7 +5075,7 @@ em {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   font-size: 0.8rem;
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -5071,7 +5086,7 @@ em {
   font-size: clamp(2.2rem, 3.2vw, 3.1rem);
   line-height: 1.15;
   margin-block: 16px 12px;
-  font-family: "Lora", serif;
+  font-family: var(--font-sans);
   letter-spacing: -0.01em;
 }
 
@@ -5104,7 +5119,7 @@ em {
   font-size: 0.86rem;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.92);
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
 }
 
 .customer-auth-steps span i {
@@ -5165,7 +5180,7 @@ em {
 
 .customer-auth-card__brand strong {
   display: block;
-  font-family: "Lora", serif;
+  font-family: var(--font-sans);
   font-size: 1.15rem;
   color: var(--gawdee-dark);
   margin-bottom: 1px;
@@ -5176,7 +5191,7 @@ em {
   font-size: 0.78rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-weight: 700;
 }
 
@@ -5187,7 +5202,7 @@ em {
   color: var(--gawdee-primary);
   font-size: 0.88rem;
   font-weight: 700;
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   margin-bottom: 20px;
   transition:
     transform 0.2s ease,
@@ -5206,12 +5221,12 @@ em {
   letter-spacing: 0.08em;
   font-weight: 800;
   color: var(--gawdee-secondary);
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   margin-bottom: 6px;
 }
 
 .customer-auth-card h2 {
-  font-family: "Lora", serif;
+  font-family: var(--font-sans);
   font-size: 1.95rem;
   color: var(--gawdee-dark);
   margin: 0 0 8px;
@@ -5260,7 +5275,7 @@ em {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.86rem;
   font-weight: 700;
   color: var(--gawdee-dark);
@@ -5298,7 +5313,7 @@ em {
   border-radius: 14px;
   border: 1.5px solid #dce5e0;
   background: #faf8f3;
-  font-family: "DM Sans", sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.96rem;
   color: var(--gawdee-dark);
   transition:
@@ -5357,7 +5372,7 @@ em {
   border-radius: 14px;
   background: linear-gradient(135deg, var(--gawdee-primary) 0%, #09543b 100%);
   color: #ffffff;
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 1rem;
   font-weight: 700;
   border: none;
@@ -5401,7 +5416,7 @@ em {
 .customer-auth-switch a {
   color: var(--gawdee-primary);
   font-weight: 750;
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   text-decoration: underline;
   text-underline-offset: 4px;
   transition: color 0.2s ease;
@@ -5435,7 +5450,7 @@ em {
 .customer-auth-note strong {
   display: block;
   color: var(--gawdee-dark);
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.88rem;
   margin-bottom: 2px;
 }
@@ -5455,7 +5470,7 @@ em {
   align-items: center;
   gap: 8px;
   color: var(--gawdee-primary);
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.9rem;
   font-weight: 750;
   margin-bottom: 16px;
@@ -5493,7 +5508,7 @@ em {
 }
 .checkout-account-banner__info strong {
   display: block;
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   color: var(--gawdee-dark);
   font-size: 1rem;
 }
@@ -5533,7 +5548,7 @@ em {
   border-radius: 50%;
   background: var(--gawdee-primary);
   color: var(--gawdee-accent);
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-weight: 800;
   font-size: 1.1rem;
   display: grid;
@@ -5577,7 +5592,7 @@ em {
   background: #faf8f3;
   padding-inline: 16px;
   outline: 0;
-  font-family: "DM Sans", sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.95rem;
   color: var(--gawdee-dark);
   transition:
@@ -5600,7 +5615,7 @@ em {
 }
 .checkout-coupon label span {
   display: block;
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.88rem;
   font-weight: 800;
   margin-bottom: 10px;
@@ -5626,7 +5641,7 @@ em {
   border-radius: 999px;
   background: var(--gawdee-primary);
   color: #fff;
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-weight: 800;
   font-size: 0.88rem;
   cursor: pointer;
@@ -5676,7 +5691,7 @@ em {
 }
 .payment-option__card strong {
   display: block;
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 1rem;
   color: var(--gawdee-dark);
 }
@@ -5691,7 +5706,7 @@ em {
   border-radius: 999px;
   background: var(--gawdee-primary);
   color: #fff;
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 1.05rem;
   font-weight: 800;
   cursor: pointer;
@@ -5743,7 +5758,7 @@ em {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  font-family: "Lora", serif;
+  font-family: var(--font-sans);
   font-size: 1.3rem;
   margin-bottom: 24px;
   padding-bottom: 16px;
@@ -5784,7 +5799,7 @@ em {
   margin: 0;
 }
 .checkout-summary__items article strong {
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-weight: 800;
   font-size: 0.95rem;
   color: var(--gawdee-accent);
@@ -5911,13 +5926,13 @@ em {
 }
 .order-success-detail span {
   font-size: 0.78rem;
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-weight: 800;
   color: var(--gawdee-muted);
   text-transform: uppercase;
 }
 .order-success-detail strong {
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 1.05rem;
   color: var(--gawdee-dark);
   font-weight: 850;
@@ -5992,7 +6007,7 @@ em {
   box-shadow: 0 0 0 4px rgba(6, 62, 43, 0.15);
 }
 .order-timeline-step strong {
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.85rem;
   color: var(--gawdee-dark);
   font-weight: 800;
@@ -6075,7 +6090,7 @@ em {
 }
 .journey-step__content strong {
   display: block;
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 1rem;
   color: var(--gawdee-dark);
   margin-bottom: 2px;
@@ -6140,7 +6155,7 @@ em {
 }
 .order-event__content strong {
   display: block;
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.92rem;
   color: var(--gawdee-dark);
 }
@@ -6152,7 +6167,7 @@ em {
 .order-event time {
   font-size: 0.8rem;
   color: var(--gawdee-muted);
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-weight: 700;
   white-space: nowrap;
 }
@@ -6185,7 +6200,7 @@ em {
 }
 .order-item__info strong {
   display: block;
-  font-family: "Lora", serif;
+  font-family: var(--font-sans);
   font-size: 1rem;
   color: var(--gawdee-dark);
   margin-bottom: 2px;
@@ -6195,7 +6210,7 @@ em {
   color: var(--muted);
 }
 .order-item__total {
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 1.05rem;
   font-weight: 850;
   color: var(--gawdee-primary);
@@ -6228,7 +6243,7 @@ em {
   margin-bottom: 12px;
 }
 .order-summary-card__rows strong {
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   color: var(--gawdee-dark);
 }
 .order-summary-card__discount strong {
@@ -6260,7 +6275,7 @@ em {
 }
 .order-summary-card__payment strong {
   display: block;
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.88rem;
   color: var(--gawdee-dark);
 }
@@ -6343,7 +6358,7 @@ em {
   z-index: 1;
 }
 .account-hero h1 {
-  font-family: "Lora", serif;
+  font-family: var(--font-sans);
   font-size: clamp(2.2rem, 3.5vw, 3rem);
   color: #ffffff;
   margin-block: 10px 8px;
@@ -6377,7 +6392,7 @@ em {
   border-radius: 50%;
   background: var(--gawdee-accent);
   color: var(--gawdee-dark);
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-weight: 800;
   font-size: 1.4rem;
   display: grid;
@@ -6387,7 +6402,7 @@ em {
 }
 .account-hero__identity strong {
   display: block;
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 1.05rem;
   color: #ffffff;
 }
@@ -6442,7 +6457,7 @@ em {
   align-items: center;
   gap: 8px;
   padding: 16px 4px;
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.92rem;
   font-weight: 700;
   color: var(--muted);
@@ -6474,7 +6489,7 @@ em {
   display: flex;
   align-items: center;
   gap: 12px;
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.92rem;
   font-weight: 600;
 }
@@ -6534,10 +6549,10 @@ em {
   color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
 }
 .account-stats article strong {
-  font-family: "Lora", serif;
+  font-family: var(--font-sans);
   font-size: 1.85rem;
   color: var(--gawdee-dark);
   margin-block: 4px 6px;
@@ -6556,7 +6571,7 @@ em {
   margin-bottom: 32px;
 }
 .account-section-heading h2 {
-  font-family: "Lora", serif;
+  font-family: var(--font-sans);
   font-size: 2.1rem;
   color: var(--gawdee-dark);
   margin: 0;
@@ -6594,7 +6609,7 @@ em {
   border-bottom: 1px solid var(--gawdee-line-light);
 }
 .account-order-card__head span {
-  font-family: "Lora", serif;
+  font-family: var(--font-sans);
   font-size: 1.35rem;
   font-weight: 600;
   color: var(--gawdee-dark);
@@ -6612,7 +6627,7 @@ em {
   gap: 6px;
   padding: 6px 16px;
   border-radius: 30px;
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.82rem;
   font-weight: 800;
   text-transform: capitalize;
@@ -6671,7 +6686,7 @@ em {
   margin-bottom: 4px;
 }
 .account-order-card__body strong {
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 1.05rem;
   color: var(--gawdee-dark);
 }
@@ -6763,7 +6778,7 @@ em {
   margin: 0 auto 20px;
 }
 .account-empty h3 {
-  font-family: "Lora", serif;
+  font-family: var(--font-sans);
   font-size: 1.75rem;
   color: var(--gawdee-dark);
   margin: 8px 0 12px;
@@ -6812,7 +6827,7 @@ em {
   flex-shrink: 0;
 }
 .account-panel__head h3 {
-  font-family: "Lora", serif;
+  font-family: var(--font-sans);
   font-size: 1.35rem;
   color: var(--gawdee-dark);
   margin: 0 0 2px;
@@ -6840,7 +6855,7 @@ em {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.85rem;
   font-weight: 700;
   color: var(--gawdee-dark);
@@ -6851,7 +6866,7 @@ em {
   border-radius: 12px;
   border: 1.5px solid #dce5e0;
   background: #faf8f3;
-  font-family: "DM Sans", sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.94rem;
   color: var(--gawdee-dark);
   outline: none;
@@ -6900,7 +6915,7 @@ em {
 .account-security-note strong {
   display: block;
   color: var(--gawdee-dark);
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
 }
 
 /* --------------------------------------------------------------------------
@@ -6936,7 +6951,7 @@ em {
   box-shadow: 0 12px 36px rgba(3, 31, 22, 0.05);
 }
 .order-detail-heading h1 {
-  font-family: "Lora", serif;
+  font-family: var(--font-sans);
   font-size: 2.2rem;
   color: var(--gawdee-dark);
   margin: 8px 0 6px;
@@ -7007,7 +7022,7 @@ em {
   flex-shrink: 0;
 }
 .order-detail-card__head h2 {
-  font-family: "Lora", serif;
+  font-family: var(--font-sans);
   font-size: 1.35rem;
   color: var(--gawdee-dark);
   margin: 0 0 2px;
@@ -7081,7 +7096,7 @@ em {
 }
 .journey-step__content strong {
   display: block;
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.98rem;
   color: var(--gawdee-dark);
   margin-bottom: 2px;
@@ -8864,7 +8879,7 @@ em {
   font-size: 0.94rem;
   line-height: 1.3;
   margin-bottom: 4px;
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   color: #ffffff;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
 }
@@ -8891,7 +8906,7 @@ em {
   font-size: clamp(2rem, 4vw, 3.2rem);
   color: #063e2b;
   margin-block: 10px 14px;
-  font-family: "Cinzel", serif;
+  font-family: var(--font-sans);
 }
 .reels-hero__content p {
   max-width: 640px;
@@ -9025,7 +9040,7 @@ em {
   font-size: 1.1rem;
   color: #063e2b;
   margin: 0 0 6px 0;
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
 }
 .reel-hub-card__content p {
   font-size: 0.88rem;
@@ -9232,7 +9247,7 @@ em {
 }
 .reel-modal-info-text h4 {
   font-size: 1.15rem;
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
   color: #ffffff;
   margin: 0 0 4px 0;
 }
@@ -9329,9 +9344,9 @@ em {
 }
 
 .product-faq__heading h2 {
-  font-family: var(--font-display, "Lora", serif);
+  font-family: var(--font-display, var(--font-sans));
   font-size: clamp(1.8rem, 3.5vw, 2.5rem);
-  color: var(--forest, #073c2b);
+  color: var(--forest, #005c4e);
   line-height: 1.2;
   margin: 8px 0 16px;
 }
@@ -9381,7 +9396,7 @@ em {
 
 .product-faq__list summary i {
   font-size: 1.2rem;
-  color: var(--green, #087345);
+  color: var(--green, #009a84);
   transition: transform 0.25s ease;
 }
 
@@ -9448,7 +9463,7 @@ em {
 }
 
 .ref-newsletter h2 {
-  font-family: var(--font-display, "Lora", serif);
+  font-family: var(--font-display, var(--font-sans));
   font-size: clamp(1.8rem, 3vw, 2.4rem);
   margin: 0 0 10px 0;
   color: #ffffff;
@@ -9488,7 +9503,7 @@ em {
   padding: 14px 24px;
   border-radius: 12px;
   background: var(--gawdee-accent, #ffba00);
-  color: #073c2b;
+  color: #005c4e;
   font-weight: 800;
   font-size: 0.92rem;
   border: none;
@@ -9564,7 +9579,7 @@ em {
   display: block;
   font-size: 0.82rem;
   font-weight: 800;
-  color: var(--forest, #073c2b);
+  color: var(--forest, #005c4e);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   margin-bottom: 10px;
@@ -9595,14 +9610,14 @@ em {
 
 .ref-variant-chip:hover {
   border-color: var(--gawdee-accent, #6d9773);
-  color: var(--forest, #073c2b);
+  color: var(--forest, #005c4e);
   background: #f4f8f5;
   transform: translateY(-2px);
 }
 
 .ref-variant-chip.is-active {
-  border-color: var(--forest, #073c2b);
-  background: var(--forest, #073c2b);
+  border-color: var(--forest, #005c4e);
+  background: var(--forest, #005c4e);
   color: #ffffff;
   font-weight: 800;
   transform: scale(1.03);
@@ -9643,15 +9658,15 @@ em {
 }
 
 .card-variant-pill:hover {
-  border-color: #073c2b;
+  border-color: #005c4e;
   background: #f0f7f3;
-  color: #073c2b;
+  color: #005c4e;
   transform: translateY(-1px);
 }
 
 .card-variant-pill.is-active {
-  border-color: #073c2b;
-  background: #073c2b;
+  border-color: #005c4e;
+  background: #005c4e;
   color: #ffffff;
   font-weight: 800;
   box-shadow: 0 3px 10px rgba(7, 60, 43, 0.2);

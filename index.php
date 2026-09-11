@@ -53,7 +53,6 @@ $blogCovers = [
 $reelProducts = [$products[2], $products[3], $products[0]];
 $homepageSections = gawdee_sections();
 $homepageBanners = gawdee_banners();
-$heroBannersTwo = gawdee_hero_banners_two();
 $homepageReels = gawdee_homepage_media('reels', false, true);
 if (empty($homepageReels)) {
     $homepageReels = gawdee_homepage_media('reels', false);
@@ -61,55 +60,12 @@ if (empty($homepageReels)) {
 $publishedPosts = gawdee_db()->query("SELECT * FROM blog_posts WHERE status='published' ORDER BY is_featured DESC, COALESCE(published_at, created_at) DESC LIMIT 5")->fetchAll();
 
 require __DIR__ . '/includes/header.php';
-
-$heroScrubEnabled = gawdee_setting('hero_scrub_enabled', '1') === '1';
-$heroScrubVideo = gawdee_setting('hero_scrub_video', '');
-$heroScrubPoster = gawdee_setting('hero_scrub_poster', '');
-$heroScrubTitle = gawdee_setting('hero_scrub_title', '');
-$heroScrubSubtitle = gawdee_setting('hero_scrub_subtitle', '');
-$heroScrubBgImage = gawdee_setting('hero_scrub_bg_image', '');
-
-$heroBgSrc = '';
-if (!empty($heroScrubBgImage)) {
-    $heroBgSrc = (str_starts_with($heroScrubBgImage, 'http://') || str_starts_with($heroScrubBgImage, 'https://')) 
-        ? $heroScrubBgImage 
-        : (str_starts_with($heroScrubBgImage, 'assets/') ? $heroScrubBgImage : 'assets/' . ltrim($heroScrubBgImage, '/'));
-}
 ?>
-
 <?php
-$firstSlide = $heroBannersTwo[0] ?? null;
-$initialEyebrow = !empty($firstSlide['eyebrow']) ? $firstSlide['eyebrow'] : gawdee_setting('hero_scrub_eyebrow', 'EVERYDAY FAVOURITES');
-$initialTitle = !empty($firstSlide['headline']) ? $firstSlide['headline'] : (!empty($firstSlide['title']) ? $firstSlide['title'] : ($heroScrubTitle ?: 'Pure, Organic & Traditional Food Essentials'));
-$initialSubtitle = !empty($firstSlide['subtitle']) ? $firstSlide['subtitle'] : ($heroScrubSubtitle ?: 'Handpicked unadulterated products thoughtfully crafted for modern living.');
-$hasHeroVideos = (!empty($heroScrubVideo) || !empty($heroBannersTwo));
+// Animated product-spotlight hero (dynamic via Admin > Animated hero).
+// Replaces the retired scroll-video hero (hero_scrub_* settings no longer used).
+require __DIR__ . '/includes/hero-animated.php';
 ?>
-
-<?php if ($heroScrubEnabled): ?>
-    <section class="hero-scrub-section <?= !$hasHeroVideos ? 'hero-scrub-section--image-mode' : '' ?>" data-hero-scrub-section
-        data-hero-slides="<?= htmlspecialchars(json_encode($heroBannersTwo, JSON_UNESCAPED_SLASHES), ENT_QUOTES) ?>"
-        aria-label="Cinematic Gawdee experience">
-        <?php if ($hasHeroVideos): ?>
-            <div class="hero-scrub-sticky">
-                <video class="hero-scrub-video is-active" data-hero-scrub-video muted playsinline autoplay loop preload="auto"
-                    <?= $heroScrubPoster ? 'poster="' . htmlspecialchars($heroScrubPoster) . '"' : '' ?>>
-                    <?php if ($heroScrubVideo): ?>
-                        <source src="<?= htmlspecialchars($heroScrubVideo) ?>" type="video/mp4">
-                    <?php endif; ?>
-                </video>
-                <video class="hero-scrub-video hero-scrub-video--next" data-hero-scrub-video-next muted playsinline preload="auto"></video>
-                <?php if ($heroScrubPoster): ?>
-                    <img class="hero-scrub-poster-overlay" data-hero-scrub-poster src="<?= htmlspecialchars($heroScrubPoster) ?>"
-                        alt="Gawdee Pure Food">
-                <?php endif; ?>
-            </div>
-        <?php elseif ($heroBgSrc): ?>
-            <div class="hero-image-banner-wrap">
-                <img src="<?= htmlspecialchars($heroBgSrc) ?>" alt="Gawdee Main Banner" class="hero-banner-responsive-img">
-            </div>
-        <?php endif; ?>
-    </section>
-<?php endif; ?>
 
 <section class="trust-strip reveal" aria-label="Shopping benefits">
     <div class="container trust-strip__inner">
@@ -140,7 +96,7 @@ foreach ($homepageSections as $sectionKey => $section) {
                         <div>
                             <span class="eyebrow"><i class="ph ph-fire"></i>
                                 <?= htmlspecialchars($homepageSections['shop']['eyebrow'] ?: 'Bestsellers') ?></span>
-                            <h1><?= htmlspecialchars($homepageSections['shop']['title']) ?></h1>
+                            <h2><?= htmlspecialchars($homepageSections['shop']['title']) ?></h2>
                             <p><?= htmlspecialchars($homepageSections['shop']['subtitle']) ?></p>
                         </div>
                         <div class="commerce-section__actions">

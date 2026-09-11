@@ -322,6 +322,19 @@ CREATE TABLE IF NOT EXISTS hero_banners_two (
     alt_text VARCHAR(255) NOT NULL DEFAULT '',
     sort_order INT NOT NULL DEFAULT 0,
     is_active TINYINT(1) NOT NULL DEFAULT 1,
+    cat VARCHAR(255) NOT NULL DEFAULT '',
+    title_html VARCHAR(255) NOT NULL DEFAULT '',
+    word VARCHAR(50) NOT NULL DEFAULT '',
+    sub TEXT,
+    price_label VARCHAR(50) NOT NULL DEFAULT '',
+    mrp_label VARCHAR(50) NOT NULL DEFAULT '',
+    off_badge VARCHAR(50) NOT NULL DEFAULT '',
+    reviews_label VARCHAR(100) NOT NULL DEFAULT '',
+    product_image VARCHAR(255) NOT NULL DEFAULT '',
+    cart_id VARCHAR(100) NOT NULL DEFAULT '',
+    cart_name VARCHAR(255) NOT NULL DEFAULT '',
+    cart_price INT NOT NULL DEFAULT 0,
+    cart_image VARCHAR(255) NOT NULL DEFAULT '',
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -581,6 +594,19 @@ CREATE TABLE IF NOT EXISTS hero_banners_two (
     alt_text TEXT NOT NULL DEFAULT '',
     sort_order INTEGER NOT NULL DEFAULT 0,
     is_active INTEGER NOT NULL DEFAULT 1,
+    cat TEXT NOT NULL DEFAULT '',
+    title_html TEXT NOT NULL DEFAULT '',
+    word TEXT NOT NULL DEFAULT '',
+    sub TEXT NOT NULL DEFAULT '',
+    price_label TEXT NOT NULL DEFAULT '',
+    mrp_label TEXT NOT NULL DEFAULT '',
+    off_badge TEXT NOT NULL DEFAULT '',
+    reviews_label TEXT NOT NULL DEFAULT '',
+    product_image TEXT NOT NULL DEFAULT '',
+    cart_id TEXT NOT NULL DEFAULT '',
+    cart_name TEXT NOT NULL DEFAULT '',
+    cart_price INTEGER NOT NULL DEFAULT 0,
+    cart_image TEXT NOT NULL DEFAULT '',
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
@@ -806,6 +832,19 @@ SQL);
     foreach ([
         'eyebrow' => "TEXT NOT NULL DEFAULT ''",
         'subtitle' => "TEXT NOT NULL DEFAULT ''",
+        'cat' => "TEXT NOT NULL DEFAULT ''",
+        'title_html' => "TEXT NOT NULL DEFAULT ''",
+        'word' => "TEXT NOT NULL DEFAULT ''",
+        'sub' => "TEXT NOT NULL DEFAULT ''",
+        'price_label' => "TEXT NOT NULL DEFAULT ''",
+        'mrp_label' => "TEXT NOT NULL DEFAULT ''",
+        'off_badge' => "TEXT NOT NULL DEFAULT ''",
+        'reviews_label' => "TEXT NOT NULL DEFAULT ''",
+        'product_image' => "TEXT NOT NULL DEFAULT ''",
+        'cart_id' => "TEXT NOT NULL DEFAULT ''",
+        'cart_name' => "TEXT NOT NULL DEFAULT ''",
+        'cart_price' => 'INTEGER NOT NULL DEFAULT 0',
+        'cart_image' => "TEXT NOT NULL DEFAULT ''",
     ] as $column => $definition) {
         gawdee_ensure_column($db, 'hero_banners_two', $column, $definition);
     }
@@ -923,10 +962,42 @@ function gawdee_seed_defaults(PDO $db): void
             $insertBannerTwo->execute(['Pure Food Harvest', 'PURE FOOD. BETTER EVERYDAY.', 'assets/uploads/hero/hero-38c236d09817bc8426.mp4', 'assets/uploads/hero/hero-38c236d09817bc8426.mp4', 1, '#shop', 'Pure Food Better Everyday', 10]);
             $insertBannerTwo->execute(['Organic Goodness', 'ORGANIC GOODNESS. PURE HARVEST.', 'assets/uploads/hero/hero-a3f9a6cc6ea5b3c2eb.mp4', 'assets/uploads/hero/hero-a3f9a6cc6ea5b3c2eb.mp4', 1, '#shop', 'Organic Goodness Pure Harvest', 20]);
             $insertBannerTwo->execute(['Soulful Wellness', 'SOULFUL WELLNESS. NATURALLY CRAFTED.', 'assets/uploads/hero/hero-38c236d09817bc8426.mp4', 'assets/uploads/hero/hero-38c236d09817bc8426.mp4', 1, '#shop', 'Soulful Wellness Naturally Crafted', 30]);
-            $insertBannerTwo->execute(['Handpicked Ingredients', 'HANDPICKED INGREDIENTS. HONEST TASTE.', 'assets/uploads/hero/hero-a3f9a6cc6ea5b3c2eb.mp4', 'assets/uploads/hero/hero-a3f9a6cc6ea5b3c2eb.mp4', 1, '#shop', 'Handpicked Ingredients Honest Taste', 40]);
+            $insertBannerTwo->execute(['Handpicked Ingredients', 'HANDPICKED INGREDIENTS. HONEST TASTE.', 'assets/uploads/hero/hero-38c236d09817bc8426.mp4', 'assets/uploads/hero/hero-38c236d09817bc8426.mp4', 1, '#shop', 'Handpicked Ingredients Honest Taste', 40]);
             $insertBannerTwo->execute(['Traditional Recipes', 'TRADITIONAL RECIPES. MODERN LIVING.', 'assets/uploads/hero/hero-38c236d09817bc8426.mp4', 'assets/uploads/hero/hero-a3f9a6cc6ea5b3c2eb.mp4', 1, '#shop', 'Traditional Recipes Modern Living', 50]);
         }
         gawdee_set_setting('hero_banners_two_seeded', '1');
+    }
+
+    // Animated hero (v1): backfill legacy video rows, then seed bg-removed demo slides
+    // from assets/images/Banners when no valid product_image slide exists.
+    try {
+        $hasProductImageCol = in_array('product_image', gawdee_get_table_columns($db, 'hero_banners_two'), true);
+        if ($hasProductImageCol && gawdee_setting('hero_animated_v1_seeded', '0') !== '1') {
+            // Migrate legacy text columns into the new animated columns where empty.
+            $db->exec("UPDATE hero_banners_two SET cat = eyebrow WHERE (cat IS NULL OR cat = '') AND eyebrow <> ''");
+            $db->exec("UPDATE hero_banners_two SET title_html = headline WHERE (title_html IS NULL OR title_html = '') AND headline <> ''");
+            $db->exec("UPDATE hero_banners_two SET sub = subtitle WHERE (sub IS NULL OR sub = '') AND subtitle <> ''");
+            $db->exec("UPDATE hero_banners_two SET product_image = desktop_video WHERE (product_image IS NULL OR product_image = '') AND (desktop_video LIKE '%.png' OR desktop_video LIKE '%.jpg' OR desktop_video LIKE '%.jpeg' OR desktop_video LIKE '%.webp' OR desktop_video LIKE '%Banners%')");
+
+            $validSlides = (int) $db->query("SELECT COUNT(*) FROM hero_banners_two WHERE product_image <> '' AND product_image NOT LIKE '%.mp4' AND product_image NOT LIKE '%.webm' AND product_image NOT LIKE '%.mov'")->fetchColumn();
+            if ($validSlides === 0) {
+                $db->exec('DELETE FROM hero_banners_two');
+                $insertAnimated = $db->prepare('INSERT INTO hero_banners_two (title, cat, title_html, word, sub, price_label, mrp_label, off_badge, reviews_label, product_image, link_url, alt_text, cart_id, cart_name, cart_price, cart_image, sort_order, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+                $demoSlides = [
+                    ['A2 Gir Cow Ghee', 'A2 Vedic • Grass-Fed', 'A2 Vedic<br><span>Gir Cow Ghee</span>', 'GHEE', 'Pure & Healthy Gir Cow A2 Ghee hand-churned using traditional Bilona method. Nutty, aromatic & nourishing.', '₹891', '₹1,049', 'Save 15%', '4.9 — 2,340 rituals', 'assets/images/Banners/IMG_1438.PNG', 'product?slug=gawdee-gir-cow-a2-ghee-500-ml', 'GAWDEE Pure Gir Cow A2 Bilona Ghee Jar', 'ghee-500', 'Gawdee Gir Cow A2 Ghee 500ml', 891, 'assets/images/products/ghee-500.webp', 10, 1],
+                    ['MixMe Vanilla', '100% Natural • Homemade Taste', 'MixMe Powder<br><span>Vanilla Flavour</span>', 'MIXME', 'Nutritive food powder for kids (2+ yrs) & adults. Packed with Ashwagandha, Shatavari, Brahmi, Peanut & Dates.', '₹759', '₹799', 'Save 5%', '4.8 — 1,870 rituals', 'assets/images/Banners/IMG_1439.PNG', 'product?slug=gawdee-mixme-vanilla-500-g', 'GAWDEE MixMe Nutritive Food Powder Vanilla Flavour Pouch', 'mixme-vanilla', 'Gawdee MixMe — Vanilla 500g', 759, 'assets/uploads/products/products-fb1c5b2c7521f2a1f5.png', 20, 1],
+                    ['MixMe Elaichi', '100% Natural • Homemade Taste', 'MixMe Powder<br><span>Cardamom Flavour</span>', 'MIXME', 'Nutritive food powder blend with Vavding, Ganthoda, Brahmi & Shankhpushpi in soothing Cardamom flavour.', '₹759', '₹799', 'Save 5%', '4.9 — 2,110 rituals', 'assets/images/Banners/IMG_1441 (1).PNG', 'product?slug=gawdee-mixme-elaichi-500-g', 'GAWDEE MixMe Nutritive Food Powder Cardamom Flavour Pouch', 'mixme-elaichi', 'Gawdee MixMe — Elaichi 500g', 759, 'assets/images/products/mixme-elaichi.webp', 30, 1],
+                    ['Burra Sugar', 'Traditional • Unrefined Sweetness', 'Burra Sugar<br><span>Khandsari 1kg</span>', 'BURRA', 'Naturally processed khandsari sugar with zero chemical processing. Fine crystals for tea, milk, sweets & halwa.', '₹159', '₹199', 'Save 20%', '4.9 — 3,102 rituals', 'assets/images/Banners/IMG_1442 (1).PNG', 'product?slug=gawdee-bura-sugar-1-kg', 'GAWDEE Burra Khandsari Sugar 1kg Pouch', 'burra-sugar', 'Gawdee Burra Sugar 1kg', 159, 'assets/images/products/burra-sugar.webp', 40, 1],
+                    ['Taral Drop', 'Authentic Nasya • Belly Button Drops', 'Taral Drop<br><span>(Nasya) 30ml</span>', 'TARAL', 'Authentic organic nutrition drops for nose & belly button. Boosts clarity, breath & natural wellness.', '₹209', '₹299', 'Save 30%', '4.7 — 940 rituals', 'assets/images/Banners/IMG_1447 (1).PNG', 'product?slug=gawdee-taral-drop-30-ml', 'GAWDEE Taral Drop Nasya Bottle 30ml', 'taral-drop', 'Gawdee Taral Drop 30ml', 209, 'assets/images/products/taral-drop.webp', 50, 1],
+                ];
+                foreach ($demoSlides as $slide) {
+                    $insertAnimated->execute($slide);
+                }
+            }
+            gawdee_set_setting('hero_animated_v1_seeded', '1');
+        }
+    } catch (Throwable $animatedSeedError) {
+        // Seeding must never break homepage boot; admin can re-save slides manually.
     }
 
     if ((int) $db->query('SELECT COUNT(*) FROM testimonials')->fetchColumn() === 0) {

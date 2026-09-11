@@ -245,47 +245,98 @@ SQL);
 
         if ($action === 'save_banner_two') {
             $id = (int) ($_POST['id'] ?? 0);
-            $desktopVideo = admin_upload_media('desktop_video', 'banners_two', trim((string) ($_POST['existing_desktop_video'] ?? '')), ['video', 'image']);
-            $mobileVideo = admin_upload_media('mobile_video', 'banners_two', trim((string) ($_POST['existing_mobile_video'] ?? '')), ['video', 'image']);
-
-            $desktopVideoUrl = trim((string) ($_POST['desktop_video_url'] ?? ''));
-            if ($desktopVideoUrl !== '') {
-                $desktopVideo = $desktopVideoUrl;
-            }
-            $mobileVideoUrl = trim((string) ($_POST['mobile_video_url'] ?? ''));
-            if ($mobileVideoUrl !== '') {
-                $mobileVideo = $mobileVideoUrl;
-            }
-
-            $headline = trim((string) ($_POST['headline'] ?? ''));
-            $eyebrow = trim((string) ($_POST['eyebrow'] ?? ''));
-            $subtitle = trim((string) ($_POST['subtitle'] ?? ''));
             $title = trim((string) ($_POST['title'] ?? ''));
-            $duration = max(1, (int) ($_POST['duration'] ?? 1));
             if ($title === '') {
-                throw new RuntimeException('Banner title is required.');
+                throw new RuntimeException('Slide name is required.');
+            }
+            $cat = trim((string) ($_POST['cat'] ?? ''));
+            $titleHtml = trim((string) ($_POST['title_html'] ?? ''));
+            $word = strtoupper(preg_replace('/[^A-Za-z0-9]/', '', (string) ($_POST['word'] ?? '')));
+            if ($word === '') {
+                throw new RuntimeException('Marquee word is required (e.g. GHEE, MIXME).');
+            }
+            $sub = trim((string) ($_POST['sub'] ?? ''));
+            if ($titleHtml === '' || $sub === '') {
+                throw new RuntimeException('Headline and description are required.');
+            }
+
+            // Background-removed product cutout: upload wins, else demo picker, else existing.
+            $existingImage = trim((string) ($_POST['existing_product_image'] ?? ''));
+            $productImage = admin_upload_media('product_image_file', 'hero_animated', $existingImage, ['image']);
+            $demoImage = trim((string) ($_POST['demo_image'] ?? ''));
+            if ($productImage === '' && $demoImage !== '' && str_starts_with($demoImage, 'assets/images/Banners/')) {
+                $productImage = $demoImage;
+            }
+            if ($productImage === '') {
+                throw new RuntimeException('Upload a background-removed product image (transparent PNG/WebP) or pick a demo image.');
+            }
+
+            // Linked product auto-fills cart + shop link when manual fields are left blank.
+            $productRef = trim((string) ($_POST['product_ref'] ?? ''));
+            $cartId = trim((string) ($_POST['cart_id'] ?? ''));
+            $cartName = trim((string) ($_POST['cart_name'] ?? ''));
+            $cartPrice = max(0, (int) ($_POST['cart_price'] ?? 0));
+            $cartImage = trim((string) ($_POST['cart_image'] ?? ''));
+            $linkUrl = trim((string) ($_POST['link_url'] ?? ''));
+            if ($productRef !== '') {
+                $productLookup = gawdee_db()->prepare('SELECT * FROM products WHERE id = ? OR slug = ? LIMIT 1');
+                $productLookup->execute([$productRef, $productRef]);
+                $linked = $productLookup->fetch() ?: null;
+                if ($linked) {
+                    if ($cartId === '') {
+                        $cartId = (string) $linked['id'];
+                    }
+                    if ($cartName === '') {
+                        $cartName = (string) $linked['full_name'];
+                    }
+                    if ($cartPrice <= 0) {
+                        $cartPrice = (int) $linked['price'];
+                    }
+                    if ($cartImage === '') {
+                        $cartImage = (string) $linked['image'];
+                    }
+                    if ($linkUrl === '' || $linkUrl === '#shop') {
+                        $linkUrl = 'product?slug=' . (string) $linked['slug'];
+                    }
+                }
+            }
+            if ($cartId === '') {
+                $cartId = $productRef !== '' ? $productRef : gawdee_slug($title);
+            }
+            if ($cartName === '') {
+                $cartName = $title;
+            }
+            if ($linkUrl === '') {
+                $linkUrl = '#shop';
             }
             $values = [
                 $title,
-                $headline,
-                $eyebrow,
-                $subtitle,
-                $desktopVideo,
-                $mobileVideo,
-                $duration,
-                trim((string) ($_POST['link_url'] ?? '#shop')),
+                $cat,
+                $titleHtml,
+                $word,
+                $sub,
+                trim((string) ($_POST['price_label'] ?? '')),
+                trim((string) ($_POST['mrp_label'] ?? '')),
+                trim((string) ($_POST['off_badge'] ?? '')),
+                trim((string) ($_POST['reviews_label'] ?? '')),
+                $productImage,
+                $linkUrl,
                 trim((string) ($_POST['alt_text'] ?? '')),
+                $cartId,
+                $cartName,
+                $cartPrice,
+                $cartImage,
                 (int) ($_POST['sort_order'] ?? 0),
                 isset($_POST['is_active']) ? 1 : 0,
             ];
             if ($id > 0) {
-                $statement = gawdee_db()->prepare('UPDATE hero_banners_two SET title=?, headline=?, eyebrow=?, subtitle=?, desktop_video=?, mobile_video=?, duration=?, link_url=?, alt_text=?, sort_order=?, is_active=?, updated_at=CURRENT_TIMESTAMP WHERE id=?');
+                $statement = gawdee_db()->prepare('UPDATE hero_banners_two SET title=?, cat=?, title_html=?, word=?, sub=?, price_label=?, mrp_label=?, off_badge=?, reviews_label=?, product_image=?, link_url=?, alt_text=?, cart_id=?, cart_name=?, cart_price=?, cart_image=?, sort_order=?, is_active=?, updated_at=CURRENT_TIMESTAMP WHERE id=?');
                 $statement->execute([...$values, $id]);
             } else {
-                $statement = gawdee_db()->prepare('INSERT INTO hero_banners_two (title, headline, eyebrow, subtitle, desktop_video, mobile_video, duration, link_url, alt_text, sort_order, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+                $statement = gawdee_db()->prepare('INSERT INTO hero_banners_two (title, cat, title_html, word, sub, price_label, mrp_label, off_badge, reviews_label, product_image, link_url, alt_text, cart_id, cart_name, cart_price, cart_image, sort_order, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
                 $statement->execute($values);
             }
-            admin_redirect('banners_two', 'Hero banner two saved successfully.');
+            admin_redirect('banners_two', 'Animated hero slide saved successfully.');
         }
 
         if ($action === 'delete_banner_two') {
@@ -480,37 +531,8 @@ SQL);
         }
 
         if ($action === 'save_hero_scrub') {
-            if (isset($_POST['has_enabled_field'])) {
-                gawdee_set_setting('hero_scrub_enabled', isset($_POST['hero_scrub_enabled']) ? '1' : '0');
-            } else {
-                gawdee_set_setting('hero_scrub_enabled', '1');
-            }
-            if (isset($_POST['hero_scrub_eyebrow'])) {
-                gawdee_set_setting('hero_scrub_eyebrow', trim((string) $_POST['hero_scrub_eyebrow']));
-            }
-            if (isset($_POST['hero_scrub_title'])) {
-                gawdee_set_setting('hero_scrub_title', trim((string) $_POST['hero_scrub_title']));
-            }
-            if (isset($_POST['hero_scrub_subtitle'])) {
-                gawdee_set_setting('hero_scrub_subtitle', trim((string) $_POST['hero_scrub_subtitle']));
-            }
-
-            $videoPath = admin_upload_media('hero_scrub_video', 'hero', trim((string) ($_POST['existing_hero_scrub_video'] ?? '')), ['video']);
-            if (!empty($videoPath)) {
-                gawdee_set_setting('hero_scrub_video', $videoPath);
-            }
-
-            $posterPath = admin_upload_media('hero_scrub_poster', 'hero', trim((string) ($_POST['existing_hero_scrub_poster'] ?? '')), ['image']);
-            if (!empty($posterPath)) {
-                gawdee_set_setting('hero_scrub_poster', $posterPath);
-            }
-
-            $bgUrl = trim((string) ($_POST['hero_scrub_bg_image_url'] ?? ''));
-            $uploadedBg = admin_upload_media('hero_scrub_bg_image', 'hero', '', ['image']);
-            $finalBg = !empty($uploadedBg) ? $uploadedBg : (!empty($bgUrl) ? $bgUrl : trim((string) ($_POST['existing_hero_scrub_bg_image'] ?? '')));
-            gawdee_set_setting('hero_scrub_bg_image', $finalBg);
-
-            admin_redirect('banners_two', 'Hero section background image & text settings saved successfully.');
+            // Retired: video hero replaced by the animated hero. Keep the endpoint harmless.
+            admin_redirect('banners_two', 'Video hero retired — the animated hero is now live. Manage slides above.');
         }
 
         if ($action === 'save_integrations') {
@@ -639,7 +661,7 @@ SQL);
 
 $flash = $_SESSION['admin_flash'] ?? null;
 unset($_SESSION['admin_flash']);
-$viewTitles = ['dashboard' => 'Dashboard', 'categories' => 'Shop by Category', 'products' => 'Products', 'orders' => 'Orders', 'reels' => 'Video Reels', 'banners' => 'Hero banners', 'banners_two' => 'Hero banners 2', 'cms' => 'Homepage CMS', 'testimonials' => 'Testimonials', 'media' => 'Homepage media', 'blog' => 'Blog', 'ai' => 'AI studio', 'integrations' => 'Integrations', 'settings' => 'Store settings'];
+$viewTitles = ['dashboard' => 'Dashboard', 'categories' => 'Shop by Category', 'products' => 'Products', 'orders' => 'Orders', 'reels' => 'Video Reels', 'banners' => 'Hero banners', 'banners_two' => 'Animated hero', 'cms' => 'Homepage CMS', 'testimonials' => 'Testimonials', 'media' => 'Homepage media', 'blog' => 'Blog', 'ai' => 'AI studio', 'integrations' => 'Integrations', 'settings' => 'Store settings'];
 $navItems = [
     ['dashboard', 'ph-squares-four', 'Dashboard'],
     ['categories', 'ph-squares-four', 'Categories'],
@@ -647,7 +669,7 @@ $navItems = [
     ['orders', 'ph-receipt', 'Orders'],
     ['reels', 'ph-film-strip', 'Video Reels'],
     ['banners', 'ph-image', 'Hero banners'],
-    ['banners_two', 'ph-film-strip', 'Hero banners 2'],
+    ['banners_two', 'ph-film-strip', 'Animated hero'],
     ['cms', 'ph-layout', 'Homepage CMS'],
     ['testimonials', 'ph-quotes', 'Testimonials'],
     ['media', 'ph-video-camera', 'Homepage media'],
@@ -682,8 +704,11 @@ $stats = [
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap"
-        rel="stylesheet">
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet" media="print" onload="this.media='all'">
+    <noscript><link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet"></noscript>
     <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
     <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/fill/style.css">
     <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css">
@@ -886,20 +911,36 @@ $stats = [
                     } ?>
                     <div class="admin-section-title">
                         <div>
-                            <h2>Hero banner 2 manager</h2>
-                            <p>Upload video slides (MP4/WebM/MOV) or paste direct video URLs. Max upload limit:
-                                <?= htmlspecialchars(ini_get('upload_max_filesize') ?: '40M') ?>
+                            <h2>Animated hero manager</h2>
+                            <p>Dynamic product-spotlight slides. Upload <strong>background-removed</strong> cutouts
+                                (transparent PNG/WebP). Demo starters live in
+                                <code>assets/images/Banners/</code>. Image upload limit:
+                                <?= htmlspecialchars(ini_get('upload_max_filesize') ?: '10M') ?>
                             </p>
                         </div><a class="admin-button admin-button--primary" href="?view=banners_two&edit=-1"><i
-                                class="ph ph-plus"></i> Add video banner</a>
+                                class="ph ph-plus"></i> Add hero slide</a>
                     </div>
                     <?php if (isset($_GET['edit'])):
-                        $b2 = $editBTwo ?? ['id' => 0, 'title' => '', 'headline' => '', 'eyebrow' => '', 'subtitle' => '', 'desktop_video' => '', 'mobile_video' => '', 'duration' => 1, 'link_url' => '#shop', 'alt_text' => '', 'sort_order' => count($allBannersTwo) * 10 + 10, 'is_active' => 1]; ?>
+                        $b2 = $editBTwo ?? ['id' => 0, 'title' => '', 'cat' => '', 'title_html' => '', 'word' => '', 'sub' => '', 'price_label' => '', 'mrp_label' => '', 'off_badge' => '', 'reviews_label' => '', 'product_image' => '', 'link_url' => '#shop', 'alt_text' => '', 'cart_id' => '', 'cart_name' => '', 'cart_price' => 0, 'cart_image' => '', 'sort_order' => count($allBannersTwo) * 10 + 10, 'is_active' => 1];
+                        $b2ProductRef = (string) ($b2['cart_id'] ?? '');
+                        $demoBannerFiles = [];
+                        foreach (glob(GAWDEE_ROOT . '/assets/images/Banners/*.PNG') ?: [] as $demoPath) {
+                            $demoBannerFiles[] = 'assets/images/Banners/' . basename($demoPath);
+                        }
+                        foreach (glob(GAWDEE_ROOT . '/assets/images/Banners/*.png') ?: [] as $demoPath) {
+                            $demoBannerFiles[] = 'assets/images/Banners/' . basename($demoPath);
+                        }
+                        $demoBannerFiles = array_values(array_unique($demoBannerFiles));
+                        try {
+                            $productOptions = gawdee_db()->query("SELECT id, full_name, price, image, slug FROM products WHERE is_active = 1 ORDER BY full_name")->fetchAll();
+                        } catch (Throwable $productOptionsError) {
+                            $productOptions = [];
+                        } ?>
                         <section class="admin-card" style="margin-bottom:20px">
                             <div class="admin-card__header">
                                 <div>
-                                    <h2><?= $editBTwo ? 'Edit video banner' : 'New video banner' ?></h2>
-                                    <p>Multiple short video slides with dynamic eyebrow, headline and subtitle updates</p>
+                                    <h2><?= $editBTwo ? 'Edit hero slide' : 'New hero slide' ?></h2>
+                                    <p>Kicker, headline, cutout image, price row, Shop Now link and Add to Cart mapping</p>
                                 </div><a href="?view=banners_two" class="admin-action-icon"><i class="ph ph-x"></i></a>
                             </div>
                             <div class="admin-card__body">
@@ -907,86 +948,126 @@ $stats = [
                                         type="hidden" name="csrf_token"
                                         value="<?= htmlspecialchars(gawdee_csrf_token()) ?>"><input type="hidden" name="action"
                                         value="save_banner_two"><input type="hidden" name="id"
-                                        value="<?= (int) $b2['id'] ?>"><input type="hidden" name="existing_desktop_video"
-                                        value="<?= htmlspecialchars($b2['desktop_video']) ?>"><input type="hidden"
-                                        name="existing_mobile_video" value="<?= htmlspecialchars($b2['mobile_video']) ?>">
-                                    <label><span>Banner title (Internal name)</span><input name="title" required
-                                            value="<?= htmlspecialchars($b2['title']) ?>"></label>
-                                    <label><span>Eyebrow tag</span><input name="eyebrow"
-                                            value="<?= htmlspecialchars($b2['eyebrow'] ?? '') ?>"></label>
-                                    <label class="form-span-2"><span>Headline (Main text displayed on slide)</span><input
-                                            name="headline" value="<?= htmlspecialchars($b2['headline']) ?>"></label>
-                                    <label class="form-span-2"><span>Subtitle / Description</span><input name="subtitle"
-                                            value="<?= htmlspecialchars($b2['subtitle'] ?? '') ?>"></label>
-                                    <div class="cms-media-field"><label><span>Desktop video file (Upload
-                                                MP4/WebM/MOV)</span><input type="file" name="desktop_video"
-                                                accept="video/mp4,video/webm,video/quicktime,video/*,image/*"></label>
-                                        <div style="margin-top:6px"><input type="text" name="desktop_video_url"
-                                                placeholder="Or enter direct video URL (e.g. https://...)"
-                                                value="<?= htmlspecialchars(preg_match('/^https?:\/\//i', $b2['desktop_video']) ? $b2['desktop_video'] : '') ?>"
-                                                style="font-size:0.85rem"></div><?php if (!empty($b2['desktop_video'])): ?>
-                                            <div style="margin-top:8px"><video
-                                                    src="<?= htmlspecialchars(admin_media_url($b2['desktop_video'])) ?>" controls
-                                                    muted playsinline
-                                                    style="width:100%;max-height:160px;border-radius:10px;background:#031f16;object-fit:cover"></video><small
-                                                    class="help-text"><?= htmlspecialchars($b2['desktop_video']) ?></small></div>
+                                        value="<?= (int) $b2['id'] ?>"><input type="hidden" name="existing_product_image"
+                                        value="<?= htmlspecialchars((string) ($b2['product_image'] ?? '')) ?>"><input type="hidden"
+                                        name="cart_image" value="<?= htmlspecialchars((string) ($b2['cart_image'] ?? '')) ?>">
+                                    <label><span>Slide name (internal)</span><input name="title" required
+                                            value="<?= htmlspecialchars((string) $b2['title']) ?>"
+                                            placeholder="e.g. A2 Gir Cow Ghee"></label>
+                                    <label><span>Kicker pill (cat)</span><input name="cat"
+                                            value="<?= htmlspecialchars((string) ($b2['cat'] ?? '')) ?>"
+                                            placeholder="e.g. A2 Vedic • Grass-Fed"></label>
+                                    <label class="form-span-2"><span>Headline (supports &lt;br&gt; + &lt;span&gt;)</span><input
+                                            name="title_html" required
+                                            value="<?= htmlspecialchars((string) ($b2['title_html'] ?? ($b2['headline'] ?? ''))) ?>"
+                                            placeholder="e.g. A2 Vedic&lt;br&gt;&lt;span&gt;Gir Cow Ghee&lt;/span&gt;"></label>
+                                    <label><span>Marquee word (UPPERCASE)</span><input name="word" required maxlength="12"
+                                            value="<?= htmlspecialchars((string) ($b2['word'] ?? '')) ?>"
+                                            placeholder="e.g. GHEE"></label>
+                                    <label><span>Reviews label</span><input name="reviews_label"
+                                            value="<?= htmlspecialchars((string) ($b2['reviews_label'] ?? '')) ?>"
+                                            placeholder="e.g. 4.9 — 2,340 rituals"></label>
+                                    <label class="form-span-2"><span>Description (sub)</span><textarea name="sub"
+                                            required style="min-height:70px"
+                                            placeholder="Short benefit-led description..."><?= htmlspecialchars((string) ($b2['sub'] ?? ($b2['subtitle'] ?? ''))) ?></textarea></label>
+                                    <div class="cms-media-field form-span-2" style="border:1px dashed #0a7540;border-radius:12px;padding:12px;background:#f4faf6"><label><span>Background-removed product cutout
+                                                (transparent PNG/WebP, &le;10MB)</span><input type="file"
+                                                name="product_image_file"
+                                                accept="image/png,image/webp,image/jpeg"></label>
+                                        <?php if (!empty($b2['product_image'])): ?>
+                                            <div style="margin-top:8px;display:flex;gap:12px;align-items:center">
+                                                <span style="width:96px;height:96px;border-radius:12px;display:grid;place-items:center;background:repeating-conic-gradient(#dfe7e1 0 25%, #fff 0 50%) 0 0/16px 16px;border:1px solid #dce5de;overflow:hidden"><img
+                                                        src="<?= htmlspecialchars(admin_media_url((string) $b2['product_image'])) ?>"
+                                                        alt="" style="max-width:88px;max-height:88px;object-fit:contain"></span>
+                                                <small class="help-text"><?= htmlspecialchars((string) $b2['product_image']) ?></small>
+                                            </div>
                                         <?php endif; ?>
+                                        <label style="margin-top:10px"><span>Or pick a demo cutout from
+                                                assets/images/Banners/</span><select name="demo_image">
+                                                <option value="">— keep current / uploaded image —</option>
+                                                <?php foreach ($demoBannerFiles as $demoFile): ?>
+                                                    <option value="<?= htmlspecialchars($demoFile) ?>"
+                                                        <?= ($b2['product_image'] ?? '') === $demoFile ? 'selected' : '' ?>>
+                                                        <?= htmlspecialchars(basename($demoFile)) ?></option>
+                                                <?php endforeach; ?>
+                                            </select></label>
                                     </div>
-                                    <div class="cms-media-field"><label><span>Mobile video file (Upload
-                                                MP4/WebM/MOV)</span><input type="file" name="mobile_video"
-                                                accept="video/mp4,video/webm,video/quicktime,video/*,image/*"></label>
-                                        <div style="margin-top:6px"><input type="text" name="mobile_video_url"
-                                                placeholder="Or enter direct video URL (e.g. https://...)"
-                                                value="<?= htmlspecialchars(preg_match('/^https?:\/\//i', $b2['mobile_video']) ? $b2['mobile_video'] : '') ?>"
-                                                style="font-size:0.85rem"></div><?php if (!empty($b2['mobile_video'])): ?>
-                                            <div style="margin-top:8px"><video
-                                                    src="<?= htmlspecialchars(admin_media_url($b2['mobile_video'])) ?>" controls
-                                                    muted playsinline
-                                                    style="width:100%;max-height:160px;border-radius:10px;background:#031f16;object-fit:cover"></video><small
-                                                    class="help-text"><?= htmlspecialchars($b2['mobile_video']) ?></small></div>
-                                        <?php endif; ?>
-                                    </div><label><span>Duration (Seconds, min 1)</span><input type="number" name="duration"
-                                            min="1" max="60"
-                                            value="<?= (int) ($b2['duration'] ?? 1) ?>"></label><label><span>Destination
-                                            link</span><input name="link_url"
-                                            value="<?= htmlspecialchars($b2['link_url']) ?>"></label><label
-                                        class="form-span-2"><span>Accessible alt text</span><input name="alt_text"
-                                            value="<?= htmlspecialchars($b2['alt_text']) ?>"></label><label><span>Sort
+                                    <label><span>Price label</span><input name="price_label"
+                                            value="<?= htmlspecialchars((string) ($b2['price_label'] ?? '')) ?>"
+                                            placeholder="e.g. ₹891"></label>
+                                    <label><span>MRP label</span><input name="mrp_label"
+                                            value="<?= htmlspecialchars((string) ($b2['mrp_label'] ?? '')) ?>"
+                                            placeholder="e.g. ₹1,049"></label>
+                                    <label><span>Offer badge</span><input name="off_badge"
+                                            value="<?= htmlspecialchars((string) ($b2['off_badge'] ?? '')) ?>"
+                                            placeholder="e.g. Save 15%"></label>
+                                    <label><span>Shop Now link</span><input name="link_url"
+                                            value="<?= htmlspecialchars((string) ($b2['link_url'] ?? '#shop')) ?>"
+                                            placeholder="product?slug=..."></label>
+                                    <label class="form-span-2"><span>Linked product (auto-fills cart + link when left
+                                            blank)</span><select name="product_ref">
+                                            <option value="">— custom / manual entry —</option>
+                                            <?php foreach ($productOptions as $option): ?>
+                                                <option value="<?= htmlspecialchars((string) $option['id']) ?>"
+                                                    <?= $b2ProductRef === (string) $option['id'] ? 'selected' : '' ?>>
+                                                    <?= htmlspecialchars((string) $option['full_name'] . ' — ₹' . number_format((int) $option['price'])) ?>
+                                                </option>
+                                            <?php endforeach; ?>
+                                        </select></label>
+                                    <label><span>Cart product ID</span><input name="cart_id"
+                                            value="<?= htmlspecialchars((string) ($b2['cart_id'] ?? '')) ?>"
+                                            placeholder="e.g. ghee-500"></label>
+                                    <label><span>Cart product name</span><input name="cart_name"
+                                            value="<?= htmlspecialchars((string) ($b2['cart_name'] ?? '')) ?>"
+                                            placeholder="e.g. Gawdee Gir Cow A2 Ghee 500ml"></label>
+                                    <label><span>Cart price (₹ number)</span><input type="number" name="cart_price"
+                                            min="0" step="1"
+                                            value="<?= (int) ($b2['cart_price'] ?? 0) ?>"></label>
+                                    <label class="form-span-2"><span>Accessible alt text</span><input name="alt_text"
+                                            value="<?= htmlspecialchars((string) ($b2['alt_text'] ?? '')) ?>"
+                                            placeholder="Describe the product cutout"></label><label><span>Sort
                                             order</span><input type="number" name="sort_order"
                                             value="<?= (int) $b2['sort_order'] ?>"></label><label class="form-switch"><input
                                             type="checkbox" name="is_active" <?= (int) $b2['is_active'] ? 'checked' : '' ?>><span>Active slide</span></label>
                                     <div class="form-span-2" style="display:flex;justify-content:flex-end"><button
-                                            class="admin-button admin-button--primary">Save video banner</button></div>
+                                            class="admin-button admin-button--primary">Save hero slide</button></div>
                                 </form>
                             </div>
                         </section>
                     <?php endif; ?>
-                    <div class="banner-grid"><?php foreach ($allBannersTwo as $banner): ?>
-                            <article class="banner-card"><?php if (!empty($banner['desktop_video'])): ?><video
-                                        src="<?= htmlspecialchars(admin_media_url($banner['desktop_video'])) ?>" controls muted
-                                        playsinline
-                                        style="width:100%;height:160px;object-fit:cover;background:#031f16"></video><?php else: ?>
-                                    <div
-                                        style="height:160px;background:#031f16;display:flex;align-items:center;justify-content:center;color:#fff;flex-direction:column;gap:6px">
-                                        <i class="ph ph-film-strip" style="font-size:2rem"></i><span
-                                            style="font-size:0.8rem;opacity:0.7">No video uploaded</span>
-                                    </div><?php endif; ?>
+                    <div class="banner-grid"><?php foreach ($allBannersTwo as $banner):
+                        $slideImg = (string) ($banner['product_image'] ?? '');
+                        if ($slideImg === '' && !empty($banner['desktop_video']) && !preg_match('/\.(mp4|webm|mov|ogv|mkv|avi)$/i', (string) $banner['desktop_video'])) {
+                            $slideImg = (string) $banner['desktop_video'];
+                        }
+                        $slideHeadline = strip_tags(str_replace(['<br>', '<br/>', '<br />'], ' ', (string) ($banner['title_html'] ?? ($banner['headline'] ?? '')))); ?>
+                            <article class="banner-card"><?php if ($slideImg !== ''): ?>
+                                        <span style="display:block;background:repeating-conic-gradient(#e6efe9 0 25%, #fff 0 50%) 0 0/18px 18px"><img
+                                                src="<?= htmlspecialchars(admin_media_url($slideImg)) ?>" alt=""
+                                                style="width:100%;height:180px;object-fit:contain"></span><?php else: ?>
+                                        <div
+                                            style="height:180px;background:#031f16;display:flex;align-items:center;justify-content:center;color:#fff;flex-direction:column;gap:6px">
+                                            <i class="ph ph-image" style="font-size:2rem"></i><span
+                                                style="font-size:0.8rem;opacity:0.7">No cutout uploaded</span>
+                                        </div><?php endif; ?>
                                 <div class="banner-card__body">
                                     <span class="help-text"
-                                        style="color:#0a7540;font-weight:600;font-size:0.75rem"><?= htmlspecialchars($banner['eyebrow'] ?: '') ?></span>
-                                    <h3 style="margin:2px 0"><?= htmlspecialchars($banner['headline'] ?: $banner['title']) ?>
+                                        style="color:#0a7540;font-weight:600;font-size:0.75rem"><?= htmlspecialchars((string) ($banner['cat'] ?? ($banner['eyebrow'] ?? ''))) ?></span>
+                                    <h3 style="margin:2px 0"><?= htmlspecialchars($slideHeadline !== '' ? $slideHeadline : (string) $banner['title']) ?>
                                     </h3>
                                     <p style="font-size:0.8rem;color:#555;margin:2px 0;line-height:1.3">
-                                        <?= htmlspecialchars($banner['subtitle'] ?: '') ?>
+                                        <?= htmlspecialchars((string) ($banner['sub'] ?? ($banner['subtitle'] ?? ''))) ?>
                                     </p>
-                                    <p style="font-size:0.75rem;opacity:0.7;margin-top:4px">Duration:
-                                        <?= (int) $banner['duration'] ?>s · Order <?= (int) $banner['sort_order'] ?> ·
+                                    <p style="font-size:0.75rem;opacity:0.7;margin-top:4px">
+                                        <?= htmlspecialchars((string) (($banner['price_label'] ?? '') . ' ' . ($banner['off_badge'] ?? ''))) ?>
+                                        · <?= htmlspecialchars((string) ($banner['cart_id'] ?? '')) ?> · Order
+                                        <?= (int) $banner['sort_order'] ?> ·
                                         <?= $banner['is_active'] ? 'Active' : 'Hidden' ?>
                                     </p>
                                     <div class="admin-actions"><a class="admin-button admin-button--secondary"
                                             href="?view=banners_two&edit=<?= (int) $banner['id'] ?>"><i
                                                 class="ph ph-pencil-simple"></i> Edit</a>
-                                        <form method="post" onsubmit="return confirm('Remove this video banner?')"><input
+                                        <form method="post" onsubmit="return confirm('Remove this hero slide?')"><input
                                                 type="hidden" name="csrf_token"
                                                 value="<?= htmlspecialchars(gawdee_csrf_token()) ?>"><input type="hidden"
                                                 name="action" value="delete_banner_two"><input type="hidden" name="id"
@@ -998,68 +1079,14 @@ $stats = [
                             </article><?php endforeach; ?>
                     </div>
 
-                    <!-- Hero Scrub Background & Media Settings Form Card -->
                     <section class="admin-card" style="margin-top:28px">
                         <div class="admin-card__header">
                             <div>
-                                <h2><i class="ph ph-image"></i> Hero Section Background Image &amp; Content Studio</h2>
-                                <p>Set a background image file or direct image URL link, headline title, eyebrow, and subtitle for the main <code>.hero-scrub-section</code> background. Recommended Size: <strong>1920 × 1080 px</strong> (Desktop 16:9 ratio) or <strong>800 × 1200 px</strong> (Mobile ratio).</p>
+                                <h2><i class="ph ph-check-circle"></i> Video hero retired</h2>
+                                <p>The old scroll video banner and its background studio were replaced by this
+                                    animated product-spotlight hero. Existing <code>hero_scrub_*</code> settings are
+                                    ignored by the storefront and kept only for history.</p>
                             </div>
-                        </div>
-                        <div class="admin-card__body">
-                            <form method="post" enctype="multipart/form-data" class="admin-form form-grid form-grid--2">
-                                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(gawdee_csrf_token()) ?>">
-                                <input type="hidden" name="action" value="save_hero_scrub">
-                                <input type="hidden" name="has_enabled_field" value="1">
-                                <input type="hidden" name="existing_hero_scrub_bg_image" value="<?= htmlspecialchars(gawdee_setting('hero_scrub_bg_image', '')) ?>">
-
-                                <label class="form-switch form-span-2">
-                                    <input type="checkbox" name="hero_scrub_enabled" <?= gawdee_setting('hero_scrub_enabled', '1') === '1' ? 'checked' : '' ?>>
-                                    <span>Enable &amp; Show Hero Section on Homepage</span>
-                                </label>
-
-                                <label class="form-span-2">
-                                    <span>Eyebrow Tagline</span>
-                                    <input type="text" name="hero_scrub_eyebrow" value="<?= htmlspecialchars(gawdee_setting('hero_scrub_eyebrow', 'EVERYDAY FAVOURITES')) ?>" placeholder="e.g. TRADITIONAL WELLNESS ESSENTIALS">
-                                </label>
-
-                                <label class="form-span-2">
-                                    <span>Main Hero Headline / Title</span>
-                                    <input type="text" name="hero_scrub_title" value="<?= htmlspecialchars(gawdee_setting('hero_scrub_title', 'Pure, Organic & Traditional Food Essentials')) ?>" placeholder="e.g. Gawdee Pure Food Essentials">
-                                </label>
-
-                                <label class="form-span-2">
-                                    <span>Hero Subtitle / Description</span>
-                                    <input type="text" name="hero_scrub_subtitle" value="<?= htmlspecialchars(gawdee_setting('hero_scrub_subtitle', 'Handpicked unadulterated products thoughtfully crafted for modern living.')) ?>" placeholder="Subheading text...">
-                                </label>
-
-                                <label class="form-span-2">
-                                    <span>Background Image Link / Direct URL (e.g. https://... or assets/images/...)</span>
-                                    <input type="text" name="hero_scrub_bg_image_url" value="<?= htmlspecialchars(gawdee_setting('hero_scrub_bg_image', '')) ?>" placeholder="https://example.com/hero-bg.jpg or assets/images/hero-bg.png">
-                                </label>
-
-                                <label>
-                                    <span>Or Upload New Background Image File</span>
-                                    <input type="file" name="hero_scrub_bg_image" accept="image/jpeg,image/png,image/webp">
-                                    <small class="help-text">Recommended Resolution: 1920×1080px (WebP / JPG / PNG under 500KB)</small>
-                                </label>
-
-                                <label>
-                                    <span>Current Active Image Link / Path</span>
-                                    <input type="text" readonly value="<?= htmlspecialchars(gawdee_setting('hero_scrub_bg_image', 'assets/images/gawdee-home-nature-background-desktop-v1.png')) ?>">
-                                </label>
-
-                                <?php if (gawdee_setting('hero_scrub_bg_image', '')): ?>
-                                    <div class="form-span-2" style="margin-top:8px">
-                                        <small class="help-text" style="display:block;margin-bottom:6px">Active Background Preview:</small>
-                                        <img src="<?= htmlspecialchars(admin_media_url(gawdee_setting('hero_scrub_bg_image', ''))) ?>" alt="Hero BG Preview" style="max-height:160px;width:auto;border-radius:12px;border:1px solid #dce5de;object-fit:cover">
-                                    </div>
-                                <?php endif; ?>
-
-                                <div class="form-span-2" style="display:flex;justify-content:flex-end;margin-top:12px">
-                                    <button class="admin-button admin-button--primary">Save Hero Background &amp; Text <i class="ph ph-check"></i></button>
-                                </div>
-                            </form>
                         </div>
                     </section>
 

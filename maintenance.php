@@ -13,24 +13,26 @@
     <link rel="manifest" href="site.webmanifest">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"></noscript>
     <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
     <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/fill/style.css">
     <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <style>
         :root {
-            --bg-cream: #f6f5ef;
-            --top-bar-bg: #073827;
+            --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+            --bg-cream: #fff8f1;
+            --top-bar-bg: #005c4e;
             --card-bg: #ffffff;
-            --text-dark: #073827;
-            --text-body: #4b5563;
+            --text-dark: #005c4e;
+            --text-body: rgba(0, 92, 78, 0.75);
             --wa-green: #22c55e;
             --wa-green-hover: #16a34a;
             --badge-bg: #fef3c7;
             --badge-text: #92400e;
-            --icon-bg: #d1fae5;
-            --icon-color: #047857;
+            --icon-bg: #e6f5f2;
+            --icon-color: #009a84;
         }
 
         * {
@@ -40,7 +42,7 @@
         }
 
         body {
-            font-family: 'Outfit', sans-serif;
+            font-family: var(--font-sans);
             background-color: var(--bg-cream);
             color: var(--text-dark);
             min-height: 100vh;
@@ -134,7 +136,7 @@
 
         /* Card Title */
         .card-title {
-            font-family: 'Playfair Display', serif;
+            font-family: var(--font-sans);
             font-size: 1.85rem;
             font-weight: 700;
             color: var(--text-dark);
