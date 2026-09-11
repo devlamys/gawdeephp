@@ -13,6 +13,7 @@ $categoryFilters = [
     'wellness' => ['Wellness', 'ph-leaf'],
 ];
 $activeCategory = array_key_exists((string) ($_GET['category'] ?? ''), $categoryFilters) ? (string) $_GET['category'] : 'all';
+$initialSearch = trim((string) ($_GET['search'] ?? ''));
 
 if ($activeCategory !== 'all') {
     $catName = $categoryFilters[$activeCategory][0];
@@ -45,14 +46,16 @@ require __DIR__ . '/includes/header.php';
             <div class="catalog-search">
                 <i class="ph ph-magnifying-glass"></i>
                 <label class="sr-only" for="catalog-search-input">Search products</label>
-                <input id="catalog-search-input" type="search" placeholder="Search products, ingredients…" data-catalog-search autocomplete="off">
+                <input id="catalog-search-input" type="search" placeholder="Search products, ingredients…" data-catalog-search autocomplete="off" value="<?= htmlspecialchars($initialSearch) ?>">
             </div>
         </div>
 
 <?php
+// Dynamic catalogue: one card per ITEM (family), variants loaded from item_variants.
+// $products is one row per variant (compat shape); group by family_key (= item slug).
 $catalogFamilies = [];
 foreach ($products as $p) {
-    $fKey = (string) ($p['family_key'] ?? $p['id']);
+    $fKey = (string) (($p['family_key'] ?? '') !== '' ? $p['family_key'] : ($p['item_slug'] ?? $p['id']));
     if (!isset($catalogFamilies[$fKey])) {
         $catalogFamilies[$fKey] = $p;
     }
@@ -64,36 +67,58 @@ $displayCatalogProducts = array_values($catalogFamilies);
             <span class="catalog-badge"><i class="ph ph-shield-check"></i> 100% Certified Authentic</span>
         </div>
 
-        <div class="product-grid catalog-product-grid" data-product-grid data-initial-category="<?= htmlspecialchars($activeCategory) ?>">
-            <?php foreach ($displayCatalogProducts as $index => $catalogProduct): 
+        <?php if (!$displayCatalogProducts): ?>
+            <div class="product-empty catalog-empty">
+                <i class="ph ph-magnifying-glass"></i>
+                <h2>No products available yet</h2>
+                <p>New natural essentials are on their way. Please check back soon.</p>
+            </div>
+        <?php else: ?>
+        <div class="product-grid catalog-product-grid" data-product-grid data-initial-category="<?= htmlspecialchars($activeCategory) ?>" data-initial-search="<?= htmlspecialchars($initialSearch) ?>">
+            <?php foreach ($displayCatalogProducts as $index => $catalogProduct):
                 $cVariants = gawdee_family_variants($products, (string) ($catalogProduct['family_key'] ?? ''));
-                $searchKeywords = strtolower($catalogProduct['full_name'] . ' ' . $catalogProduct['category'] . ' ' . $catalogProduct['tag']);
-                foreach ($cVariants as $cv) {
-                    $searchKeywords .= ' ' . strtolower($cv['full_name'] . ' ' . $cv['weight']);
+                if (!$cVariants) {
+                    $cVariants = [$catalogProduct];
                 }
+                $searchKeywords = strtolower(($catalogProduct['full_name'] ?? '') . ' ' . ($catalogProduct['category'] ?? '') . ' ' . ($catalogProduct['tag'] ?? '') . ' ' . ($catalogProduct['flavor'] ?? '') . ' ' . ($catalogProduct['sku'] ?? ''));
+                foreach ($cVariants as $cv) {
+                    $searchKeywords .= ' ' . strtolower(($cv['full_name'] ?? '') . ' ' . ($cv['weight'] ?? '') . ' ' . ($cv['sku'] ?? ''));
+                }
+                $cardDiscount = discount_percentage($catalogProduct);
+                // List card: first image = ItemTable image; hover reveals ItemTable hover_image.
+                $cardImage = (string) (($catalogProduct['item_image'] ?? '') !== '' ? $catalogProduct['item_image'] : ($catalogProduct['image'] ?? 'assets/images/logo.png'));
+                if ($cardImage === '') {
+                    $cardImage = 'assets/images/logo.png';
+                }
+                $cardHover = (string) ($catalogProduct['hover_image'] ?? '');
             ?>
-                <article class="product-card catalog-product-card reveal" data-delay="<?= ($index % 4) * 40 ?>" data-category="<?= htmlspecialchars($catalogProduct['category_key']) ?>" data-search-name="<?= htmlspecialchars($searchKeywords) ?>">
-                    <a class="product-card__media" href="product?slug=<?= rawurlencode((string) $catalogProduct['slug']) ?>" style="--product-accent:<?= htmlspecialchars($catalogProduct['accent']) ?>">
+                <article class="product-card catalog-product-card reveal" data-delay="<?= ($index % 4) * 40 ?>" data-category="<?= htmlspecialchars((string) ($catalogProduct['category_key'] ?? 'all')) ?>" data-search-name="<?= htmlspecialchars($searchKeywords) ?>">
+                    <a class="product-card__media" href="product?slug=<?= rawurlencode((string) $catalogProduct['slug']) ?>" style="--product-accent:<?= htmlspecialchars((string) ($catalogProduct['accent'] ?? '#0a7540')) ?>" aria-label="View <?= htmlspecialchars((string) $catalogProduct['full_name']) ?>">
                         <?php if (!empty($catalogProduct['tag'])): ?>
-                            <span class="product-card__tag"><?= htmlspecialchars($catalogProduct['tag']) ?></span>
+                            <span class="product-card__tag"><?= htmlspecialchars((string) $catalogProduct['tag']) ?></span>
                         <?php endif; ?>
-                        <span class="product-card__discount"><?= discount_percentage($catalogProduct) ?>% OFF</span>
-                        <img src="<?= htmlspecialchars($catalogProduct['image']) ?>" alt="<?= htmlspecialchars($catalogProduct['full_name']) ?>" loading="lazy">
+                        <?php if ($cardDiscount > 0): ?>
+                            <span class="product-card__discount"><?= $cardDiscount ?>% OFF</span>
+                        <?php endif; ?>
+                        <img src="<?= htmlspecialchars($cardImage) ?>" alt="<?= htmlspecialchars((string) $catalogProduct['full_name']) ?>" loading="lazy" decoding="async" data-card-main-image onerror="this.onerror=null;this.src='assets/images/logo.png'">
+                        <?php if ($cardHover !== '' && $cardHover !== $cardImage): ?>
+                            <img class="product-card__hover" src="<?= htmlspecialchars($cardHover) ?>" alt="" loading="lazy" decoding="async" aria-hidden="true">
+                        <?php endif; ?>
                     </a>
                     <div class="product-card__body">
                         <div class="product-card__meta">
-                            <span><?= htmlspecialchars($catalogProduct['category']) ?></span>
+                            <span><?= htmlspecialchars((string) $catalogProduct['category']) ?></span>
                             <span>·</span>
-                            <span><?= htmlspecialchars($catalogProduct['weight']) ?></span>
+                            <span data-card-weight><?= htmlspecialchars((string) $catalogProduct['weight']) ?></span>
                         </div>
                         <h3>
-                            <a href="product?slug=<?= rawurlencode((string) $catalogProduct['slug']) ?>"><?= htmlspecialchars($catalogProduct['name']) ?></a>
+                            <a href="product?slug=<?= rawurlencode((string) $catalogProduct['slug']) ?>"><?= htmlspecialchars((string) $catalogProduct['name']) ?></a>
                         </h3>
-                        <p class="catalog-product-card__copy"><?= htmlspecialchars($catalogProduct['description']) ?></p>
+                        <p class="catalog-product-card__copy"><?= htmlspecialchars((string) $catalogProduct['description']) ?></p>
                         <div class="catalog-product-card__rating">
-                            <?php if ((int) $catalogProduct['review_count'] > 0): ?>
+                            <?php if ((int) ($catalogProduct['review_count'] ?? 0) > 0): ?>
                                 <span class="stars" aria-hidden="true">★★★★★</span>
-                                <strong><?= number_format((float) $catalogProduct['rating'], 1) ?></strong>
+                                <strong><?= number_format((float) ($catalogProduct['rating'] ?? 0), 1) ?></strong>
                                 <small>(<?= (int) $catalogProduct['review_count'] ?>)</small>
                             <?php else: ?>
                                 <span class="stars" aria-hidden="true">★★★★★</span>
@@ -102,47 +127,55 @@ $displayCatalogProducts = array_values($catalogFamilies);
                             <?php endif; ?>
                         </div>
                         <?php if (count($cVariants) > 1): ?>
-                            <div class="card-variant-pills" aria-label="Select pack size">
-                                <?php foreach ($cVariants as $cv): 
-                                    $isCur = $cv['slug'] === $catalogProduct['slug'];
+                            <div class="card-variant-pills" role="group" aria-label="Select pack size for <?= htmlspecialchars((string) $catalogProduct['name']) ?>">
+                                <?php foreach ($cVariants as $cv):
+                                    $isCur = ($cv['slug'] ?? '') === ($catalogProduct['slug'] ?? '');
                                     $cvDiscount = discount_percentage($cv);
+                                    $cvStock = (int) ($cv['stock'] ?? 0);
                                 ?>
-                                    <button type="button" 
+                                    <button type="button"
                                             class="card-variant-pill <?= $isCur ? 'is-active' : '' ?>"
                                             data-card-variant-switch
-                                            data-slug="<?= htmlspecialchars($cv['slug']) ?>"
-                                            data-id="<?= htmlspecialchars($cv['id']) ?>"
-                                            data-name="<?= htmlspecialchars($cv['full_name']) ?>"
-                                            data-weight="<?= htmlspecialchars($cv['weight']) ?>"
-                                            data-price="<?= (int) $cv['price'] ?>"
-                                            data-price-formatted="<?= money($cv['price']) ?>"
-                                            data-original-price-formatted="<?= money($cv['original_price']) ?>"
+                                            data-slug="<?= htmlspecialchars((string) ($cv['slug'] ?? '')) ?>"
+                                            data-id="<?= htmlspecialchars((string) ($cv['id'] ?? '')) ?>"
+                                            data-name="<?= htmlspecialchars((string) ($cv['full_name'] ?? '')) ?>"
+                                            data-weight="<?= htmlspecialchars((string) ($cv['weight'] ?? '')) ?>"
+                                            data-price="<?= (int) ($cv['price'] ?? 0) ?>"
+                                            data-price-formatted="<?= money((int) ($cv['price'] ?? 0)) ?>"
+                                            data-original-price-formatted="<?= money((int) ($cv['original_price'] ?? 0)) ?>"
                                             data-discount="<?= $cvDiscount ?>"
-                                            data-image="<?= htmlspecialchars($cv['image']) ?>">
-                                        <?= htmlspecialchars($cv['weight']) ?>
+                                            data-stock="<?= $cvStock ?>"
+                                            data-sku="<?= htmlspecialchars((string) ($cv['sku'] ?? '')) ?>"
+                                            data-image="<?= htmlspecialchars((string) (($cv['image'] ?? '') !== '' ? $cv['image'] : $cardImage)) ?>"
+                                            <?= $isCur ? 'aria-pressed="true"' : 'aria-pressed="false"' ?>>
+                                        <?= htmlspecialchars((string) ($cv['weight'] ?? '')) ?>
                                     </button>
                                 <?php endforeach; ?>
                             </div>
+                        <?php else: ?>
+                            <p class="catalog-single-variant"><span><?= htmlspecialchars((string) $catalogProduct['weight']) ?></span><?php if (!empty($catalogProduct['sku'])): ?><small>SKU <?= htmlspecialchars((string) $catalogProduct['sku']) ?></small><?php endif; ?></p>
                         <?php endif; ?>
                         <div class="product-card__buy">
                             <div class="product-card__price">
-                                <strong><?= money($catalogProduct['price']) ?></strong>
-                                <s><?= money($catalogProduct['original_price']) ?></s>
+                                <strong data-card-price><?= money((int) ($catalogProduct['price'] ?? 0)) ?></strong>
+                                <s data-card-original-price><?= money((int) ($catalogProduct['original_price'] ?? 0)) ?></s>
                             </div>
                             <button class="add-button" type="button"
                                     data-add-to-cart
-                                    data-id="<?= htmlspecialchars($catalogProduct['id']) ?>"
-                                    data-name="<?= htmlspecialchars($catalogProduct['full_name']) ?>"
-                                    data-price="<?= (int) $catalogProduct['price'] ?>"
-                                    data-image="<?= htmlspecialchars($catalogProduct['image']) ?>"
-                                    aria-label="Add <?= htmlspecialchars($catalogProduct['name']) ?> to cart">
-                                <span>Add to cart</span>
+                                    data-id="<?= htmlspecialchars((string) ($catalogProduct['id'] ?? '')) ?>"
+                                    data-name="<?= htmlspecialchars((string) ($catalogProduct['full_name'] ?? '')) ?>"
+                                    data-price="<?= (int) ($catalogProduct['price'] ?? 0) ?>"
+                                    data-image="<?= htmlspecialchars($cardImage) ?>"
+                                    <?= ((int) ($catalogProduct['stock'] ?? 0) <= 0) ? 'disabled' : '' ?>
+                                    aria-label="Add <?= htmlspecialchars((string) $catalogProduct['name']) ?> to cart">
+                                <span><?= ((int) ($catalogProduct['stock'] ?? 0) <= 0) ? 'Out of stock' : 'Add to cart' ?></span>
                             </button>
                         </div>
                     </div>
                 </article>
             <?php endforeach; ?>
         </div>
+        <?php endif; ?>
 
         <div class="product-empty catalog-empty" data-product-empty hidden>
             <i class="ph ph-magnifying-glass"></i>

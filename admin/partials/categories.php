@@ -7,7 +7,17 @@ if ($editId !== null && $editId > 0) {
     $editCategory = gawdee_category_by_id($editId);
 }
 
-$dbProductCategories = gawdee_db()->query("SELECT DISTINCT category, category_key FROM products WHERE category_key != '' ORDER BY category ASC")->fetchAll();
+$dbProductCategories = [];
+try {
+    $dbProductCategories = gawdee_db()->query("SELECT DISTINCT category, category_key FROM products WHERE category_key != '' ORDER BY category ASC")->fetchAll();
+} catch (Throwable) {
+}
+try {
+    foreach (gawdee_db()->query("SELECT DISTINCT category, category_key FROM items WHERE category_key != '' ORDER BY category ASC")->fetchAll() as $ic) {
+        $dbProductCategories[] = $ic;
+    }
+} catch (Throwable) {
+}
 $categoryOptions = [
     'all' => 'All Products',
     'ghee' => 'Ghee',

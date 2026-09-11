@@ -18,8 +18,19 @@ try {
     $review = trim((string) ($payload['review'] ?? ''));
     $rating = (int) ($payload['rating'] ?? 0);
 
-    if (!gawdee_product_by_id($productId)) {
+    $product = gawdee_product_by_id($productId);
+    if (!$product) {
         throw new RuntimeException('This product is no longer available.');
+    }
+    // Store under the legacy products.id when available so FK + grouped
+    // review history keep working; new variants fall back to their variant id
+    // (a lightweight products mirror row is ensured for FK compliance).
+    $storeId = $productId;
+    if (!empty($product['legacy_product_id'])) {
+        $storeId = (string) $product['legacy_product_id'];
+    } elseif (!empty($product['variant_id']) && function_exists('gawdee_sync_variant_mirror')) {
+        gawdee_sync_variant_mirror((int) $product['variant_id']);
+        $storeId = (string) $product['variant_id'];
     }
     if (mb_strlen($name) < 2 || mb_strlen($name) > 80) {
         throw new RuntimeException('Enter your name.');
@@ -35,7 +46,7 @@ try {
     }
 
     $statement = gawdee_db()->prepare('INSERT INTO product_reviews (product_id, rating, review, name, email) VALUES (?, ?, ?, ?, ?)');
-    $statement->execute([$productId, $rating, $review, $name, $email]);
+    $statement->execute([$storeId, $rating, $review, $name, $email]);
 
     gawdee_json_response([
         'ok' => true,

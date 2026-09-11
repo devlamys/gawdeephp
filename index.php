@@ -11,25 +11,77 @@ $bodyClass = 'commerce-home';
 
 $categories = gawdee_categories();
 
-$combos = [
-    ['tag' => 'Wellness Combo', 'title' => 'A2 Ghee 500ml + Honey 650g', 'items' => [$products[2], $products[3]], 'price' => 1499, 'original' => 1748],
-    ['tag' => 'Energy Combo', 'title' => 'MixMe Choco + Raw Honey', 'items' => [$products[0], $products[3]], 'price' => 1299, 'original' => 1458],
-    ['tag' => 'Immunity Combo', 'title' => 'Taral Drop + Moringa Powder', 'items' => [$products[4], $products[5]], 'price' => 399, 'original' => 558],
-    ['tag' => 'Daily Nutrition', 'title' => 'MixMe Elaichi + A2 Ghee', 'items' => [$products[1], $products[2]], 'price' => 1549, 'original' => 1808],
-];
+$pickProduct = static function (string $slug) use ($products): ?array {
+    $found = product_by_slug($products, $slug);
+    if ($found) {
+        return $found;
+    }
+    return $products[0] ?? null;
+};
 
-$featuredProducts = [$products[0], $products[1], $products[4], $products[6], $products[2], $products[3]];
+$comboCandidates = [
+    ['tag' => 'Wellness Combo', 'title' => 'A2 Ghee 500ml + Honey 650g', 'slugs' => ['gawdee-gir-cow-a2-ghee-500-ml', 'gawdee-raw-wild-forest-honey-650-g'], 'price' => 1499, 'original' => 1748],
+    ['tag' => 'Energy Combo', 'title' => 'MixMe Choco + Raw Honey', 'slugs' => ['gawdee-mixme-choco-500-g', 'gawdee-raw-wild-forest-honey-650-g'], 'price' => 1299, 'original' => 1458],
+    ['tag' => 'Immunity Combo', 'title' => 'Taral Drop + Moringa Powder', 'slugs' => ['gawdee-taral-drop-30-ml', 'gawdee-moringa-powder-300-g'], 'price' => 399, 'original' => 558],
+    ['tag' => 'Daily Nutrition', 'title' => 'MixMe Elaichi + A2 Ghee', 'slugs' => ['gawdee-mixme-elaichi-500-g', 'gawdee-gir-cow-a2-ghee-500-ml'], 'price' => 1549, 'original' => 1808],
+];
+$combos = [];
+foreach ($comboCandidates as $candidate) {
+    $items = [];
+    foreach ($candidate['slugs'] as $slug) {
+        $prod = $pickProduct($slug);
+        if ($prod) {
+            $items[] = $prod;
+        }
+    }
+    if (count($items) === count($candidate['slugs'])) {
+        $combos[] = ['tag' => $candidate['tag'], 'title' => $candidate['title'], 'items' => $items, 'price' => $candidate['price'], 'original' => $candidate['original']];
+    }
+}
+
+$featuredSlugs = [
+    'gawdee-mixme-choco-500-g',
+    'gawdee-mixme-elaichi-500-g',
+    'gawdee-taral-drop-30-ml',
+    'gawdee-white-sugar-1kg',
+    'gawdee-gir-cow-a2-ghee-500-ml',
+    'gawdee-raw-wild-forest-honey-650-g',
+];
+$featuredProducts = [];
+foreach ($featuredSlugs as $slug) {
+    $prod = $pickProduct($slug);
+    if ($prod && !in_array($prod['slug'] ?? '', array_column($featuredProducts, 'slug'), true)) {
+        $featuredProducts[] = $prod;
+    }
+}
+if (!$featuredProducts) {
+    $featuredProducts = array_slice($products, 0, 6);
+} else {
+    // Top up with catalogue rows when some slugs are missing (e.g. renamed items).
+    foreach ($products as $prod) {
+        if (count($featuredProducts) >= 6) {
+            break;
+        }
+        if (!in_array($prod['slug'] ?? '', array_column($featuredProducts, 'slug'), true)) {
+            $featuredProducts[] = $prod;
+        }
+    }
+}
 
 $testimonialFavourites = [
-    'honey' => product_by_slug($products, 'gawdee-raw-wild-forest-honey-650-g') ?? $products[0],
-    'ghee' => product_by_slug($products, 'gawdee-gir-cow-a2-ghee-500-ml') ?? $products[0],
-    'mixme' => product_by_slug($products, 'gawdee-mixme-choco-500-g') ?? $products[0],
-    'moringa' => product_by_slug($products, 'gawdee-moringa-powder-300-g') ?? $products[0],
+    'honey' => $pickProduct('gawdee-raw-wild-forest-honey-650-g') ?? $featuredProducts[0] ?? null,
+    'ghee' => $pickProduct('gawdee-gir-cow-a2-ghee-500-ml') ?? $featuredProducts[0] ?? null,
+    'mixme' => $pickProduct('gawdee-mixme-choco-500-g') ?? $featuredProducts[0] ?? null,
+    'moringa' => $pickProduct('gawdee-moringa-powder-300-g') ?? $featuredProducts[0] ?? null,
 ];
+$testimonialFavourites = array_filter($testimonialFavourites);
 
 $testimonials = [];
 foreach (gawdee_testimonials() as $story) {
-    $relatedProduct = product_by_slug($products, (string) $story['product_slug']) ?? $products[0];
+    $relatedProduct = product_by_slug($products, (string) $story['product_slug']) ?? $featuredProducts[0] ?? $products[0] ?? null;
+    if (!$relatedProduct) {
+        continue;
+    }
     $testimonials[] = [
         'name' => $story['name'],
         'initials' => $story['initials'],
@@ -50,7 +102,14 @@ $blogCovers = [
     'assets/images/blogs/modern-food-choices-v1.webp',
     'assets/images/blogs/quality-over-quantity-v1.webp',
 ];
-$reelProducts = [$products[2], $products[3], $products[0]];
+$reelProducts = array_values(array_filter([
+    $pickProduct('gawdee-gir-cow-a2-ghee-500-ml'),
+    $pickProduct('gawdee-raw-wild-forest-honey-650-g'),
+    $pickProduct('gawdee-mixme-choco-500-g'),
+]));
+if (!$reelProducts) {
+    $reelProducts = array_slice($featuredProducts, 0, 3);
+}
 $homepageSections = gawdee_sections();
 $homepageBanners = gawdee_banners();
 $homepageReels = gawdee_homepage_media('reels', false, true);
@@ -114,52 +173,66 @@ foreach ($homepageSections as $sectionKey => $section) {
 
                     <div class="compact-product-grid home-product-rail" id="home-product-rail" data-product-grid
                         aria-label="Bestselling products">
-                        <?php foreach ($featuredProducts as $index => $product): ?>
+                        <?php foreach ($featuredProducts as $index => $product):
+                            $homeImage = (string) ($product['image'] ?? 'assets/images/logo.png');
+                            if ($homeImage === '') {
+                                $homeImage = 'assets/images/logo.png';
+                            }
+                        ?>
                             <article class="compact-product-card reveal" data-delay="<?= $index * 45 ?>"
-                                data-category="<?= htmlspecialchars($product['category_key']) ?>"
-                                data-search-name="<?= htmlspecialchars(strtolower($product['full_name'] . ' ' . $product['category'])) ?>">
-                                <a class="compact-product-card__media" href="product?slug=<?= urlencode($product['slug']) ?>">
+                                data-category="<?= htmlspecialchars((string) ($product['category_key'] ?? 'all')) ?>"
+                                data-search-name="<?= htmlspecialchars(strtolower(($product['full_name'] ?? '') . ' ' . ($product['category'] ?? '') . ' ' . ($product['sku'] ?? ''))) ?>">
+                                <a class="compact-product-card__media" href="product?slug=<?= urlencode((string) $product['slug']) ?>" aria-label="View <?= htmlspecialchars((string) ($product['full_name'] ?? '')) ?>">
                                     <span
                                         class="compact-product-card__badge <?= $index % 3 === 2 ? 'is-blue' : ($index % 2 === 0 ? 'is-orange' : '') ?>"><?= $index === 5 ? 'New arrival' : ($index % 2 === 0 ? 'Best seller' : 'Popular') ?></span>
-                                    <img src="<?= htmlspecialchars($product['image']) ?>"
-                                        alt="<?= htmlspecialchars($product['full_name']) ?>" loading="lazy">
+                                    <img src="<?= htmlspecialchars($homeImage) ?>"
+                                        alt="<?= htmlspecialchars((string) ($product['full_name'] ?? '')) ?>" loading="lazy" decoding="async" data-card-main-image onerror="this.onerror=null;this.src='assets/images/logo.png'">
                                 </a>
                                 <div class="compact-product-card__body">
                                     <h3><a
-                                            href="product?slug=<?= urlencode($product['slug']) ?>"><?= htmlspecialchars($product['name']) ?></a>
+                                            href="product?slug=<?= urlencode((string) $product['slug']) ?>"><?= htmlspecialchars((string) ($product['name'] ?? '')) ?></a>
                                     </h3>
                                     <?php
                                     $cVariants = gawdee_family_variants($products, (string) ($product['family_key'] ?? ''));
+                                    if (!$cVariants) {
+                                        $cVariants = [$product];
+                                    }
                                     if (count($cVariants) > 1):
                                         ?>
-                                        <div class="card-variant-pills" aria-label="Select size">
+                                        <div class="card-variant-pills" role="group" aria-label="Select size for <?= htmlspecialchars((string) ($product['name'] ?? '')) ?>">
                                             <?php foreach ($cVariants as $cv):
-                                                $isCur = $cv['slug'] === $product['slug'];
+                                                $isCur = ($cv['slug'] ?? '') === ($product['slug'] ?? '');
                                                 $cvDiscount = discount_percentage($cv);
+                                                $cvStock = (int) ($cv['stock'] ?? 0);
+                                                $cvImage = (string) (($cv['image'] ?? '') !== '' ? $cv['image'] : $homeImage);
                                                 ?>
                                                 <button type="button" class="card-variant-pill <?= $isCur ? 'is-active' : '' ?>"
-                                                    data-card-variant-switch data-slug="<?= htmlspecialchars($cv['slug']) ?>"
-                                                    data-id="<?= htmlspecialchars($cv['id']) ?>"
-                                                    data-name="<?= htmlspecialchars($cv['full_name']) ?>"
-                                                    data-weight="<?= htmlspecialchars($cv['weight']) ?>" data-price="<?= (int) $cv['price'] ?>"
-                                                    data-price-formatted="<?= money($cv['price']) ?>"
-                                                    data-original-price-formatted="<?= money($cv['original_price']) ?>"
-                                                    data-discount="<?= $cvDiscount ?>" data-image="<?= htmlspecialchars($cv['image']) ?>">
-                                                    <?= htmlspecialchars($cv['weight']) ?>
+                                                    data-card-variant-switch data-slug="<?= htmlspecialchars((string) ($cv['slug'] ?? '')) ?>"
+                                                    data-id="<?= htmlspecialchars((string) ($cv['id'] ?? '')) ?>"
+                                                    data-name="<?= htmlspecialchars((string) ($cv['full_name'] ?? '')) ?>"
+                                                    data-weight="<?= htmlspecialchars((string) ($cv['weight'] ?? '')) ?>" data-price="<?= (int) ($cv['price'] ?? 0) ?>"
+                                                    data-price-formatted="<?= money((int) ($cv['price'] ?? 0)) ?>"
+                                                    data-original-price-formatted="<?= money((int) ($cv['original_price'] ?? 0)) ?>"
+                                                    data-discount="<?= $cvDiscount ?>" data-stock="<?= $cvStock ?>"
+                                                    data-sku="<?= htmlspecialchars((string) ($cv['sku'] ?? '')) ?>"
+                                                    data-image="<?= htmlspecialchars($cvImage) ?>"
+                                                    <?= $isCur ? 'aria-pressed="true"' : 'aria-pressed="false"' ?>>
+                                                    <?= htmlspecialchars((string) ($cv['weight'] ?? '')) ?>
                                                 </button>
                                             <?php endforeach; ?>
                                         </div>
                                     <?php else: ?>
-                                        <span class="compact-product-card__weight"><?= htmlspecialchars($product['weight']) ?></span>
+                                        <span class="compact-product-card__weight"><?= htmlspecialchars((string) ($product['weight'] ?? '')) ?></span>
                                     <?php endif; ?>
                                     <div class="compact-product-card__price">
-                                        <strong><?= money($product['price']) ?></strong><s><?= money($product['original_price']) ?></s>
+                                        <strong data-card-price><?= money((int) ($product['price'] ?? 0)) ?></strong><s data-card-original-price><?= money((int) ($product['original_price'] ?? 0)) ?></s>
                                     </div>
                                     <div class="compact-product-card__actions">
-                                        <button type="button" data-add-to-cart data-id="<?= htmlspecialchars($product['id']) ?>"
-                                            data-name="<?= htmlspecialchars($product['full_name']) ?>"
-                                            data-price="<?= (int) $product['price'] ?>"
-                                            data-image="<?= htmlspecialchars($product['image']) ?>">Add to cart</button>
+                                        <button type="button" data-add-to-cart data-id="<?= htmlspecialchars((string) ($product['id'] ?? '')) ?>"
+                                            data-name="<?= htmlspecialchars((string) ($product['full_name'] ?? '')) ?>"
+                                            data-price="<?= (int) ($product['price'] ?? 0) ?>"
+                                            data-image="<?= htmlspecialchars($homeImage) ?>"
+                                            <?= ((int) ($product['stock'] ?? 0) <= 0) ? 'disabled' : '' ?>><?= ((int) ($product['stock'] ?? 0) <= 0) ? 'Out of stock' : 'Add to cart' ?></button>
 
                                     </div>
                                 </div>

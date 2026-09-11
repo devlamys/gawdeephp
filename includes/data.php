@@ -599,12 +599,6 @@ $productDetailProfiles = [
 ];
 
 foreach ($products as &$catalogProduct) {
-    $categoryKey = (string) ($catalogProduct['category_key'] ?? '');
-    $galleryFeature = match ($categoryKey) {
-        'ghee' => 'assets/images/hero-slide-ghee-v5.webp',
-        'nutrition' => 'assets/images/hero-slide-mixme-v5.webp',
-        default => 'assets/images/hero-slide-independence-v5.webp',
-    };
     $defaults = [
         'rating' => 4.8,
         'review_count' => 12,
@@ -630,11 +624,31 @@ foreach ($products as &$catalogProduct) {
         ],
         'gallery' => [
             ['src' => (string) $catalogProduct['image'], 'label' => 'Product view'],
-            ['src' => $galleryFeature, 'label' => 'Gawdee collection'],
-            ['src' => 'assets/images/hero-product-collage-v2.png', 'label' => 'Pantry collection'],
         ],
     ];
-    $catalogProduct = array_merge($defaults, $productDetailProfiles[$catalogProduct['id']] ?? [], $catalogProduct);
+    $profileKey = (string) ($catalogProduct['id'] ?? '');
+    $profile = $productDetailProfiles[$profileKey] ?? null;
+    if ($profile === null && !empty($catalogProduct['legacy_product_id'])) {
+        $profile = $productDetailProfiles[(string) $catalogProduct['legacy_product_id']] ?? null;
+    }
+    if ($profile === null && !empty($catalogProduct['item_slug'])) {
+        // Fall back to any profile whose key shares the item family (e.g. base variant).
+        foreach ($productDetailProfiles as $pKey => $pVal) {
+            if (isset($catalogProduct['legacy_product_id']) && str_starts_with((string) $catalogProduct['legacy_product_id'], (string) preg_replace('/-\d+$/', '', $pKey))) {
+                $profile = $pVal;
+                break;
+            }
+        }
+    }
+    // Include hover image as second gallery frame when available (secondary hover reveal).
+    $galleryStack = [
+        ['src' => (string) $catalogProduct['image'], 'label' => 'Product view'],
+    ];
+    if (!empty($catalogProduct['hover_image'])) {
+        $galleryStack[] = ['src' => (string) $catalogProduct['hover_image'], 'label' => 'Alternate view'];
+    }
+    $defaults['gallery'] = $galleryStack;
+    $catalogProduct = array_merge($defaults, $profile ?? [], $catalogProduct);
 
     $official = json_decode((string) ($catalogProduct['details_json'] ?? ''), true);
     if (is_array($official) && $official) {
@@ -719,7 +733,9 @@ foreach ($products as &$catalogProduct) {
         ];
         $catalogProduct = array_merge($catalogProduct, $officialProfile);
     }
-    $catalogProduct['family_key'] = product_family_key((string) $catalogProduct['full_name']);
+    if (empty($catalogProduct['family_key'])) {
+        $catalogProduct['family_key'] = product_family_key((string) $catalogProduct['full_name']);
+    }
 }
 unset($catalogProduct);
 
@@ -735,15 +751,33 @@ if (!function_exists('product_family_key')) {
     }
 }
 
-function product_by_slug(array $products, string $slug): ?array
-{
+if (!function_exists('product_by_slug')) {
+    function product_by_slug(array $products, string $slug): ?array
+    {
+    $slug = trim($slug);
+    if ($slug === '') {
+        return null;
+    }
     foreach ($products as $product) {
-        if ($product['slug'] === $slug) {
+        if (($product['slug'] ?? '') === $slug) {
+            return $product;
+        }
+    }
+    // Fall back to item slug / family key: return the first variant of that item.
+    foreach ($products as $product) {
+        if (($product['item_slug'] ?? '') === $slug || ($product['family_key'] ?? '') === $slug) {
+            return $product;
+        }
+    }
+    // Legacy id fallback (old carts / links).
+    foreach ($products as $product) {
+        if (($product['legacy_product_id'] ?? '') === $slug || (string) ($product['variant_id'] ?? '') === $slug) {
             return $product;
         }
     }
 
     return null;
+    }
 }
 
 if (!function_exists('money')) {

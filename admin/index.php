@@ -117,97 +117,259 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         gawdee_verify_csrf($_POST['csrf_token'] ?? null);
 
-        if ($action === 'save_product') {
-            $variantsData = $_POST['variants'] ?? null;
-            if (is_array($variantsData) && !empty($variantsData)) {
-                $category = trim((string) ($_POST['category'] ?? 'Pantry'));
-                $categoryKey = gawdee_slug((string) ($_POST['category_key'] ?? 'ghee'));
-                $baseName = trim((string) ($_POST['name'] ?? ''));
-                $description = trim((string) ($_POST['description'] ?? ''));
-                $tag = trim((string) ($_POST['tag'] ?? ''));
-                $accent = preg_match('/^#[0-9a-f]{6}$/i', (string) ($_POST['accent'] ?? '')) ? (string) $_POST['accent'] : '#0a7540';
-
-                foreach ($variantsData as $index => $vData) {
-                    $weight = trim((string) ($vData['weight'] ?? ''));
-                    $fullName = trim((string) ($vData['full_name'] ?? ''));
-                    if ($fullName === '' && $baseName !== '') {
-                        $fullName = 'Gawdee ' . $baseName . ($weight !== '' ? ' ' . $weight : '');
-                    }
-                    $slug = gawdee_slug($vData['slug'] ?? $fullName);
-                    $id = preg_replace('/[^a-z0-9-]/', '', strtolower(trim((string) ($vData['id'] ?? $slug))));
-                    if ($id === '')
-                        continue;
-
-                    $existingImg = trim((string) ($vData['existing_image'] ?? $_POST['existing_image'] ?? 'assets/images/logo.png'));
-                    $uploadedImg = admin_upload_media("variant_image_{$index}", 'products', $existingImg, ['image']);
-
-                    $values = [
-                        'id' => $id,
-                        'slug' => $slug,
-                        'name' => $baseName ?: $fullName,
-                        'full_name' => $fullName,
-                        'category' => $category,
-                        'category_key' => $categoryKey,
-                        'tag' => $tag,
-                        'price' => max(0, (int) ($vData['price'] ?? 0)),
-                        'original_price' => max(0, (int) ($vData['original_price'] ?? 0)),
-                        'weight' => $weight,
-                        'image' => $uploadedImg,
-                        'description' => $description,
-                        'accent' => $accent,
-                        'stock' => max(0, (int) ($vData['stock'] ?? 0)),
-                        'is_active' => isset($vData['is_active']) ? 1 : 0,
-                    ];
-                    $statement = gawdee_db()->prepare(<<<'SQL'
-INSERT INTO products (id, slug, name, full_name, category, category_key, tag, price, original_price, weight, image, description, accent, stock, is_active, updated_at)
-VALUES (:id, :slug, :name, :full_name, :category, :category_key, :tag, :price, :original_price, :weight, :image, :description, :accent, :stock, :is_active, CURRENT_TIMESTAMP)
-ON CONFLICT(id) DO UPDATE SET slug=excluded.slug, name=excluded.name, full_name=excluded.full_name, category=excluded.category, category_key=excluded.category_key, tag=excluded.tag, price=excluded.price, original_price=excluded.original_price, weight=excluded.weight, image=excluded.image, description=excluded.description, accent=excluded.accent, stock=excluded.stock, is_active=excluded.is_active, updated_at=CURRENT_TIMESTAMP
-SQL);
-                    $statement->execute($values);
-                    gawdee_db()->prepare("UPDATE products SET stock_status=CASE WHEN stock > 0 THEN 'in_stock' ELSE 'out_of_stock' END WHERE id=?")->execute([$id]);
-                }
-                admin_redirect('products', 'Product and variant sizes saved successfully.');
-            } else {
-                $id = preg_replace('/[^a-z0-9-]/', '', strtolower(trim((string) ($_POST['id'] ?? '')))) ?: gawdee_slug((string) $_POST['name']);
-                $existingImg = trim((string) ($_POST['existing_image'] ?? $_POST['image'] ?? 'assets/images/logo.png'));
-                $uploadedImg = admin_upload_media('image_file', 'products', $existingImg, ['image']);
-                $values = [
-                    'id' => $id,
-                    'slug' => gawdee_slug((string) ($_POST['slug'] ?? $_POST['full_name'])),
-                    'name' => trim((string) $_POST['name']),
-                    'full_name' => trim((string) $_POST['full_name']),
-                    'category' => trim((string) $_POST['category']),
-                    'category_key' => gawdee_slug((string) $_POST['category_key']),
-                    'tag' => trim((string) ($_POST['tag'] ?? '')),
-                    'price' => max(0, (int) $_POST['price']),
-                    'original_price' => max(0, (int) $_POST['original_price']),
-                    'weight' => trim((string) ($_POST['weight'] ?? '')),
-                    'image' => $uploadedImg,
-                    'description' => trim((string) ($_POST['description'] ?? '')),
-                    'accent' => preg_match('/^#[0-9a-f]{6}$/i', (string) ($_POST['accent'] ?? '')) ? (string) $_POST['accent'] : '#0a7540',
-                    'stock' => max(0, (int) ($_POST['stock'] ?? 0)),
-                    'is_active' => isset($_POST['is_active']) ? 1 : 0,
-                ];
-                if ($values['name'] === '' || $values['full_name'] === '') {
-                    throw new RuntimeException('Product name and full name are required.');
-                }
-                $statement = gawdee_db()->prepare(<<<'SQL'
-INSERT INTO products (id, slug, name, full_name, category, category_key, tag, price, original_price, weight, image, description, accent, stock, is_active, updated_at)
-VALUES (:id, :slug, :name, :full_name, :category, :category_key, :tag, :price, :original_price, :weight, :image, :description, :accent, :stock, :is_active, CURRENT_TIMESTAMP)
-ON CONFLICT(id) DO UPDATE SET slug=excluded.slug, name=excluded.name, full_name=excluded.full_name, category=excluded.category, category_key=excluded.category_key, tag=excluded.tag, price=excluded.price, original_price=excluded.original_price, weight=excluded.weight, image=excluded.image, description=excluded.description, accent=excluded.accent, stock=excluded.stock, is_active=excluded.is_active, updated_at=CURRENT_TIMESTAMP
-SQL);
-                $statement->execute($values);
-                gawdee_db()->prepare("UPDATE products SET stock_status=CASE WHEN stock > 0 THEN 'in_stock' ELSE 'out_of_stock' END WHERE id=?")->execute([$id]);
-                admin_redirect('products', 'Product saved successfully.');
+        if ($action === 'save_item' || $action === 'save_product') {
+            // Canonical Item + Variants save (one-to-many). Accepts the new
+            // Item Details form; legacy `save_product` posts are mapped.
+            $itemId = null;
+            $rawItemId = trim((string) ($_POST['item_id'] ?? ''));
+            if ($rawItemId !== '' && ctype_digit($rawItemId)) {
+                $itemId = (int) $rawItemId;
             }
+            $existingItem = $itemId ? gawdee_item_by_id($itemId) : null;
+
+            $categoryKeyRaw = trim((string) ($_POST['category_key'] ?? $existingItem['category_key'] ?? ''));
+            $categoryNameRaw = trim((string) ($_POST['category'] ?? $existingItem['category'] ?? ''));
+            // Category select posts the filter key; resolve display name from categories table.
+            if ($categoryKeyRaw !== '') {
+                try {
+                    $catStmt = gawdee_db()->prepare('SELECT name, filter FROM categories WHERE filter = ? OR name = ? LIMIT 1');
+                    $catStmt->execute([$categoryKeyRaw, $categoryKeyRaw]);
+                    $catRow = $catStmt->fetch();
+                    if ($catRow) {
+                        $categoryNameRaw = (string) ($catRow['name'] ?? $categoryNameRaw);
+                        $categoryKeyRaw = (string) ($catRow['filter'] ?? $categoryKeyRaw);
+                    } elseif ($categoryNameRaw === '') {
+                        $categoryNameRaw = $categoryKeyRaw;
+                    }
+                } catch (Throwable) {
+                }
+            }
+            if ($categoryKeyRaw === '') {
+                $categoryKeyRaw = gawdee_slug($categoryNameRaw !== '' ? $categoryNameRaw : 'pantry');
+            }
+
+            $existingImage = trim((string) ($_POST['existing_image'] ?? $existingItem['image'] ?? ''));
+            $existingHover = trim((string) ($_POST['existing_hover_image'] ?? $existingItem['hover_image'] ?? ''));
+            $itemImage = admin_upload_media('image_file', 'products', $existingImage, ['image']);
+            $hoverImage = admin_upload_media('hover_image_file', 'products', $existingHover, ['image']);
+            if ($itemImage === '') {
+                $itemImage = $existingImage !== '' ? $existingImage : 'assets/images/logo.png';
+            }
+
+            $itemFields = [
+                'slug' => trim((string) ($_POST['slug'] ?? $existingItem['slug'] ?? '')),
+                'name' => trim((string) ($_POST['name'] ?? '')),
+                'flavor' => trim((string) ($_POST['flavor'] ?? '')),
+                'description' => trim((string) ($_POST['description'] ?? '')),
+                'image' => $itemImage,
+                'hover_image' => $hoverImage,
+                'customer_review' => trim((string) ($_POST['customer_review'] ?? '')),
+                'category' => $categoryNameRaw !== '' ? $categoryNameRaw : 'Pantry',
+                'category_key' => $categoryKeyRaw,
+                'tag' => trim((string) ($_POST['tag'] ?? '')),
+                'accent' => trim((string) ($_POST['accent'] ?? '#0a7540')),
+                'is_active' => isset($_POST['is_active']) ? 1 : ($existingItem['is_active'] ?? 1),
+            ];
+            if ($itemFields['slug'] === '' && $itemFields['name'] !== '') {
+                $itemFields['slug'] = gawdee_slug($itemFields['name']);
+            }
+
+            $variantsData = $_POST['variants'] ?? null;
+            // Map legacy save_product shape (weight/price/original_price/stock) to new shape.
+            $variants = [];
+            if (is_array($variantsData)) {
+                foreach ($variantsData as $index => $vData) {
+                    if (!is_array($vData)) {
+                        continue;
+                    }
+                    $indexKey = (string) $index;
+                    $vid = trim((string) ($vData['id'] ?? $vData['variant_id'] ?? ''));
+                    $existingVariant = null;
+                    if ($vid !== '' && ctype_digit($vid)) {
+                        try {
+                            $vs = gawdee_db()->prepare('SELECT * FROM item_variants WHERE id = ? LIMIT 1');
+                            $vs->execute([(int) $vid]);
+                            $existingVariant = $vs->fetch() ?: null;
+                        } catch (Throwable) {
+                        }
+                    }
+                    $existingVariantImage = trim((string) ($vData['existing_image'] ?? $existingVariant['image'] ?? ''));
+                    $uploadedVariantImage = '';
+                    try {
+                        $uploadedVariantImage = admin_upload_media('variant_image_' . $indexKey, 'products', $existingVariantImage, ['image']);
+                    } catch (Throwable $e) {
+                        // No file uploaded for this row; keep existing.
+                        $uploadedVariantImage = $existingVariantImage;
+                    }
+                    // Skip fully-empty repeater rows (added then left blank).
+                    $rowName = trim((string) ($vData['variant_name'] ?? $vData['weight'] ?? ''));
+                    $rowSku = trim((string) ($vData['sku'] ?? ''));
+                    $rowMrp = trim((string) ($vData['mrp'] ?? $vData['original_price'] ?? ''));
+                    if ($vid === '' && $rowName === '' && $rowSku === '' && $rowMrp === '') {
+                        continue;
+                    }
+                    $isInclusive = 1;
+                    if (array_key_exists('is_inclusive_tax', $vData)) {
+                        $isInclusive = !empty($vData['is_inclusive_tax']) ? 1 : 0;
+                    } elseif (array_key_exists('is_inclusive', $vData)) {
+                        $isInclusive = !empty($vData['is_inclusive']) ? 1 : 0;
+                    } elseif ($existingVariant) {
+                        $isInclusive = (int) ($existingVariant['is_inclusive_tax'] ?? 1);
+                    }
+                    $variants[] = [
+                        'id' => $vid !== '' && ctype_digit($vid) ? (int) $vid : null,
+                        'variant_name' => $rowName,
+                        'slug' => trim((string) ($vData['slug'] ?? $existingVariant['slug'] ?? '')),
+                        'sku' => $rowSku,
+                        'stock_quantity' => $vData['stock_quantity'] ?? $vData['stock'] ?? $existingVariant['stock_quantity'] ?? 0,
+                        'mrp' => $vData['mrp'] ?? $vData['original_price'] ?? $existingVariant['mrp'] ?? 0,
+                        'discount' => $vData['discount'] ?? $vData['discount_percent'] ?? $existingVariant['discount'] ?? 0,
+                        'is_inclusive_tax' => $isInclusive,
+                        'image' => $uploadedVariantImage,
+                        'is_active' => array_key_exists('is_active', $vData) ? (!empty($vData['is_active']) ? 1 : 0) : (int) ($existingVariant['is_active'] ?? 1),
+                    ];
+                }
+            }
+            if (!$variants) {
+                throw new RuntimeException('Add at least one variant with name, SKU, stock, MRP and discount.');
+            }
+            $savedId = gawdee_save_item_with_variants($itemFields, $variants, $itemId);
+            gawdee_sync_item_mirrors($savedId);
+
+            // ---- Variant galleries (ItemImageTable) ----
+            // `images[i][k]` rows arrive in display order: existing rows carry
+            // their image id, fresh rows carry an upload. Reconcile per variant
+            // so kept images are only re-sequenced, removed ones deleted.
+            $imagesPayload = $_POST['images'] ?? [];
+            if (is_array($imagesPayload)) {
+                $orderedVids = [];
+                foreach ($variants as $submittedVariant) {
+                    if (!empty($submittedVariant['id'])) {
+                        $orderedVids[] = (int) $submittedVariant['id'];
+                        continue;
+                    }
+                    $skuLookup = gawdee_db()->prepare('SELECT id FROM item_variants WHERE item_id = ? AND LOWER(sku) = LOWER(?) LIMIT 1');
+                    $skuLookup->execute([$savedId, (string) ($submittedVariant['sku'] ?? '')]);
+                    $foundVid = $skuLookup->fetchColumn();
+                    $orderedVids[] = $foundVid ? (int) $foundVid : 0;
+                }
+                $imageErrors = [];
+                foreach ($imagesPayload as $variantIndex => $imageRows) {
+                    $vid = $orderedVids[(int) $variantIndex] ?? 0;
+                    if ($vid <= 0 || !is_array($imageRows)) {
+                        continue;
+                    }
+                    try {
+                        $belongs = gawdee_db()->prepare('SELECT id FROM item_variants WHERE id = ? AND item_id = ? LIMIT 1');
+                        $belongs->execute([$vid, $savedId]);
+                        if (!$belongs->fetchColumn()) {
+                            throw new RuntimeException('Images saved against wrong variant.');
+                        }
+                        $finalOrder = [];
+                        foreach (array_values($imageRows) as $imageIndex => $imageEntry) {
+                            if (!is_array($imageEntry)) {
+                                continue;
+                            }
+                            $existingImageId = (int) ($imageEntry['id'] ?? 0);
+                            if ($existingImageId > 0) {
+                                $owner = gawdee_db()->prepare('SELECT id FROM item_images WHERE id = ? AND variant_id = ? LIMIT 1');
+                                $owner->execute([$existingImageId, $vid]);
+                                if (!$owner->fetchColumn()) {
+                                    throw new RuntimeException('An image does not belong to its variant.');
+                                }
+                            }
+                            $fileField = 'variant_images_' . (int) $variantIndex . '_' . (int) $imageIndex;
+                            $hasUpload = !empty($_FILES[$fileField]['tmp_name'])
+                                && (int) ($_FILES[$fileField]['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE;
+                            if ($hasUpload) {
+                                // New upload wins; a replaced existing row drops out
+                                // of the keep-list and is removed by reconcile.
+                                $finalOrder[] = gawdee_save_variant_image_upload($vid, $fileField, 'products');
+                            } elseif ($existingImageId > 0) {
+                                $finalOrder[] = $existingImageId;
+                            }
+                            // Rows with neither id nor upload are empty add-rows: skipped.
+                        }
+                        // De-duplicate while preserving order (prevents double saves).
+                        $finalOrder = array_values(array_unique($finalOrder));
+                        gawdee_set_variant_images($vid, $finalOrder);
+                        // Keep the legacy single-image column pointing at the primary gallery image.
+                        $galleryNow = gawdee_variant_images($vid, true);
+                        $primaryNow = $galleryNow ? (string) ($galleryNow[0]['image'] ?? '') : '';
+                        $currentSingle = gawdee_db()->prepare('SELECT image FROM item_variants WHERE id = ? LIMIT 1');
+                        $currentSingle->execute([$vid]);
+                        if ((string) $currentSingle->fetchColumn() !== $primaryNow) {
+                            gawdee_update_variant($vid, ['image' => $primaryNow]);
+                        }
+                    } catch (Throwable $imageError) {
+                        $imageErrors[] = 'Variant #' . $vid . ': ' . $imageError->getMessage();
+                    }
+                }
+                if ($imageErrors) {
+                    throw new RuntimeException('Item saved, but image upload failed — ' . implode(' ', $imageErrors));
+                }
+                gawdee_sync_item_mirrors($savedId);
+            }
+            admin_redirect('products', $itemId ? 'Item and variants updated successfully.' : 'Item with variants created successfully.');
         }
 
-        if ($action === 'delete_product') {
-            gawdee_db()->prepare('DELETE FROM products WHERE id=?')->execute([(string) ($_POST['id'] ?? '')]);
+        if ($action === 'delete_item' || $action === 'delete_product') {
+            $raw = trim((string) ($_POST['id'] ?? $_POST['item_id'] ?? ''));
+            if ($raw !== '' && ctype_digit($raw)) {
+                gawdee_delete_item((int) $raw);
+                admin_redirect('products', 'Item and all its variants removed.');
+            }
+            // Legacy fallback: delete a single legacy products row (and its migrated variant if linked).
+            $legacyId = (string) ($_POST['id'] ?? '');
+            if ($legacyId !== '') {
+                try {
+                    $v = function_exists('gawdee_variant_by_ref') ? gawdee_variant_by_ref($legacyId, true) : null;
+                    if ($v) {
+                        $itemIdForVariant = (int) ($v['item_id'] ?? 0);
+                        $variantCount = count(gawdee_variants_for_item($itemIdForVariant, true));
+                        if ($variantCount <= 1) {
+                            gawdee_delete_item($itemIdForVariant);
+                        } else {
+                            gawdee_delete_variant((int) $v['id']);
+                        }
+                        admin_redirect('products', 'Variant removed from catalogue.');
+                    }
+                } catch (Throwable $e) {
+                    throw $e;
+                }
+                gawdee_db()->prepare('DELETE FROM products WHERE id=?')->execute([$legacyId]);
+            }
             admin_redirect('products', 'Product removed from catalogue.');
         }
 
-        if ($action === 'toggle_product') {
+        if ($action === 'delete_variant') {
+            $vid = (int) ($_POST['variant_id'] ?? $_POST['id'] ?? 0);
+            if ($vid <= 0) {
+                throw new RuntimeException('Variant not found.');
+            }
+            gawdee_delete_variant($vid);
+            admin_redirect('products', 'Variant deleted.');
+        }
+
+        if ($action === 'delete_variant_image') {
+            $imageId = (int) ($_POST['image_id'] ?? $_POST['id'] ?? 0);
+            if ($imageId <= 0) {
+                throw new RuntimeException('Image not found.');
+            }
+            gawdee_delete_variant_image($imageId, true);
+            admin_redirect('products', 'Variant image deleted.');
+        }
+
+        if ($action === 'toggle_item' || $action === 'toggle_product') {
+            $raw = trim((string) ($_POST['id'] ?? $_POST['item_id'] ?? ''));
+            if ($raw !== '' && ctype_digit($raw)) {
+                $item = gawdee_item_by_id((int) $raw);
+                if (!$item) {
+                    throw new RuntimeException('Item not found.');
+                }
+                gawdee_update_item((int) $raw, ['is_active' => empty($item['is_active']) ? 1 : 0]);
+                admin_redirect('products', 'Item visibility updated.');
+            }
             gawdee_db()->prepare('UPDATE products SET is_active = CASE is_active WHEN 1 THEN 0 ELSE 1 END, updated_at = CURRENT_TIMESTAMP WHERE id = ?')->execute([(string) $_POST['id']]);
             admin_redirect('products', 'Product visibility updated.');
         }
@@ -279,9 +441,19 @@ SQL);
             $cartImage = trim((string) ($_POST['cart_image'] ?? ''));
             $linkUrl = trim((string) ($_POST['link_url'] ?? ''));
             if ($productRef !== '') {
-                $productLookup = gawdee_db()->prepare('SELECT * FROM products WHERE id = ? OR slug = ? LIMIT 1');
-                $productLookup->execute([$productRef, $productRef]);
-                $linked = $productLookup->fetch() ?: null;
+                $linked = null;
+                try {
+                    $linked = gawdee_product_by_id($productRef);
+                } catch (Throwable) {
+                }
+                if (!$linked) {
+                    try {
+                        $productLookup = gawdee_db()->prepare('SELECT * FROM products WHERE id = ? OR slug = ? LIMIT 1');
+                        $productLookup->execute([$productRef, $productRef]);
+                        $linked = $productLookup->fetch() ?: null;
+                    } catch (Throwable) {
+                    }
+                }
                 if ($linked) {
                     if ($cartId === '') {
                         $cartId = (string) $linked['id'];
@@ -932,7 +1104,7 @@ $stats = [
                         }
                         $demoBannerFiles = array_values(array_unique($demoBannerFiles));
                         try {
-                            $productOptions = gawdee_db()->query("SELECT id, full_name, price, image, slug FROM products WHERE is_active = 1 ORDER BY full_name")->fetchAll();
+                            $productOptions = gawdee_products();
                         } catch (Throwable $productOptionsError) {
                             $productOptions = [];
                         } ?>

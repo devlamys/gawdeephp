@@ -296,6 +296,56 @@ CREATE TABLE IF NOT EXISTS products (
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+CREATE TABLE IF NOT EXISTS items (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    slug VARCHAR(191) NOT NULL UNIQUE,
+    name VARCHAR(255) NOT NULL,
+    flavor VARCHAR(100) NOT NULL DEFAULT '',
+    description TEXT,
+    image VARCHAR(255) NOT NULL DEFAULT '',
+    hover_image VARCHAR(255) NOT NULL DEFAULT '',
+    customer_review TEXT,
+    category VARCHAR(100) NOT NULL DEFAULT '',
+    category_key VARCHAR(100) NOT NULL DEFAULT '',
+    tag VARCHAR(100) NOT NULL DEFAULT '',
+    accent VARCHAR(20) NOT NULL DEFAULT '#0a7540',
+    rating DOUBLE NOT NULL DEFAULT 0,
+    review_count INT NOT NULL DEFAULT 0,
+    is_active TINYINT(1) NOT NULL DEFAULT 1,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS item_variants (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    item_id INT NOT NULL,
+    variant_name VARCHAR(100) NOT NULL,
+    slug VARCHAR(191) NOT NULL UNIQUE,
+    sku VARCHAR(100) NOT NULL,
+    stock_quantity INT NOT NULL DEFAULT 0,
+    mrp INT NOT NULL DEFAULT 0,
+    discount DECIMAL(5,2) NOT NULL DEFAULT 0,
+    price INT NOT NULL DEFAULT 0,
+    is_inclusive_tax TINYINT(1) NOT NULL DEFAULT 1,
+    image VARCHAR(255) NOT NULL DEFAULT '',
+    legacy_product_id VARCHAR(191) NOT NULL DEFAULT '',
+    is_active TINYINT(1) NOT NULL DEFAULT 1,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_item_variants_item FOREIGN KEY (item_id) REFERENCES items(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS item_images (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    variant_id INT NOT NULL,
+    image VARCHAR(255) NOT NULL,
+    sort_order INT NOT NULL DEFAULT 0,
+    is_active TINYINT(1) NOT NULL DEFAULT 1,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_item_images_variant FOREIGN KEY (variant_id) REFERENCES item_variants(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 CREATE TABLE IF NOT EXISTS banners (
     id INT AUTO_INCREMENT PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
@@ -566,6 +616,56 @@ CREATE TABLE IF NOT EXISTS products (
     is_active INTEGER NOT NULL DEFAULT 1,
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS items (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    slug TEXT NOT NULL UNIQUE,
+    name TEXT NOT NULL,
+    flavor TEXT NOT NULL DEFAULT '',
+    description TEXT NOT NULL DEFAULT '',
+    image TEXT NOT NULL DEFAULT '',
+    hover_image TEXT NOT NULL DEFAULT '',
+    customer_review TEXT NOT NULL DEFAULT '',
+    category TEXT NOT NULL DEFAULT '',
+    category_key TEXT NOT NULL DEFAULT '',
+    tag TEXT NOT NULL DEFAULT '',
+    accent TEXT NOT NULL DEFAULT '#0a7540',
+    rating REAL NOT NULL DEFAULT 0,
+    review_count INTEGER NOT NULL DEFAULT 0,
+    is_active INTEGER NOT NULL DEFAULT 1,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS item_variants (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    item_id INTEGER NOT NULL,
+    variant_name TEXT NOT NULL,
+    slug TEXT NOT NULL UNIQUE,
+    sku TEXT NOT NULL DEFAULT '',
+    stock_quantity INTEGER NOT NULL DEFAULT 0,
+    mrp INTEGER NOT NULL DEFAULT 0,
+    discount REAL NOT NULL DEFAULT 0,
+    price INTEGER NOT NULL DEFAULT 0,
+    is_inclusive_tax INTEGER NOT NULL DEFAULT 1,
+    image TEXT NOT NULL DEFAULT '',
+    legacy_product_id TEXT NOT NULL DEFAULT '',
+    is_active INTEGER NOT NULL DEFAULT 1,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (item_id) REFERENCES items(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS item_images (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    variant_id INTEGER NOT NULL,
+    image TEXT NOT NULL,
+    sort_order INTEGER NOT NULL DEFAULT 0,
+    is_active INTEGER NOT NULL DEFAULT 1,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (variant_id) REFERENCES item_variants(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS banners (
@@ -849,6 +949,36 @@ SQL);
         gawdee_ensure_column($db, 'hero_banners_two', $column, $definition);
     }
     gawdee_ensure_column($db, 'homepage_media', 'is_featured_homepage', 'INTEGER NOT NULL DEFAULT 1');
+    foreach ([
+        'flavor' => "TEXT NOT NULL DEFAULT ''",
+        'hover_image' => "TEXT NOT NULL DEFAULT ''",
+        'customer_review' => "TEXT NOT NULL DEFAULT ''",
+    ] as $column => $definition) {
+        try {
+            gawdee_ensure_column($db, 'items', $column, $definition);
+        } catch (Throwable $e) { /* table may not exist yet on first boot */
+        }
+    }
+    foreach ([
+        'discount' => 'REAL NOT NULL DEFAULT 0',
+        'price' => 'INTEGER NOT NULL DEFAULT 0',
+        'is_inclusive_tax' => 'INTEGER NOT NULL DEFAULT 1',
+        'legacy_product_id' => "TEXT NOT NULL DEFAULT ''",
+    ] as $column => $definition) {
+        try {
+            gawdee_ensure_column($db, 'item_variants', $column, $definition);
+        } catch (Throwable $e) { /* table may not exist yet */
+        }
+    }
+    foreach ([
+        'sort_order' => 'INTEGER NOT NULL DEFAULT 0',
+        'is_active' => 'INTEGER NOT NULL DEFAULT 1',
+    ] as $column => $definition) {
+        try {
+            gawdee_ensure_column($db, 'item_images', $column, $definition);
+        } catch (Throwable $e) { /* table may not exist yet */
+        }
+    }
     gawdee_ensure_column($db, 'orders', 'user_id', 'INTEGER');
     foreach ([
         'discount' => 'INTEGER NOT NULL DEFAULT 0',
@@ -869,6 +999,13 @@ SQL);
     }
 
     gawdee_create_index($db, 'products', 'idx_products_category_key', 'category_key');
+    gawdee_create_index($db, 'items', 'idx_items_slug', 'slug', true);
+    gawdee_create_index($db, 'items', 'idx_items_category', 'category_key, is_active, id');
+    gawdee_create_index($db, 'item_variants', 'idx_variants_item', 'item_id, is_active, id');
+    gawdee_create_index($db, 'item_variants', 'idx_variants_slug', 'slug', true);
+    gawdee_create_index($db, 'item_variants', 'idx_variants_sku', 'sku');
+    gawdee_create_index($db, 'item_variants', 'idx_variants_legacy', 'legacy_product_id');
+    gawdee_create_index($db, 'item_images', 'idx_images_variant', 'variant_id, is_active, sort_order, id');
     gawdee_create_index($db, 'testimonials', 'idx_testimonials_active', 'is_active, sort_order, id');
     gawdee_create_index($db, 'categories', 'idx_categories_active', 'is_active, sort_order, id');
     gawdee_create_index($db, 'homepage_media', 'idx_homepage_media_section', 'section_key, is_active, sort_order, id');
@@ -1094,6 +1231,21 @@ if (!function_exists('gawdee_family_variants')) {
 
 function gawdee_products(bool $includeInactive = false): array
 {
+    // New canonical source: items + item_variants. Fall back to legacy products table.
+    try {
+        if (function_exists('gawdee_catalog_rows')) {
+            $catalog = gawdee_catalog_rows($includeInactive);
+            if ($catalog) {
+                return $catalog;
+            }
+            // If migration produced no rows but legacy products exist, fall through to legacy.
+            if (function_exists('gawdee_items_count') && gawdee_items_count(true) > 0) {
+                return $catalog;
+            }
+        }
+    } catch (Throwable) {
+        // Fall through to legacy catalogue.
+    }
     $sql = 'SELECT * FROM products' . ($includeInactive ? '' : ' WHERE is_active = 1') . ' ORDER BY created_at, name';
     $rows = gawdee_db()->query($sql)->fetchAll();
     return array_map(static function (array $row): array {
@@ -1110,6 +1262,24 @@ function gawdee_products(bool $includeInactive = false): array
 
 function gawdee_product_by_id(string $id): ?array
 {
+    $id = trim($id);
+    if ($id === '') {
+        return null;
+    }
+    // Prefer new variant catalogue (accepts numeric variant id, slug, legacy id, SKU).
+    try {
+        if (function_exists('gawdee_variant_by_ref') && function_exists('gawdee_item_by_id') && function_exists('gawdee_map_variant_row')) {
+            $variant = gawdee_variant_by_ref($id, false);
+            if ($variant) {
+                $item = gawdee_item_by_id((int) ($variant['item_id'] ?? 0));
+                if ($item) {
+                    return gawdee_map_variant_row($item, $variant);
+                }
+            }
+        }
+    } catch (Throwable) {
+        // Fall through to legacy lookup.
+    }
     $statement = gawdee_db()->prepare('SELECT * FROM products WHERE id = ? AND is_active = 1');
     $statement->execute([$id]);
     $row = $statement->fetch();
@@ -1126,8 +1296,24 @@ function gawdee_product_by_id(string $id): ?array
 
 function gawdee_product_reviews(string $productId): array
 {
-    $statement = gawdee_db()->prepare("SELECT id, product_id, rating, review, name, created_at FROM product_reviews WHERE product_id = ? AND status = 'approved' ORDER BY id DESC");
-    $statement->execute([$productId]);
+    $productId = trim($productId);
+    $candidates = [$productId];
+    try {
+        if ($productId !== '' && function_exists('gawdee_variant_by_ref')) {
+            $variant = gawdee_variant_by_ref($productId, true);
+            if ($variant) {
+                foreach ([(string) $variant['id'], (string) ($variant['legacy_product_id'] ?? ''), (string) ($variant['slug'] ?? '')] as $c) {
+                    if ($c !== '' && !in_array($c, $candidates, true)) {
+                        $candidates[] = $c;
+                    }
+                }
+            }
+        }
+    } catch (Throwable) {
+    }
+    $placeholders = implode(',', array_fill(0, count($candidates), '?'));
+    $statement = gawdee_db()->prepare("SELECT id, product_id, rating, review, name, created_at FROM product_reviews WHERE product_id IN ($placeholders) AND status = 'approved' ORDER BY id DESC");
+    $statement->execute($candidates);
     return array_map(static function (array $row): array {
         $row['id'] = (int) $row['id'];
         $row['rating'] = (int) $row['rating'];
@@ -1475,9 +1661,22 @@ function gawdee_mark_order_paid(int $orderId, string $paymentId = '', string $si
                 $items->execute([$orderId]);
                 $orderItems = $items->fetchAll();
                 foreach ($orderItems as $item) {
-                    $stock = $db->prepare('SELECT stock FROM products WHERE id = ?');
-                    $stock->execute([$item['product_id']]);
-                    if ((int) $stock->fetchColumn() < (int) $item['quantity']) {
+                    $available = null;
+                    if (function_exists('gawdee_variant_by_ref')) {
+                        try {
+                            $variant = gawdee_variant_by_ref((string) $item['product_id'], true);
+                            if ($variant) {
+                                $available = (int) ($variant['stock_quantity'] ?? 0);
+                            }
+                        } catch (Throwable) {
+                        }
+                    }
+                    if ($available === null) {
+                        $stock = $db->prepare('SELECT stock FROM products WHERE id = ?');
+                        $stock->execute([$item['product_id']]);
+                        $available = (int) $stock->fetchColumn();
+                    }
+                    if ($available < (int) $item['quantity']) {
                         $db->prepare("UPDATE orders SET payment_status='paid', status='on_hold', payment_error='Payment received, but stock needs manual review.', paid_at=CURRENT_TIMESTAMP, cancelled_at=NULL, razorpay_payment_id=CASE WHEN ?='' THEN razorpay_payment_id ELSE ? END, razorpay_signature=CASE WHEN ?='' THEN razorpay_signature ELSE ? END, updated_at=CURRENT_TIMESTAMP WHERE id=?")
                             ->execute([$paymentId, $paymentId, $signature, $signature, $orderId]);
                         gawdee_record_order_event($orderId, 'on_hold', 'Payment received — stock review needed', 'Payment is secure, but fulfilment needs an inventory check by the store team.');
@@ -1486,8 +1685,32 @@ function gawdee_mark_order_paid(int $orderId, string $paymentId = '', string $si
                     }
                 }
                 $reduce = $db->prepare("UPDATE products SET stock = stock - ?, stock_status = CASE WHEN stock - ? <= 0 THEN 'out_of_stock' ELSE 'in_stock' END WHERE id = ?");
+                $reduceVariant = null;
+                try {
+                    $reduceVariant = $db->prepare('UPDATE item_variants SET stock_quantity = stock_quantity - ? WHERE id = ? AND stock_quantity >= ?');
+                } catch (Throwable) {
+                }
                 foreach ($orderItems as $item) {
-                    $reduce->execute([(int) $item['quantity'], (int) $item['quantity'], $item['product_id']]);
+                    $done = false;
+                    if ($reduceVariant && function_exists('gawdee_variant_by_ref')) {
+                        try {
+                            $variant = gawdee_variant_by_ref((string) $item['product_id'], true);
+                            if ($variant) {
+                                $reduceVariant->execute([(int) $item['quantity'], (int) $variant['id'], (int) $item['quantity']]);
+                                if (!empty($variant['legacy_product_id'])) {
+                                    try {
+                                        $db->prepare("UPDATE products SET stock = GREATEST(0, stock - ?), stock_status = CASE WHEN stock - ? <= 0 THEN 'out_of_stock' ELSE 'in_stock' END WHERE id = ?")->execute([(int) $item['quantity'], (int) $item['quantity'], (string) $variant['legacy_product_id']]);
+                                    } catch (Throwable) {
+                                    }
+                                }
+                                $done = true;
+                            }
+                        } catch (Throwable) {
+                        }
+                    }
+                    if (!$done) {
+                        $reduce->execute([(int) $item['quantity'], (int) $item['quantity'], $item['product_id']]);
+                    }
                 }
             }
             $update = $db->prepare("UPDATE orders SET payment_status='paid', status='processing', shipment_status='awaiting_fulfillment', inventory_status='deducted', payment_error='', paid_at=CURRENT_TIMESTAMP, cancelled_at=NULL, razorpay_payment_id=CASE WHEN ?='' THEN razorpay_payment_id ELSE ? END, razorpay_signature=CASE WHEN ?='' THEN razorpay_signature ELSE ? END, updated_at=CURRENT_TIMESTAMP WHERE id=?");
@@ -1533,13 +1756,23 @@ if (!function_exists('money')) {
 if (!function_exists('discount_percentage')) {
     function discount_percentage(array $product): int
     {
-        if (($product['original_price'] ?? 0) <= 0) {
+        $mrp = (int) ($product['original_price'] ?? $product['mrp'] ?? 0);
+        $price = (int) ($product['price'] ?? 0);
+        if (isset($product['discount_percent'])) {
+            return (int) max(0, min(100, round((float) $product['discount_percent'])));
+        }
+        if (isset($product['discount']) && $mrp > 0 && $price <= 0) {
+            return (int) max(0, min(100, round((float) $product['discount'])));
+        }
+        if ($mrp <= 0) {
             return 0;
         }
 
-        return (int) round((1 - (($product['price'] ?? 0) / $product['original_price'])) * 100);
+        return (int) round((1 - ($price / $mrp)) * 100);
     }
 }
+
+require_once __DIR__ . '/items.php';
 
 gawdee_db();
 

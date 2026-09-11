@@ -181,10 +181,11 @@
         }
     });
 
-    const initialSearch = new URLSearchParams(window.location.search).get('search');
+    const initialSearch = new URLSearchParams(window.location.search).get('search') || productGrid?.dataset.initialSearch || '';
     if (initialSearch && productGrid) {
-        activeSearch = initialSearch.toLowerCase();
+        activeSearch = initialSearch.toLowerCase().trim();
         if (searchInput) searchInput.value = initialSearch;
+        if (catalogSearch && !catalogSearch.value) catalogSearch.value = initialSearch;
         filterProducts();
     }
     if (productGrid) filterProducts();
@@ -509,7 +510,13 @@
 
     try {
         const savedCart = JSON.parse(localStorage.getItem(storageKey) || '[]');
-        cart = Array.isArray(savedCart) ? savedCart : [];
+        cart = Array.isArray(savedCart) ? savedCart.filter(item => item && item.id && Number(item.price) >= 0).map(item => ({
+            id: String(item.id),
+            name: String(item.name || 'Gawdee product'),
+            price: Math.max(0, Number(item.price || 0)),
+            image: String(item.image || 'assets/images/logo.png'),
+            quantity: Math.max(1, Math.min(20, Number(item.quantity || 1)))
+        })) : [];
     } catch {
         cart = [];
     }
@@ -520,7 +527,22 @@
 
     const saveCart = () => localStorage.setItem(storageKey, JSON.stringify(cart));
 
-    const showToast = () => {};
+    const showToast = (message) => {
+        if (!message) return;
+        let node = qs('[data-toast]');
+        if (!node) {
+            node = document.createElement('div');
+            node.setAttribute('data-toast', '');
+            node.setAttribute('role', 'status');
+            node.setAttribute('aria-live', 'polite');
+            node.className = 'gawdee-toast';
+            document.body.appendChild(node);
+        }
+        node.textContent = message;
+        node.classList.add('is-visible');
+        window.clearTimeout(toastTimer);
+        toastTimer = window.setTimeout(() => node.classList.remove('is-visible'), 2400);
+    };
 
     qsa('[data-newsletter-form]').forEach(form => {
         form.addEventListener('submit', async event => {
@@ -740,74 +762,120 @@
 
 
 
-    // Instant Variant Switcher
-    qsa('[data-variant-switch]').forEach(chip => {
-        chip.addEventListener('click', (e) => {
-            if (e.metaKey || e.ctrlKey || e.shiftKey) return;
-            e.preventDefault();
+    // Product-details variant switcher (delegated: works for dynamic chips, single-variant safe).
+    document.addEventListener('click', (e) => {
+        const chip = e.target.closest('[data-variant-switch]');
+        if (!chip) return;
+        // Allow new-tab / modifier clicks to follow the link.
+        if (e.metaKey || e.ctrlKey || e.shiftKey || e.button === 1) return;
+        // Only handle chips inside the PDP buybox; card pills use data-card-variant-switch.
+        if (!chip.closest('.ref-buybox')) return;
+        e.preventDefault();
 
-            const slug = chip.dataset.slug;
-            const id = chip.dataset.id;
-            const name = chip.dataset.name;
-            const weight = chip.dataset.weight;
-            const price = chip.dataset.price;
-            const priceFormatted = chip.dataset.priceFormatted;
-            const originalPriceFormatted = chip.dataset.originalPriceFormatted;
-            const discount = chip.dataset.discount;
-            const stock = parseInt(chip.dataset.stock || '0', 10);
-            const image = chip.dataset.image;
+        const slug = chip.dataset.slug || '';
+        const id = chip.dataset.id || '';
+        const name = chip.dataset.name || '';
+        const weight = chip.dataset.weight || '';
+        const price = chip.dataset.price || '0';
+        const priceFormatted = chip.dataset.priceFormatted || '';
+        const originalPriceFormatted = chip.dataset.originalPriceFormatted || '';
+        const discount = chip.dataset.discount || '0';
+        const stock = parseInt(chip.dataset.stock || '0', 10);
+        const image = chip.dataset.image || '';
+        const sku = chip.dataset.sku || '';
+        const taxInclusive = chip.dataset.taxInclusive !== '0';
 
-            qsa('[data-variant-switch]').forEach(c => {
-                c.classList.remove('is-active');
-                c.removeAttribute('aria-current');
-            });
-            chip.classList.add('is-active');
-            chip.setAttribute('aria-current', 'true');
-
-            const priceEl = qs('[data-variant-price]');
-            const origPriceEl = qs('[data-variant-original-price]');
-            const discountEl = qs('[data-variant-discount]');
-            if (priceEl) priceEl.textContent = priceFormatted;
-            if (origPriceEl) origPriceEl.textContent = originalPriceFormatted;
-            if (discountEl) discountEl.textContent = `${discount}% OFF`;
-
-            const titleEl = qs('[data-variant-title]');
-            if (titleEl) {
-                titleEl.innerHTML = `${name} <i class="ph-fill ph-seal-check" aria-label="Verified product"></i>`;
-            }
-
-            const mainImg = qs('[data-product-main-image]');
-            if (mainImg && image) {
-                mainImg.src = image;
-                mainImg.alt = name;
-            }
-
-            const stockEl = qs('[data-variant-stock]');
-            if (stockEl) {
-                stockEl.innerHTML = `<i></i>${stock > 0 ? 'In stock' : 'Out of stock'}`;
-            }
-
-            qsa('[data-add-to-cart], [data-buy-now]').forEach(btn => {
-                btn.dataset.id = id;
-                btn.dataset.name = name;
-                btn.dataset.price = price;
-                btn.dataset.image = image;
-                if (stock <= 0) {
-                    btn.setAttribute('disabled', 'true');
-                } else {
-                    btn.removeAttribute('disabled');
-                }
-            });
-
-            if (window.history && window.history.replaceState && slug) {
-                window.history.replaceState({}, '', `product.php?slug=${encodeURIComponent(slug)}`);
-            }
-
-            showToast(`Selected ${weight} pack`);
+        chip.closest('.ref-variants')?.querySelectorAll('[data-variant-switch]').forEach(c => {
+            const active = c === chip;
+            c.classList.toggle('is-active', active);
+            if (active) c.setAttribute('aria-current', 'true');
+            else c.removeAttribute('aria-current');
         });
+
+        const priceEl = qs('[data-variant-price]');
+        const origPriceEl = qs('[data-variant-original-price]');
+        const discountEl = qs('[data-variant-discount]');
+        if (priceEl && priceFormatted) priceEl.textContent = priceFormatted;
+        if (origPriceEl && originalPriceFormatted) origPriceEl.textContent = originalPriceFormatted;
+        if (discountEl) {
+            const d = parseInt(discount || '0', 10);
+            if (d > 0) {
+                discountEl.hidden = false;
+                discountEl.textContent = `${d}% OFF`;
+            } else {
+                discountEl.hidden = true;
+                discountEl.textContent = '';
+            }
+        }
+
+        const titleEl = qs('[data-variant-title]');
+        if (titleEl && name) {
+            titleEl.childNodes[0].textContent = name + ' ';
+        }
+
+        // Swap the whole gallery to the selected variant's images so no
+        // previous-variant frames remain. Falls back to the single image
+        // when gallery data is unavailable.
+        if (typeof rebuildGallery === 'function' && !rebuildGallery(id, name) && image) {
+            const mainImg = qs('[data-product-main-image]');
+            if (mainImg) {
+                mainImg.src = image;
+                mainImg.alt = name || mainImg.alt;
+                const expand = qs('.ref-gallery__expand');
+                if (expand) expand.href = image;
+            }
+        }
+
+        const stockEl = qs('[data-variant-stock]');
+        if (stockEl) {
+            const inStock = stock > 0;
+            stockEl.innerHTML = `<i></i>${inStock ? 'In stock' : 'Out of stock'}`;
+            stockEl.classList.toggle('is-out', !inStock);
+        }
+
+        const skuEl = qs('[data-variant-sku]');
+        if (skuEl) skuEl.textContent = sku || '—';
+
+        const taxEl = qs('[data-variant-tax]');
+        if (taxEl) taxEl.textContent = taxInclusive ? 'Inclusive of all taxes' : 'Exclusive of taxes';
+
+        // Reset quantity to 1 whenever the pack changes.
+        const qtyEl = qs('[data-product-qty]');
+        if (qtyEl) {
+            qtyEl.textContent = '1';
+            if (typeof productQuantity !== 'undefined') {
+                try {
+                    productQuantity = 1;
+                } catch (_) {}
+            }
+        }
+
+        qsa('[data-add-to-cart], [data-buy-now]').forEach(btn => {
+            // Only retarget PDP-level buttons, not related-product card buttons.
+            if (btn.closest('.product-card, .compact-product-card')) return;
+            if (id) btn.dataset.id = id;
+            if (name) btn.dataset.name = name;
+            if (price) btn.dataset.price = price;
+            if (image) btn.dataset.image = image;
+            if (stock <= 0) btn.setAttribute('disabled', '');
+            else btn.removeAttribute('disabled');
+        });
+
+        // Keep the review form pinned to the selected variant.
+        qsa('[data-review-form]').forEach(form => {
+            if (id) form.dataset.productId = id;
+        });
+
+        if (window.history && window.history.replaceState && slug) {
+            const url = new URL(window.location.href);
+            url.searchParams.set('slug', slug);
+            window.history.replaceState({}, '', url.pathname + url.search);
+        }
+
+        showToast(`Selected ${weight} pack`);
     });
 
-    // Card-level Instant Variant Switcher
+    // Card-level variant switcher (delegated, stock/SKU aware, link-safe).
     document.addEventListener('click', (e) => {
         const pill = e.target.closest('[data-card-variant-switch]');
         if (!pill) return;
@@ -817,60 +885,84 @@
         const card = pill.closest('.product-card, .compact-product-card');
         if (!card) return;
 
-        const slug = pill.dataset.slug;
-        const id = pill.dataset.id;
-        const name = pill.dataset.name;
-        const weight = pill.dataset.weight;
-        const price = pill.dataset.price;
-        const priceFormatted = pill.dataset.priceFormatted;
-        const originalPriceFormatted = pill.dataset.originalPriceFormatted;
-        const discount = pill.dataset.discount;
-        const image = pill.dataset.image;
+        const slug = pill.dataset.slug || '';
+        const id = pill.dataset.id || '';
+        const name = pill.dataset.name || '';
+        const weight = pill.dataset.weight || '';
+        const price = pill.dataset.price || '0';
+        const priceFormatted = pill.dataset.priceFormatted || '';
+        const originalPriceFormatted = pill.dataset.originalPriceFormatted || '';
+        const discount = pill.dataset.discount || '0';
+        const stock = parseInt(pill.dataset.stock || '1', 10);
+        const image = pill.dataset.image || '';
 
-        card.querySelectorAll('[data-card-variant-switch]').forEach(p => p.classList.remove('is-active'));
-        pill.classList.add('is-active');
+        card.querySelectorAll('[data-card-variant-switch]').forEach(p => {
+            const active = p === pill;
+            p.classList.toggle('is-active', active);
+            p.setAttribute('aria-pressed', String(active));
+        });
 
-        card.querySelectorAll('a[href*="product"]').forEach(link => {
+        card.querySelectorAll('.product-card__media, .compact-product-card__media, .product-card__body h3 a, .compact-product-card__body h3 a').forEach(link => {
+            const href = link.getAttribute('href');
+            if (!href || !href.includes('product')) return;
             try {
-                const url = new URL(link.getAttribute('href'), window.location.href);
+                const url = new URL(href, window.location.href);
                 url.searchParams.set('slug', slug);
-                link.setAttribute('href', url.pathname.substring(url.pathname.lastIndexOf('/') + 1) + url.search);
+                const clean = url.pathname.substring(url.pathname.lastIndexOf('/') + 1) + url.search;
+                link.setAttribute('href', clean);
             } catch (_) {
-                link.setAttribute('href', `product.php?slug=${encodeURIComponent(slug)}`);
+                link.setAttribute('href', `product?slug=${encodeURIComponent(slug)}`);
             }
         });
 
-        const img = card.querySelector('.product-card__media img, .compact-product-card__media img');
+        const img = card.querySelector('[data-card-main-image]') || card.querySelector('.product-card__media img, .compact-product-card__media img');
         if (img && image) {
             img.src = image;
-            img.alt = name;
+            img.alt = name || img.alt;
         }
 
-        const weightEl = card.querySelector('.compact-product-card__weight, .product-card__meta span:last-child');
-        if (weightEl) {
+        const weightEl = card.querySelector('[data-card-weight], .compact-product-card__weight, .product-card__meta span:last-child');
+        if (weightEl && weight) {
             weightEl.textContent = weight;
         }
 
-        const priceStrong = card.querySelector('.product-card__price strong, .compact-product-card__price strong, .product-card__buy strong');
+        const priceStrong = card.querySelector('[data-card-price]') || card.querySelector('.product-card__price strong, .compact-product-card__price strong, .product-card__buy strong');
         if (priceStrong && priceFormatted) {
             priceStrong.textContent = priceFormatted;
         }
-        const priceS = card.querySelector('.product-card__price s, .compact-product-card__price s, .product-card__buy s');
+        const priceS = card.querySelector('[data-card-original-price]') || card.querySelector('.product-card__price s, .compact-product-card__price s, .product-card__buy s');
         if (priceS && originalPriceFormatted) {
             priceS.textContent = originalPriceFormatted;
         }
 
-        const discountEl = card.querySelector('.product-card__discount');
-        if (discountEl && discount) {
-            discountEl.textContent = `${discount}% OFF`;
+        const discountEl = card.querySelector('[data-card-discount], .product-card__discount');
+        if (discountEl) {
+            const d = parseInt(discount || '0', 10);
+            if (d > 0) {
+                discountEl.hidden = false;
+                discountEl.textContent = `${d}% OFF`;
+            } else {
+                discountEl.hidden = true;
+            }
         }
 
         const addBtn = card.querySelector('[data-add-to-cart]');
         if (addBtn) {
-            addBtn.dataset.id = id;
-            addBtn.dataset.name = name;
-            addBtn.dataset.price = price;
+            if (id) addBtn.dataset.id = id;
+            if (name) addBtn.dataset.name = name;
+            if (price) addBtn.dataset.price = price;
             if (image) addBtn.dataset.image = image;
+            if (stock <= 0) {
+                addBtn.setAttribute('disabled', '');
+                const label = addBtn.querySelector('span');
+                if (label) label.textContent = 'Out of stock';
+                else if (!addBtn.querySelector('i')) addBtn.textContent = 'Out of stock';
+            } else {
+                addBtn.removeAttribute('disabled');
+                const label = addBtn.querySelector('span');
+                if (label && label.textContent === 'Out of stock') label.textContent = 'Add to cart';
+                else if (addBtn.textContent === 'Out of stock') addBtn.textContent = 'Add to cart';
+            }
         }
 
         showToast(`Selected ${weight} pack`);
@@ -892,47 +984,58 @@
     };
 
     const renderCart = () => {
-        const count = cart.reduce((sum, item) => sum + item.quantity, 0);
-        const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+        const count = cart.reduce((sum, item) => sum + Number(item.quantity || 0), 0);
+        const total = cart.reduce((sum, item) => sum + Number(item.price || 0) * Number(item.quantity || 0), 0);
         if (cartCount) cartCount.textContent = String(count);
         if (cartTotal) cartTotal.textContent = formatMoney(total);
         if (cartEmpty) cartEmpty.hidden = cart.length > 0;
         if (cartSummary) cartSummary.hidden = cart.length === 0;
 
         if (!cartItems) return;
+        const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
         cartItems.innerHTML = cart.map(item => `
             <article class="cart-item">
-                <img src="${item.image}" alt="">
+                <img src="${esc(item.image)}" alt="">
                 <div>
-                    <h3>${item.name}</h3>
-                    <p>${formatMoney(item.price)}</p>
-                    <div class="cart-item__qty" aria-label="Quantity for ${item.name}">
-                        <button type="button" data-cart-decrease="${item.id}" aria-label="Decrease quantity">−</button>
-                        <span>${item.quantity}</span>
-                        <button type="button" data-cart-increase="${item.id}" aria-label="Increase quantity">+</button>
+                    <h3>${esc(item.name)}</h3>
+                    <p>${formatMoney(Number(item.price || 0))}</p>
+                    <div class="cart-item__qty" aria-label="Quantity for ${esc(item.name)}">
+                        <button type="button" data-cart-decrease="${esc(item.id)}" aria-label="Decrease quantity">−</button>
+                        <span>${Number(item.quantity || 0)}</span>
+                        <button type="button" data-cart-increase="${esc(item.id)}" aria-label="Increase quantity">+</button>
                     </div>
                 </div>
-                <button class="cart-item__remove" type="button" data-cart-remove="${item.id}" aria-label="Remove ${item.name}"><i class="ph ph-trash"></i></button>
+                <button class="cart-item__remove" type="button" data-cart-remove="${esc(item.id)}" aria-label="Remove ${esc(item.name)}"><i class="ph ph-trash"></i></button>
             </article>
         `).join('');
     };
 
     const addToCart = (button, quantity = 1) => {
+        if (button.disabled || button.hasAttribute('disabled')) {
+            showToast('This variant is currently out of stock');
+            return;
+        }
+        quantity = Math.max(1, Math.min(20, Number(quantity) || 1));
         const item = {
-            id: button.dataset.id,
-            name: button.dataset.name,
-            price: Number(button.dataset.price),
-            image: button.dataset.image,
+            id: String(button.dataset.id || ''),
+            name: String(button.dataset.name || 'Gawdee product'),
+            price: Math.max(0, Number(button.dataset.price || 0)),
+            image: String(button.dataset.image || 'assets/images/logo.png'),
             quantity
         };
+        if (!item.id || !(item.price >= 0)) {
+            showToast('This product is unavailable right now');
+            return;
+        }
         const existing = cart.find(product => product.id === item.id);
-        if (existing) existing.quantity += quantity;
+        if (existing) existing.quantity = Math.min(20, existing.quantity + quantity);
         else cart.push(item);
         saveCart();
         renderCart();
         button.classList.add('is-added');
         window.setTimeout(() => button.classList.remove('is-added'), 650);
         showToast(`${item.name} added to your bag`);
+        openCart();
     };
 
     qsa('[data-cart-toggle]').forEach(button => button.addEventListener('click', openCart));
@@ -981,26 +1084,92 @@
         if (qtyDisplay) qtyDisplay.textContent = String(productQuantity);
     });
 
-    // Product gallery and purchase actions.
+    // Product gallery: delegated thumb switching (survives gallery rebuilds
+    // when the variant changes) with keyboard support.
+    const galleryRoot = qs('[data-variant-galleries]');
+    const galleryThumbs = qs('[data-gallery-thumbs]');
     const productMainImage = qs('[data-product-main-image]');
     const productExpandLink = qs('.ref-gallery__expand');
-    qsa('[data-gallery-thumb]').forEach(thumbnail => {
-        thumbnail.addEventListener('click', () => {
-            if (!productMainImage || !thumbnail.dataset.image) return;
-            qsa('[data-gallery-thumb]').forEach(item => {
-                const active = item === thumbnail;
-                item.classList.toggle('is-active', active);
-                item.setAttribute('aria-pressed', String(active));
-            });
-            productMainImage.classList.add('is-changing');
-            window.setTimeout(() => {
-                productMainImage.src = thumbnail.dataset.image;
-                productMainImage.alt = thumbnail.dataset.alt || productMainImage.alt;
-                if (productExpandLink) productExpandLink.href = thumbnail.dataset.image;
-                productMainImage.classList.remove('is-changing');
-            }, reduceMotion ? 0 : 150);
+
+    const setStageImage = (src, alt) => {
+        if (!productMainImage || !src) return;
+        productMainImage.classList.add('is-changing');
+        window.setTimeout(() => {
+            productMainImage.src = src;
+            if (alt) productMainImage.alt = alt;
+            if (productExpandLink) productExpandLink.href = src;
+            productMainImage.classList.remove('is-changing');
+        }, reduceMotion ? 0 : 150);
+    };
+
+    const activateThumb = (thumbnail) => {
+        if (!thumbnail) return;
+        qsa('[data-gallery-thumb]').forEach(item => {
+            const active = item === thumbnail;
+            item.classList.toggle('is-active', active);
+            item.setAttribute('aria-pressed', String(active));
+            item.tabIndex = active ? 0 : -1;
         });
+        setStageImage(thumbnail.dataset.image, thumbnail.dataset.alt);
+    };
+
+    const thumbContainer = galleryThumbs || document;
+    thumbContainer.addEventListener('click', (event) => {
+        const thumbnail = event.target.closest('[data-gallery-thumb]');
+        if (!thumbnail || (galleryThumbs && !galleryThumbs.contains(thumbnail))) return;
+        activateThumb(thumbnail);
     });
+    (galleryThumbs || document).addEventListener('keydown', (event) => {
+        if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(event.key)) return;
+        const current = event.target.closest('[data-gallery-thumb]');
+        if (!current) return;
+        event.preventDefault();
+        const thumbs = qsa('[data-gallery-thumb]', galleryThumbs || document);
+        const at = thumbs.indexOf(current);
+        if (at < 0) return;
+        const forward = event.key === 'ArrowRight' || event.key === 'ArrowDown';
+        const next = thumbs[(at + (forward ? 1 : -1) + thumbs.length) % thumbs.length];
+        next?.focus();
+        activateThumb(next);
+    });
+
+    // Broken-image safety net: swap to the fallback instead of showing a broken icon.
+    document.addEventListener('error', (event) => {
+        const img = event.target;
+        if (!(img instanceof HTMLImageElement)) return;
+        if (img.dataset.imgFallbackApplied) return;
+        const inGallery = img.closest('[data-gallery-thumbs], [data-gallery-stage]');
+        if (!inGallery) return;
+        const fallback = galleryRoot?.dataset.galleryFallback || 'assets/images/logo.png';
+        img.dataset.imgFallbackApplied = '1';
+        img.src = fallback;
+    }, true);
+
+    // Rebuild the whole gallery for a newly selected variant.
+    // Returns true when gallery data existed for the variant.
+    const rebuildGallery = (variantId, variantName) => {
+        if (!galleryRoot || !galleryThumbs || !variantId) return false;
+        let galleries = {};
+        try {
+            galleries = JSON.parse(galleryRoot.dataset.variantGalleries || '{}');
+        } catch {
+            galleries = {};
+        }
+        const frames = galleries[String(variantId)];
+        if (!Array.isArray(frames) || !frames.length) return false;
+        const productName = galleryRoot.dataset.galleryProductName || variantName || '';
+        galleryThumbs.innerHTML = frames.map((frame, frameIndex) => {
+            const src = String(frame?.src || '');
+            if (!src) return '';
+            const label = String(frame?.label || `Product view ${frameIndex + 1}`);
+            const alt = `${productName} — ${label}`;
+            const esc = (v) => String(v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+            return `<button type="button" class="ref-gallery__thumb${frameIndex === 0 ? ' is-active' : ''}" data-gallery-thumb data-image="${esc(src)}" data-alt="${esc(alt)}" aria-label="Show ${esc(label)}" aria-pressed="${frameIndex === 0 ? 'true' : 'false'}" tabindex="${frameIndex === 0 ? '0' : '-1'}"><img src="${esc(src)}" alt="${esc(alt)}" loading="lazy" decoding="async" data-thumb-image></button>`;
+        }).join('');
+        const first = frames[0];
+        if (first?.src) setStageImage(String(first.src), `${productName} — ${String(first.label || 'Product view 1')}`);
+        return true;
+    };
 
     qsa('[data-ref-product-tab]').forEach(tab => {
         tab.addEventListener('click', () => {

@@ -77,8 +77,49 @@ foreach ($products as $candidate) {
 }
 $relatedProducts = array_slice(array_merge($sameCategory, $otherProducts), 0, 4);
 $variantProducts = gawdee_family_variants($products, (string) ($product['family_key'] ?? ''));
+if (!$variantProducts) {
+    $variantProducts = [$product];
+}
+$galleryFallbackSrc = 'assets/images/logo.png';
 $gallery = is_array($product['gallery'] ?? null) ? $product['gallery'] : [['src' => $product['image'], 'label' => 'Product view']];
 $aPlusImages = is_array($product['aplus_images'] ?? null) ? $product['aplus_images'] : [];
+
+// Per-variant galleries: ItemImageTable rows first, then legacy/editorial
+// frames as fallback. Keyed by variant id for the JS switcher.
+$buildVariantGallery = static function (array $variant, array $editorialGallery, array $editorialAplus, string $fallbackSrc): array {
+    $frames = [];
+    $push = static function (string $src, string $label) use (&$frames): void {
+        $src = trim($src);
+        if ($src === '' || isset($frames[$src])) {
+            return;
+        }
+        $frames[$src] = ['src' => $src, 'label' => $label !== '' ? $label : ('Product view ' . (count($frames) + 1))];
+    };
+    $position = 0;
+    foreach (($variant['images'] ?? []) as $imgRow) {
+        $position++;
+        $push((string) (is_array($imgRow) ? ($imgRow['image'] ?? '') : $imgRow), 'Product view ' . $position);
+    }
+    // Legacy single-image columns stay as fallback (backward compatibility).
+    $push((string) ($variant['primary_image'] ?? ''), 'Product view');
+    $push((string) ($variant['image'] ?? ''), 'Product view');
+    $push((string) ($variant['hover_image'] ?? ''), 'Alternate view');
+    foreach (array_merge($editorialGallery, $editorialAplus) as $mediaItem) {
+        if (!is_array($mediaItem)) {
+            continue;
+        }
+        $push((string) ($mediaItem['src'] ?? ''), (string) ($mediaItem['label'] ?? $mediaItem['title'] ?? 'Product view'));
+    }
+    if (!$frames) {
+        $push($fallbackSrc, 'Product view');
+    }
+    return array_slice(array_values($frames), 0, 8);
+};
+$variantGalleries = [];
+foreach ($variantProducts as $variantRow) {
+    $variantGalleries[(string) ($variantRow['id'] ?? '')] = $buildVariantGallery($variantRow, $gallery, $aPlusImages, $galleryFallbackSrc);
+}
+$displayGallery = $variantGalleries[(string) ($product['id'] ?? '')] ?? $buildVariantGallery($product, $gallery, $aPlusImages, $galleryFallbackSrc);
 $comparisonRows = is_array($product['comparison_rows'] ?? null) ? $product['comparison_rows'] : [];
 $comparisonHeadings = is_array($product['comparison_headings'] ?? null) ? $product['comparison_headings'] : [];
 $benefits = is_array($product['benefits'] ?? null) ? $product['benefits'] : [];
@@ -88,18 +129,10 @@ $usage = is_array($product['usage'] ?? null) ? $product['usage'] : [];
 $faqs = is_array($product['faqs'] ?? null) ? $product['faqs'] : [];
 $featuredReview = is_array($product['featured_review'] ?? null) ? $product['featured_review'] : null;
 $stock = (int) ($product['stock'] ?? 0);
-$displayGallery = [];
-foreach (array_merge($gallery, $aPlusImages) as $mediaItem) {
-    $mediaSource = (string) ($mediaItem['src'] ?? '');
-    if ($mediaSource === '' || isset($displayGallery[$mediaSource])) {
-        continue;
-    }
-    $displayGallery[$mediaSource] = [
-        'src' => $mediaSource,
-        'label' => (string) ($mediaItem['label'] ?? $mediaItem['title'] ?? 'Product view'),
-    ];
+$displayGallery = array_values($displayGallery);
+if (!$displayGallery) {
+    $displayGallery = [['src' => $galleryFallbackSrc, 'label' => 'Product view']];
 }
-$displayGallery = array_slice(array_values($displayGallery), 0, 5);
 $storyMedia = gawdee_product_videos((string) $product['slug'], 4);
 $nutritionFacts = $product['category_key'] === 'ghee'
     ? [['Energy', '897 kcal'], ['Total Fat', '99.7 g'], ['Saturated Fat', '62.5 g'], ['Trans Fat', '0 g'], ['Cholesterol', '220 mg'], ['Vitamin A', '700 mcg']]
@@ -138,7 +171,7 @@ $schema = [
     '@context' => 'https://schema.org',
     '@type' => 'Product',
     'name' => $product['full_name'],
-    'image' => array_values(array_map(static fn(array $item): string => $item['src'], $gallery)),
+    'image' => array_values(array_map(static fn(array $item): string => $item['src'], $displayGallery)),
     'description' => $product['description'],
     'sku' => $product['sku'],
     'brand' => ['@type' => 'Brand', 'name' => 'Gawdee'],
@@ -176,25 +209,25 @@ require __DIR__ . '/includes/header.php';
         </nav>
 
         <section class="ref-product-hero" aria-labelledby="product-title">
-            <div class="ref-gallery reveal reveal--left">
-                <div class="ref-gallery__thumbs" aria-label="Product images">
+            <div class="ref-gallery reveal reveal--left" data-variant-galleries="<?= htmlspecialchars(json_encode($variantGalleries, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)) ?>" data-gallery-fallback="<?= htmlspecialchars($galleryFallbackSrc) ?>" data-gallery-product-name="<?= htmlspecialchars($product['full_name']) ?>">
+                <div class="ref-gallery__thumbs" aria-label="Product images" data-gallery-thumbs>
                     <?php foreach ($displayGallery as $galleryIndex => $galleryItem): ?>
                         <button type="button" class="ref-gallery__thumb <?= $galleryIndex === 0 ? 'is-active' : '' ?>"
                             data-gallery-thumb data-image="<?= htmlspecialchars($galleryItem['src']) ?>"
                             data-alt="<?= htmlspecialchars($product['full_name'] . ' — ' . $galleryItem['label']) ?>"
                             aria-label="Show <?= htmlspecialchars($galleryItem['label']) ?>"
                             aria-pressed="<?= $galleryIndex === 0 ? 'true' : 'false' ?>">
-                            <img src="<?= htmlspecialchars($galleryItem['src']) ?>" alt="" loading="lazy">
+                            <img src="<?= htmlspecialchars($galleryItem['src']) ?>" alt="<?= htmlspecialchars($product['full_name'] . ' — ' . $galleryItem['label']) ?>" loading="lazy" decoding="async" data-thumb-image>
                         </button>
                     <?php endforeach; ?>
                 </div>
-                <div class="ref-gallery__stage" style="--product-accent:<?= htmlspecialchars($product['accent']) ?>">
+                <div class="ref-gallery__stage" data-gallery-stage style="--product-accent:<?= htmlspecialchars($product['accent']) ?>">
                     <span class="ref-gallery__badge"><?= htmlspecialchars($product['tag'] ?: 'Popular') ?></span>
                     <a class="ref-gallery__expand" href="<?= htmlspecialchars($displayGallery[0]['src']) ?>"
                         target="_blank" rel="noopener" aria-label="Open full-size product image"><i
                             class="ph ph-arrows-out"></i></a>
                     <img src="<?= htmlspecialchars($displayGallery[0]['src']) ?>"
-                        alt="<?= htmlspecialchars($product['full_name']) ?>" data-product-main-image>
+                        alt="<?= htmlspecialchars($product['full_name']) ?>" data-product-main-image decoding="async">
                 </div>
             </div>
 
@@ -206,35 +239,40 @@ require __DIR__ . '/includes/header.php';
                         reviews)</small><b><?= max(50, $displayReviewCount * 5) ?>+ Happy Customers</b></a>
                 <p class="ref-buybox__description"><?= htmlspecialchars($product['description']) ?></p>
                 <div class="ref-price">
-                    <strong data-variant-price><?= money($product['price']) ?></strong><s data-variant-original-price><?= money($product['original_price']) ?></s><span data-variant-discount><?= discount_percentage($product) ?>%
-                        OFF</span>
+                    <strong data-variant-price><?= money($product['price']) ?></strong><s data-variant-original-price><?= money($product['original_price']) ?></s><?php if (discount_percentage($product) > 0): ?><span data-variant-discount><?= discount_percentage($product) ?>%
+                        OFF</span><?php else: ?><span data-variant-discount hidden></span><?php endif; ?>
                 </div>
-                <small class="ref-tax">Inclusive of all taxes</small>
+                <small class="ref-tax" data-variant-tax><?= !empty($product['is_inclusive_tax']) || !isset($product['is_inclusive_tax']) ? 'Inclusive of all taxes' : 'Exclusive of taxes' ?></small>
+                <p class="ref-sku">SKU: <strong data-variant-sku><?= htmlspecialchars((string) ($product['sku'] ?? '')) ?></strong></p>
 
                 <div class="ref-variants">
                     <strong><?= count($variantProducts) > 1 ? 'Select Size' : 'Pack Size' ?></strong>
                     <div>
                         <?php foreach ($variantProducts ?: [$product] as $variant):
-                            $isCurrent = $variant['slug'] === $product['slug']; 
+                            $isCurrent = ($variant['slug'] ?? '') === ($product['slug'] ?? '');
                             $variantStock = (int)($variant['stock'] ?? 0);
                             $variantDiscount = discount_percentage($variant);
+                            $variantTax = !empty($variant['is_inclusive_tax']) || !isset($variant['is_inclusive_tax']);
+                            $variantImage = (string) (($variant['image'] ?? '') !== '' ? $variant['image'] : ($product['image'] ?? ''));
                             ?>
-                            <a href="product.php?slug=<?= rawurlencode((string) $variant['slug']) ?>"
-                               class="ref-variant-chip <?= $isCurrent ? 'is-active' : '' ?>" 
+                            <a href="product.php?slug=<?= rawurlencode((string) ($variant['slug'] ?? '')) ?>"
+                               class="ref-variant-chip <?= $isCurrent ? 'is-active' : '' ?>"
                                <?= $isCurrent ? 'aria-current="true"' : '' ?>
                                data-variant-switch
-                               data-slug="<?= htmlspecialchars($variant['slug']) ?>"
-                               data-id="<?= htmlspecialchars($variant['id']) ?>"
-                               data-name="<?= htmlspecialchars($variant['full_name']) ?>"
-                               data-weight="<?= htmlspecialchars($variant['weight']) ?>"
-                               data-price="<?= (int) $variant['price'] ?>"
-                               data-price-formatted="<?= money($variant['price']) ?>"
-                               data-original-price-formatted="<?= money($variant['original_price']) ?>"
+                               data-slug="<?= htmlspecialchars((string) ($variant['slug'] ?? '')) ?>"
+                               data-id="<?= htmlspecialchars((string) ($variant['id'] ?? '')) ?>"
+                               data-name="<?= htmlspecialchars((string) ($variant['full_name'] ?? '')) ?>"
+                               data-weight="<?= htmlspecialchars((string) ($variant['weight'] ?? '')) ?>"
+                               data-price="<?= (int) ($variant['price'] ?? 0) ?>"
+                               data-price-formatted="<?= money((int) ($variant['price'] ?? 0)) ?>"
+                               data-original-price-formatted="<?= money((int) ($variant['original_price'] ?? 0)) ?>"
                                data-discount="<?= $variantDiscount ?>"
                                data-stock="<?= $variantStock ?>"
-                               data-image="<?= htmlspecialchars($variant['image']) ?>"
-                               data-sku="<?= htmlspecialchars($variant['sku'] ?? '') ?>"
-                            ><?= htmlspecialchars($variant['weight']) ?></a>
+                               data-image="<?= htmlspecialchars($variantImage) ?>"
+                               data-sku="<?= htmlspecialchars((string) ($variant['sku'] ?? '')) ?>"
+                               data-tax-inclusive="<?= $variantTax ? '1' : '0' ?>"
+                               data-mrp="<?= (int) ($variant['original_price'] ?? 0) ?>"
+                            ><?= htmlspecialchars((string) ($variant['weight'] ?? '')) ?></a>
                         <?php endforeach; ?>
                     </div>
                 </div>
@@ -905,14 +943,20 @@ require __DIR__ . '/includes/header.php';
                 <a class="text-link" href="index.php#shop">View all products <i class="ph ph-arrow-right"></i></a>
             </div>
             <div class="product-grid related-products__grid">
-                <?php foreach ($relatedProducts as $index => $related): ?>
+                <?php foreach ($relatedProducts as $index => $related):
+                    $relImage = (string) (($related['image'] ?? '') !== '' ? $related['image'] : 'assets/images/logo.png');
+                    $relDiscount = discount_percentage($related);
+                ?>
                     <article class="product-card reveal" data-delay="<?= $index * 70 ?>">
                         <a class="product-card__media" href="product.php?slug=<?= rawurlencode((string) $related['slug']) ?>"
-                            style="--product-accent: <?= htmlspecialchars($related['accent']) ?>">
-                            <span class="product-card__tag"><?= htmlspecialchars($related['tag']) ?></span><span
-                                class="product-card__discount"><?= discount_percentage($related) ?>% off</span>
-                            <img src="<?= htmlspecialchars($related['image']) ?>"
-                                alt="<?= htmlspecialchars($related['full_name']) ?>" loading="lazy">
+                            style="--product-accent: <?= htmlspecialchars((string) ($related['accent'] ?? '#0a7540')) ?>">
+                            <?php if (!empty($related['tag'])): ?><span class="product-card__tag"><?= htmlspecialchars((string) $related['tag']) ?></span><?php endif; ?><?php if ($relDiscount > 0): ?><span
+                                class="product-card__discount" data-card-discount><?= $relDiscount ?>% off</span><?php endif; ?>
+                            <img src="<?= htmlspecialchars($relImage) ?>"
+                                alt="<?= htmlspecialchars((string) ($related['full_name'] ?? '')) ?>" loading="lazy" decoding="async" data-card-main-image onerror="this.onerror=null;this.src='assets/images/logo.png'">
+                            <?php if (!empty($related['hover_image'])): ?>
+                                <img class="product-card__hover" src="<?= htmlspecialchars((string) $related['hover_image']) ?>" alt="" loading="lazy" decoding="async" aria-hidden="true">
+                            <?php endif; ?>
                         </a>
                         <div class="product-card__body">
                             <div class="product-card__meta">
@@ -930,37 +974,43 @@ require __DIR__ . '/includes/header.php';
                             $relVariants = gawdee_family_variants($products, (string) ($related['family_key'] ?? ''));
                             if (count($relVariants) > 1): 
                             ?>
-                                <div class="card-variant-pills" aria-label="Select pack size">
-                                    <?php foreach ($relVariants as $rv): 
-                                        $isCur = $rv['slug'] === $related['slug'];
+                                <div class="card-variant-pills" role="group" aria-label="Select pack size">
+                                    <?php foreach ($relVariants as $rv):
+                                        $isCur = ($rv['slug'] ?? '') === ($related['slug'] ?? '');
                                         $rvDiscount = discount_percentage($rv);
+                                        $rvStock = (int) ($rv['stock'] ?? 0);
+                                        $rvImage = (string) (($rv['image'] ?? '') !== '' ? $rv['image'] : $relImage);
                                     ?>
-                                        <button type="button" 
+                                        <button type="button"
                                                 class="card-variant-pill <?= $isCur ? 'is-active' : '' ?>"
                                                 data-card-variant-switch
-                                                data-slug="<?= htmlspecialchars($rv['slug']) ?>"
-                                                data-id="<?= htmlspecialchars($rv['id']) ?>"
-                                                data-name="<?= htmlspecialchars($rv['full_name']) ?>"
-                                                data-weight="<?= htmlspecialchars($rv['weight']) ?>"
-                                                data-price="<?= (int) $rv['price'] ?>"
-                                                data-price-formatted="<?= money($rv['price']) ?>"
-                                                data-original-price-formatted="<?= money($rv['original_price']) ?>"
+                                                data-slug="<?= htmlspecialchars((string) ($rv['slug'] ?? '')) ?>"
+                                                data-id="<?= htmlspecialchars((string) ($rv['id'] ?? '')) ?>"
+                                                data-name="<?= htmlspecialchars((string) ($rv['full_name'] ?? '')) ?>"
+                                                data-weight="<?= htmlspecialchars((string) ($rv['weight'] ?? '')) ?>"
+                                                data-price="<?= (int) ($rv['price'] ?? 0) ?>"
+                                                data-price-formatted="<?= money((int) ($rv['price'] ?? 0)) ?>"
+                                                data-original-price-formatted="<?= money((int) ($rv['original_price'] ?? 0)) ?>"
                                                 data-discount="<?= $rvDiscount ?>"
-                                                data-image="<?= htmlspecialchars($rv['image']) ?>">
-                                            <?= htmlspecialchars($rv['weight']) ?>
+                                                data-stock="<?= $rvStock ?>"
+                                                data-sku="<?= htmlspecialchars((string) ($rv['sku'] ?? '')) ?>"
+                                                data-image="<?= htmlspecialchars($rvImage) ?>"
+                                                <?= $isCur ? 'aria-pressed="true"' : 'aria-pressed="false"' ?>>
+                                            <?= htmlspecialchars((string) ($rv['weight'] ?? '')) ?>
                                         </button>
                                     <?php endforeach; ?>
                                 </div>
                             <?php endif; ?>
                             <div class="product-card__buy">
-                                <p><strong><?= money($related['price']) ?></strong>
-                                    <s><?= money($related['original_price']) ?></s>
+                                <p><strong data-card-price><?= money((int) ($related['price'] ?? 0)) ?></strong>
+                                    <s data-card-original-price><?= money((int) ($related['original_price'] ?? 0)) ?></s>
                                 </p><button class="add-button" type="button" data-add-to-cart
-                                    data-id="<?= htmlspecialchars($related['id']) ?>"
-                                    data-name="<?= htmlspecialchars($related['full_name']) ?>"
-                                    data-price="<?= (int) $related['price'] ?>"
-                                    data-image="<?= htmlspecialchars($related['image']) ?>"
-                                    aria-label="Add <?= htmlspecialchars($related['name']) ?> to cart"><i
+                                    data-id="<?= htmlspecialchars((string) ($related['id'] ?? '')) ?>"
+                                    data-name="<?= htmlspecialchars((string) ($related['full_name'] ?? '')) ?>"
+                                    data-price="<?= (int) ($related['price'] ?? 0) ?>"
+                                    data-image="<?= htmlspecialchars($relImage) ?>"
+                                    <?= ((int) ($related['stock'] ?? 0) <= 0) ? 'disabled' : '' ?>
+                                    aria-label="Add <?= htmlspecialchars((string) ($related['name'] ?? '')) ?> to cart"><i
                                         class="ph ph-plus"></i></button>
                             </div>
                         </div>

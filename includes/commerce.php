@@ -123,9 +123,17 @@ function gawdee_create_local_order(array $fields, array $requestedItems, string 
     $db->beginTransaction();
     try {
         foreach ($pricing['items'] as $line) {
-            $stock = $db->prepare('SELECT stock FROM products WHERE id = ?');
-            $stock->execute([$line['product']['id']]);
-            if ((int) $stock->fetchColumn() < (int) $line['quantity']) {
+            $identity = function_exists('gawdee_resolve_variant_identity') ? gawdee_resolve_variant_identity($line['product']) : ['variant_id' => 0, 'product_id' => (string) ($line['product']['id'] ?? '')];
+            $available = null;
+            if (!empty($identity['variant_id']) && function_exists('gawdee_variant_stock')) {
+                $available = gawdee_variant_stock((int) $identity['variant_id']);
+            }
+            if ($available === null) {
+                $stock = $db->prepare('SELECT stock FROM products WHERE id = ?');
+                $stock->execute([$line['product']['id']]);
+                $available = (int) $stock->fetchColumn();
+            }
+            if ((int) $available < (int) $line['quantity']) {
                 throw new RuntimeException($line['product']['name'] . ' sold out while checkout was being prepared.');
             }
         }
@@ -144,14 +152,40 @@ SQL);
         $orderId = (int) $db->lastInsertId();
 
         $itemStatement = $db->prepare('INSERT INTO order_items (order_id, product_id, product_name, quantity, unit_price, image) VALUES (?, ?, ?, ?, ?, ?)');
-        $reduce = $db->prepare("UPDATE products SET stock = stock - ?, stock_status = CASE WHEN stock - ? <= 0 THEN 'out_of_stock' ELSE 'in_stock' END WHERE id = ? AND stock >= ?");
+        $reduceProducts = $db->prepare("UPDATE products SET stock = stock - ?, stock_status = CASE WHEN stock - ? <= 0 THEN 'out_of_stock' ELSE 'in_stock' END WHERE id = ? AND stock >= ?");
+        $reduceVariant = null;
+        try {
+            $reduceVariant = $db->prepare('UPDATE item_variants SET stock_quantity = stock_quantity - ? WHERE id = ? AND stock_quantity >= ?');
+        } catch (Throwable) {
+            $reduceVariant = null;
+        }
+        $syncLegacy = null;
+        try {
+            $syncLegacy = $db->prepare("UPDATE products SET stock = GREATEST(0, stock - ?), stock_status = CASE WHEN stock - ? <= 0 THEN 'out_of_stock' ELSE 'in_stock' END WHERE id = ?");
+        } catch (Throwable) {
+            $syncLegacy = null;
+        }
         foreach ($pricing['items'] as $line) {
             $product = $line['product'];
             $quantity = (int) $line['quantity'];
             $itemStatement->execute([$orderId, $product['id'], $product['full_name'], $quantity, $product['price'], $product['image']]);
-            $reduce->execute([$quantity, $quantity, $product['id'], $quantity]);
-            if ($reduce->rowCount() !== 1) {
-                throw new RuntimeException($product['name'] . ' sold out while checkout was being prepared.');
+            $identity = function_exists('gawdee_resolve_variant_identity') ? gawdee_resolve_variant_identity($product) : ['variant_id' => 0, 'legacy_id' => '', 'product_id' => (string) ($product['id'] ?? '')];
+            if (!empty($identity['variant_id']) && $reduceVariant) {
+                $reduceVariant->execute([$quantity, (int) $identity['variant_id'], $quantity]);
+                if ($reduceVariant->rowCount() !== 1) {
+                    throw new RuntimeException($product['name'] . ' sold out while checkout was being prepared.');
+                }
+                if (!empty($identity['legacy_id']) && $syncLegacy) {
+                    try {
+                        $syncLegacy->execute([$quantity, $quantity, (string) $identity['legacy_id']]);
+                    } catch (Throwable) {
+                    }
+                }
+            } else {
+                $reduceProducts->execute([$quantity, $quantity, $product['id'], $quantity]);
+                if ($reduceProducts->rowCount() !== 1) {
+                    throw new RuntimeException($product['name'] . ' sold out while checkout was being prepared.');
+                }
             }
         }
 
@@ -209,8 +243,31 @@ function gawdee_release_order_inventory(int $orderId, string $newInventoryStatus
             return false;
         }
         $restore = $db->prepare("UPDATE products SET stock = stock + ?, stock_status='in_stock' WHERE id = ?");
+        $restoreVariant = null;
+        $restoreLegacy = null;
+        try {
+            $restoreVariant = $db->prepare('UPDATE item_variants SET stock_quantity = stock_quantity + ? WHERE id = ?');
+            $restoreLegacy = $db->prepare("UPDATE products SET stock = stock + ?, stock_status='in_stock' WHERE id = ?");
+        } catch (Throwable) {
+        }
         foreach (gawdee_order_items($orderId) as $item) {
-            $restore->execute([(int) $item['quantity'], $item['product_id']]);
+            $restored = false;
+            if ($restoreVariant && function_exists('gawdee_variant_by_ref')) {
+                try {
+                    $variant = gawdee_variant_by_ref((string) $item['product_id'], true);
+                    if ($variant) {
+                        $restoreVariant->execute([(int) $item['quantity'], (int) $variant['id']]);
+                        if (!empty($variant['legacy_product_id']) && $restoreLegacy) {
+                            $restoreLegacy->execute([(int) $item['quantity'], (string) $variant['legacy_product_id']]);
+                        }
+                        $restored = true;
+                    }
+                } catch (Throwable) {
+                }
+            }
+            if (!$restored) {
+                $restore->execute([(int) $item['quantity'], $item['product_id']]);
+            }
         }
         $db->prepare('UPDATE orders SET inventory_status=?, updated_at=CURRENT_TIMESTAMP WHERE id=?')->execute([$newInventoryStatus, $orderId]);
         if ($ownsTransaction) {

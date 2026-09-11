@@ -123,6 +123,7 @@ $waUrl = 'https://wa.me/' . $waNumber . '?text=' . rawurlencode($waText);
 ?>
 <a class="whatsapp-float" href="<?= htmlspecialchars($waUrl) ?>" target="_blank" rel="noopener"
     aria-label="Chat with Gawdee on WhatsApp"><i class="ph ph-whatsapp-logo"></i></a>
+<div class="gawdee-toast" data-toast role="status" aria-live="polite"></div>
 <script src="assets/js/app.js" defer></script>
 </body>
 
