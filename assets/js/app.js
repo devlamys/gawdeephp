@@ -22,18 +22,74 @@
     setHeaderState();
     window.addEventListener('scroll', setHeaderState, { passive: true });
 
-    menuToggles.forEach(menuToggle => menuToggle.addEventListener('click', () => {
-        const isOpen = mobileMenu?.classList.toggle('is-open') ?? false;
-        menuToggles.forEach(toggle => toggle.setAttribute('aria-expanded', String(isOpen)));
-        menuToggle.setAttribute('aria-label', isOpen ? 'Close menu' : 'Open menu');
-        qs('i', menuToggle)?.classList.toggle('ph-x', isOpen);
-        qs('i', menuToggle)?.classList.toggle('ph-list', !isOpen);
-    }));
+    const setMobileMenu = (open) => {
+        mobileMenu?.classList.toggle('is-open', open);
+        menuToggles.forEach(toggle => {
+            toggle.setAttribute('aria-expanded', String(open));
+            toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+        });
+        const icon = document.querySelector('[data-menu-toggle] i');
+        if (icon) {
+            icon.classList.toggle('ph-x', open);
+            icon.classList.toggle('ph-list', !open);
+        }
+        document.body.classList.toggle('is-locked', open);
+    };
 
-    qsa('[data-mobile-menu] a').forEach(link => link.addEventListener('click', () => {
-        mobileMenu?.classList.remove('is-open');
-        menuToggles.forEach(toggle => toggle.setAttribute('aria-expanded', 'false'));
+    // Delegated on document so the toggle works regardless of when the
+    // header markup renders; replaces per-button listeners (double-toggle).
+    document.addEventListener('click', (event) => {
+        const target = event.target instanceof Element ? event.target : null;
+        if (!target) return;
+        if (target.closest('[data-menu-toggle]')) {
+            const menu = qs('[data-mobile-menu]');
+            setMobileMenu(menu ? !menu.classList.contains('is-open') : false);
+            return;
+        }
+        if (target.closest('[data-mobile-menu] a')) {
+            setMobileMenu(false);
+        }
+    });
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') setMobileMenu(false);
+    });
+
+    const closeNavDrops = () => {
+        qsa('.sf-nav-dropdown').forEach(panel => { panel.hidden = true; });
+        qsa('[data-nav-disclosure]').forEach(btn => btn.setAttribute('aria-expanded', 'false'));
+    };
+    qsa('[data-nav-disclosure]').forEach(disclosure => disclosure.addEventListener('click', (event) => {
+        event.stopPropagation();
+        const group = disclosure.closest('.sf-nav-group');
+        const panel = group ? qs('.sf-nav-dropdown', group) : null;
+        if (!panel) return;
+        const willOpen = panel.hidden;
+        closeNavDrops();
+        panel.hidden = !willOpen;
+        disclosure.setAttribute('aria-expanded', String(willOpen));
     }));
+    document.addEventListener('click', (event) => {
+        if (!event.target.closest('.sf-nav-group')) closeNavDrops();
+    });
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') closeNavDrops();
+    });
+
+    qsa('.gx-brand-video').forEach((brandVideo) => {
+        const brandScope = brandVideo.closest('a, span, div') || document;
+        const brandFallback = qs('.gx-brand__fallback, .header-logo-img[hidden]', brandScope);
+        const showBrandFallback = () => {
+            brandVideo.hidden = true;
+            if (brandFallback) brandFallback.hidden = false;
+        };
+        brandVideo.addEventListener('error', showBrandFallback, true);
+        qs('source', brandVideo)?.addEventListener('error', showBrandFallback);
+        if (reduceMotion) {
+            brandVideo.pause();
+        } else {
+            brandVideo.play?.().catch(() => {});
+        }
+    });
 
     const openSearch = () => {
         searchPanel?.classList.add('is-open');

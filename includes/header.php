@@ -143,8 +143,12 @@ $isReferenceProductPage = str_contains($bodyClass, 'product-page--reference');
                 <i class="ph ph-list" aria-hidden="true"></i>
             </button>
 
-            <a class="commerce-logo" href="index" aria-label="Gawdee home">
-                <img src="assets/images/logo.png" alt="Gawdee — The Soul of Wellness" class="header-logo-img">
+            <a class="commerce-logo gx-brand-logo" href="index" aria-label="Gawdee home">
+                <video class="gx-brand-video" autoplay muted loop playsinline preload="metadata"
+                    poster="assets/images/logo.png" disablepictureinpicture>
+                    <source src="assets/images/logo/Make_please.mp4" type="video/mp4">
+                </video>
+                <img src="assets/images/logo.png" alt="Gawdee — The Soul of Wellness" class="header-logo-img gx-brand__fallback" hidden>
             </a>
 
             <nav class="desktop-main-nav desktop-only" aria-label="Primary navigation">
@@ -222,6 +226,13 @@ $isReferenceProductPage = str_contains($bodyClass, 'product-page--reference');
     <div class="drawer-backdrop" data-drawer-backdrop></div>
     <aside class="cart-drawer" data-cart-drawer aria-labelledby="cart-title" aria-hidden="true">
         <div class="cart-drawer__header">
+            <span class="gx-drawer-logo" aria-hidden="true">
+                <video class="gx-brand-video" autoplay muted loop playsinline preload="metadata"
+                    poster="assets/images/logo.png" disablepictureinpicture>
+                    <source src="assets/images/logo/Make_please.mp4" type="video/mp4">
+                </video>
+                <img class="gx-brand__fallback" src="assets/images/logo.png" alt="" hidden>
+            </span>
             <div><span class="eyebrow">Your selection</span>
                 <h2 id="cart-title">Shopping bag</h2>
             </div>
