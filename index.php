@@ -234,11 +234,32 @@ foreach ($homepageSections as $sectionKey => $section) {
                                             data-card-original-price><?= money((int) ($product['original_price'] ?? 0)) ?></s>
                                     </div>
                                     <div class="compact-product-card__actions">
+                                        <?php
+                                        $variantDataForJs = [];
+                                        foreach ($cVariants as $cv) {
+                                            $cvImageForJs = (string) (($cv['image'] ?? '') !== '' ? $cv['image'] : $homeImage);
+                                            $variantDataForJs[] = [
+                                                'id' => (string) ($cv['id'] ?? ''),
+                                                'name' => (string) ($cv['full_name'] ?? ''),
+                                                'weight' => (string) ($cv['weight'] ?? ''),
+                                                'price' => (int) ($cv['price'] ?? 0),
+                                                'price_formatted' => money((int) ($cv['price'] ?? 0)),
+                                                'original_price' => (int) ($cv['original_price'] ?? 0),
+                                                'original_price_formatted' => money((int) ($cv['original_price'] ?? 0)),
+                                                'discount' => discount_percentage($cv),
+                                                'stock' => (int) ($cv['stock'] ?? 0),
+                                                'image' => htmlspecialchars($cvImageForJs, ENT_QUOTES | ENT_HTML5),
+                                            ];
+                                        }
+                                        $variantsJson = htmlspecialchars(json_encode($variantDataForJs, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE), ENT_QUOTES | ENT_HTML5);
+                                        ?>
                                         <button type="button" data-add-to-cart
                                             data-id="<?= htmlspecialchars((string) ($product['id'] ?? '')) ?>"
                                             data-name="<?= htmlspecialchars((string) ($product['full_name'] ?? '')) ?>"
                                             data-price="<?= (int) ($product['price'] ?? 0) ?>"
-                                            data-image="<?= htmlspecialchars($homeImage) ?>" <?= ((int) ($product['stock'] ?? 0) <= 0) ? 'disabled' : '' ?>><?= ((int) ($product['stock'] ?? 0) <= 0) ? 'Out of stock' : 'Add to cart' ?></button>
+                                            data-image="<?= htmlspecialchars($homeImage) ?>"
+                                            data-variants="<?= $variantsJson ?>"
+                                            <?= ((int) ($product['stock'] ?? 0) <= 0) ? 'disabled' : '' ?>><?= ((int) ($product['stock'] ?? 0) <= 0) ? 'Out of stock' : 'Add to cart' ?></button>
 
                                     </div>
                                 </div>

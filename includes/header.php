@@ -191,10 +191,10 @@ $isReferenceProductPage = str_contains($bodyClass, 'product-page--reference');
         <!-- Mobile Navigation Menu -->
         <nav class="mobile-nav commerce-mobile-nav" data-mobile-menu aria-label="Mobile navigation">
             <div class="mobile-nav-top-bar">
-                <span class="mobile-nav-title"><i class="ph ph-compass"></i> Explore Gawdee</span>
-                <button class="mobile-nav-close-btn" type="button" data-menu-toggle aria-label="Close menu">
-                    <i class="ph ph-x" aria-hidden="true"></i> <span>Close</span>
+                <button class="mobile-nav-close-btn" type="button" data-menu-close aria-label="Close menu">
+                    <i class="ph ph-x" aria-hidden="true"></i>
                 </button>
+                <span class="mobile-nav-title"><i class="ph ph-compass"></i> Explore</span>
             </div>
             <a href="products"><i class="ph ph-squares-four"></i> <span>All Products</span> <i
                     class="ph ph-arrow-right"></i></a>
@@ -240,11 +240,11 @@ $isReferenceProductPage = str_contains($bodyClass, 'product-page--reference');
                     class="ph ph-x"></i></button>
         </div>
         <div class="cart-items" data-cart-items></div>
-        <div class="cart-empty" data-cart-empty>
-            <i class="ph ph-shopping-bag-open" aria-hidden="true"></i>
-            <h3>Your bag is waiting</h3>
-            <p>Add a few natural essentials and they’ll appear here.</p>
-            <button class="button button--secondary" type="button" data-cart-close>Continue shopping</button>
+        <div class="cart-empty" data-cart-empty style="text-align: center; padding: 4rem 2rem; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;">
+            <i class="ph ph-tote" aria-hidden="true" style="font-size: 6rem; color: var(--gawdee-primary); opacity: 0.85; margin-bottom: 1.5rem;"></i>
+            <h3 style="font-size: 1.5rem; color: var(--gawdee-primary-dark); margin-bottom: 0.5rem; font-weight: 700;">Nothing in your cart yet.</h3>
+            <p style="color: var(--text-muted); margin-bottom: 2rem;">Let's fix that with something pure and delicious.</p>
+            <button class="button button--primary" type="button" data-cart-close style="border-radius: 99px; font-size: 1.1rem; padding: 0.8rem 2.5rem;">Continue Shopping</button>
         </div>
         <div class="cart-summary" data-cart-summary hidden>
             <div class="cart-summary__line"><span>Subtotal</span><strong data-cart-total>₹0</strong></div>

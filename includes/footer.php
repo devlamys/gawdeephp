@@ -117,6 +117,27 @@
     </aside>
 <?php endif; ?>
 
+<div class="variants-drawer-backdrop" data-variants-backdrop
+    style="position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 10000; opacity: 0; visibility: hidden; pointer-events: none; transition: opacity 0.3s ease;">
+</div>
+<div class="variants-drawer" data-variants-drawer
+    style="position: fixed; bottom: 0; left: 0; width: 100%; background: var(--gawdee-bg, #fff); z-index: 10001; border-top-left-radius: 20px; border-top-right-radius: 20px; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); max-height: 85vh; display: flex; flex-direction: column; box-shadow: 0 -4px 20px rgba(0,0,0,0.1);">
+    <div
+        style="padding: 1rem 1.5rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-color, #eee);">
+        <h3 data-variants-title
+            style="margin: 0; font-size: 1.25rem; color: var(--gawdee-primary-dark); display: flex; align-items: center; gap: 0.5rem;">
+            <i class="ph ph-shopping-cart"></i> <span>Product Name</span>
+        </h3>
+        <button type="button" data-variants-close
+            style="background: var(--surface-2, #f5f5f5); border: none; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-color);"><i
+                class="ph ph-x"></i></button>
+    </div>
+    <div data-variants-list
+        style="padding: 1rem 1.5rem; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 1rem;">
+        <!-- Variants injected via JS -->
+    </div>
+</div>
+
 <?php
 $waNumber = preg_replace('/\D+/', '', gawdee_setting('whatsapp_number', '917055207030'));
 $waText = "Hi Gawdee Team! 👋 I’m interested in Gawdee products and would like to know more. Please assist me.";
@@ -125,6 +146,28 @@ $waUrl = 'https://wa.me/' . $waNumber . '?text=' . rawurlencode($waText);
 <a class="whatsapp-float" href="<?= htmlspecialchars($waUrl) ?>" target="_blank" rel="noopener"
     aria-label="Chat with Gawdee on WhatsApp"><i class="ph ph-whatsapp-logo"></i></a>
 <div class="gawdee-toast" data-toast role="status" aria-live="polite"></div>
+
+<!-- Sticky Checkout Bar -->
+<div class="checkout-sticky-bar" data-checkout-sticky
+    style="display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: calc(100% - 40px); max-width: 400px; background: var(--gawdee-primary-dark); color: #fff; border-radius: 99px; padding: 0.6rem 1rem; z-index: 9999; justify-content: space-between; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+    <div style="display: flex; align-items: center; gap: 0.8rem;">
+        <div
+            style="width: 44px; height: 44px; border-radius: 50%; overflow: hidden; background: #fff; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+            <img data-sticky-img src="" alt="Cart Item"
+                style="width: 100%; height: 100%; object-fit: contain; padding: 4px;">
+        </div>
+        <div style="display: flex; flex-direction: column;">
+            <span style="font-size: 0.8rem; font-weight: 500; opacity: 0.9;" data-sticky-count>1 item</span>
+            <strong style="font-size: 1.15rem; line-height: 1.2; font-weight: 700;" data-sticky-price>₹0</strong>
+        </div>
+    </div>
+    <button type="button" data-cart-toggle
+        style="background: #17211e; color: #fff; border: none; padding: 0.6rem 1.2rem; border-radius: 99px; font-weight: 700; display: flex; align-items: center; gap: 0.4rem; cursor: pointer;">
+        <i class="ph ph-shopping-cart" style="font-size: 1.2rem;"></i> <i class="ph ph-arrow-right"
+            style="font-size: 1rem;"></i>
+    </button>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.12.2/lottie.min.js" defer></script>
 <script src="assets/js/app.js" defer></script>
 </body>
 

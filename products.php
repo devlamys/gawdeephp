@@ -160,12 +160,32 @@ $displayCatalogProducts = array_values($catalogFamilies);
                                 <strong data-card-price><?= money((int) ($catalogProduct['price'] ?? 0)) ?></strong>
                                 <s data-card-original-price><?= money((int) ($catalogProduct['original_price'] ?? 0)) ?></s>
                             </div>
-                            <button class="add-button" type="button"
-                                    data-add-to-cart
-                                    data-id="<?= htmlspecialchars((string) ($catalogProduct['id'] ?? '')) ?>"
-                                    data-name="<?= htmlspecialchars((string) ($catalogProduct['full_name'] ?? '')) ?>"
-                                    data-price="<?= (int) ($catalogProduct['price'] ?? 0) ?>"
-                                    data-image="<?= htmlspecialchars($cardImage) ?>"
+                                <?php
+                                $variantDataForJs = [];
+                                foreach ($cVariants as $cv) {
+                                    $cvImageForJs = (string) (($cv['image'] ?? '') !== '' ? $cv['image'] : $cardImage);
+                                    $variantDataForJs[] = [
+                                        'id' => (string) ($cv['id'] ?? ''),
+                                        'name' => (string) ($cv['full_name'] ?? ''),
+                                        'weight' => (string) ($cv['weight'] ?? ''),
+                                        'price' => (int) ($cv['price'] ?? 0),
+                                        'price_formatted' => money((int) ($cv['price'] ?? 0)),
+                                        'original_price' => (int) ($cv['original_price'] ?? 0),
+                                        'original_price_formatted' => money((int) ($cv['original_price'] ?? 0)),
+                                        'discount' => discount_percentage($cv),
+                                        'stock' => (int) ($cv['stock'] ?? 0),
+                                        'image' => htmlspecialchars($cvImageForJs, ENT_QUOTES | ENT_HTML5),
+                                    ];
+                                }
+                                $variantsJson = htmlspecialchars(json_encode($variantDataForJs, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE), ENT_QUOTES | ENT_HTML5);
+                                ?>
+                                <button class="add-button" type="button"
+                                        data-add-to-cart
+                                        data-id="<?= htmlspecialchars((string) ($catalogProduct['id'] ?? '')) ?>"
+                                        data-name="<?= htmlspecialchars((string) ($catalogProduct['full_name'] ?? '')) ?>"
+                                        data-price="<?= (int) ($catalogProduct['price'] ?? 0) ?>"
+                                        data-image="<?= htmlspecialchars($cardImage) ?>"
+                                        data-variants="<?= $variantsJson ?>"
                                     <?= ((int) ($catalogProduct['stock'] ?? 0) <= 0) ? 'disabled' : '' ?>
                                     aria-label="Add <?= htmlspecialchars((string) $catalogProduct['name']) ?> to cart">
                                 <span><?= ((int) ($catalogProduct['stock'] ?? 0) <= 0) ? 'Out of stock' : 'Add to cart' ?></span>
