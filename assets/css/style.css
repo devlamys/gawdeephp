@@ -1838,6 +1838,10 @@ em {
   gap: 24px;
   margin-bottom: 28px;
 }
+.campaign-offer-section,
+#offers {
+  scroll-margin-top: 110px;
+}
 .independence-image-offer {
   display: block;
   width: 100%;
