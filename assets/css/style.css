@@ -2211,13 +2211,8 @@ em {
 .testimonial-reference-rail {
   display: flex;
   gap: 24px;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
   padding-bottom: 24px;
-  scrollbar-width: none;
-}
-.testimonial-reference-rail::-webkit-scrollbar {
-  display: none;
+  overflow: hidden;
 }
 
 .testimonial-reference-card {
@@ -3718,12 +3713,9 @@ em {
 .journal-rail {
   display: flex;
   gap: 24px;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  scrollbar-width: none;
-  -webkit-overflow-scrolling: touch;
   padding-block: 10px 20px;
   margin-bottom: 24px;
+  overflow: hidden;
 }
 .journal-rail .journal-card {
   width: 280px;
