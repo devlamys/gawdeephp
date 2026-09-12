@@ -49,7 +49,7 @@ require __DIR__ . '/includes/header.php';
                             <p>For order confirmation and shipment status alerts</p>
                         </div>
                     </div>
-                    <div class="checkout-fields">
+                    <div class="checkout-fields form-grid-2col">
                         <label class="checkout-span-2">
                             <span>Full Name <small>*</small></span>
                             <input name="name" autocomplete="name" required placeholder="Full Name" value="<?= htmlspecialchars((string) ($checkoutCustomer['name'] ?? '')) ?>">
@@ -73,7 +73,7 @@ require __DIR__ . '/includes/header.php';
                             <p>Currently delivering across all pincodes in India</p>
                         </div>
                     </div>
-                    <div class="checkout-fields">
+                    <div class="checkout-fields form-grid-2col">
                         <label class="checkout-span-2">
                             <span>Street Address / House No. <small>*</small></span>
                             <input name="address1" autocomplete="address-line1" required placeholder="Flat, House no., Building, Street" value="<?= htmlspecialchars((string) ($checkoutCustomer['address1'] ?? '')) ?>">

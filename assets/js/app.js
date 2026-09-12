@@ -8,6 +8,10 @@
     const header = qs('[data-header]');
     const menuToggles = qsa('[data-menu-toggle]');
     const mobileMenu = qs('[data-mobile-menu]');
+    const mobileBackdrop = qs('[data-mobile-backdrop]');
+    const mobileSearchTrigger = qs('[data-mobile-search-trigger]');
+    const mobileSearchInput = qs('[data-mobile-search-input]');
+    const mobileSearchClear = qs('[data-mobile-search-clear]');
     const searchToggle = qs('[data-search-toggle]');
     const searchClose = qs('[data-search-close]');
     const searchPanel = qs('[data-search-panel]');
@@ -24,6 +28,9 @@
 
     const setMobileMenu = (open) => {
         mobileMenu?.classList.toggle('is-open', open);
+        if (mobileBackdrop) {
+            mobileBackdrop.style.display = open ? 'block' : 'none';
+        }
         menuToggles.forEach(toggle => {
             toggle.setAttribute('aria-expanded', String(open));
             toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
@@ -41,6 +48,23 @@
     document.addEventListener('click', (event) => {
         const target = event.target instanceof Element ? event.target : null;
         if (!target) return;
+        if (target.closest('[data-mobile-backdrop]')) {
+            setMobileMenu(false);
+            return;
+        }
+        if (target.closest('[data-mobile-search-trigger]')) {
+            setMobileMenu(true);
+            window.setTimeout(() => mobileSearchInput?.focus(), 150);
+            return;
+        }
+        if (target.closest('[data-mobile-search-clear]')) {
+            if (mobileSearchInput) {
+                mobileSearchInput.value = '';
+                mobileSearchInput.focus();
+            }
+            if (mobileSearchClear) mobileSearchClear.style.display = 'none';
+            return;
+        }
         if (target.closest('[data-menu-toggle]')) {
             const menu = qs('[data-mobile-menu]');
             setMobileMenu(menu ? !menu.classList.contains('is-open') : false);
@@ -50,6 +74,13 @@
             setMobileMenu(false);
         }
     });
+
+    if (mobileSearchInput && mobileSearchClear) {
+        mobileSearchInput.addEventListener('input', () => {
+            mobileSearchClear.style.display = mobileSearchInput.value.trim() ? 'flex' : 'none';
+        });
+    }
+
     document.addEventListener('keydown', (event) => {
         if (event.key === 'Escape') setMobileMenu(false);
     });
@@ -812,6 +843,10 @@
         if (titleEl && name) {
             titleEl.childNodes[0].textContent = name + ' ';
         }
+        const stickyNameEl = qs('[data-sticky-name]');
+        if (stickyNameEl && name) stickyNameEl.textContent = name;
+        const stickyPriceEl = qs('[data-sticky-price]');
+        if (stickyPriceEl && price) stickyPriceEl.textContent = money(parseInt(price, 10));
 
         // Swap the whole gallery to the selected variant's images so no
         // previous-variant frames remain. Falls back to the single image
@@ -1193,6 +1228,28 @@
             window.setTimeout(() => { window.location.href = 'checkout'; }, reduceMotion ? 0 : 220);
         });
     });
+
+    // PDP Mobile Sticky "Add to Bag" bar
+    const pdpStickyBar = qs('[data-pdp-sticky-bar]');
+    const pdpMainCta = qs('.ref-purchase-actions') || qs('.product-commerce-hero__buy') || qs('[data-main-cta]');
+    if (pdpStickyBar && pdpMainCta && 'IntersectionObserver' in window) {
+        const pdpObserver = new IntersectionObserver(([entry]) => {
+            const isScrolledPast = !entry.isIntersecting && entry.boundingClientRect.top < 0;
+            pdpStickyBar.classList.toggle('is-visible', isScrolledPast);
+            pdpStickyBar.setAttribute('aria-hidden', String(!isScrolledPast));
+        }, { threshold: 0.1 });
+        pdpObserver.observe(pdpMainCta);
+
+        const stickyAddBtn = qs('[data-sticky-add-btn]', pdpStickyBar);
+        if (stickyAddBtn) {
+            stickyAddBtn.addEventListener('click', () => {
+                const mainAddBtn = qs('.ref-purchase-actions [data-add-to-cart]') || qs('[data-add-to-cart]');
+                if (mainAddBtn) {
+                    mainAddBtn.click();
+                }
+            });
+        }
+    }
 
     qsa('[data-delivery-check]').forEach(form => {
         form.addEventListener('submit', event => {

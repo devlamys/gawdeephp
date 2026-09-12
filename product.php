@@ -208,7 +208,7 @@ require __DIR__ . '/includes/header.php';
             <span><?= htmlspecialchars($product['name']) ?></span>
         </nav>
 
-        <section class="ref-product-hero" aria-labelledby="product-title">
+        <section class="ref-product-hero pdp-hero-grid" aria-labelledby="product-title">
             <div class="ref-gallery reveal reveal--left" data-variant-galleries="<?= htmlspecialchars(json_encode($variantGalleries, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)) ?>" data-gallery-fallback="<?= htmlspecialchars($galleryFallbackSrc) ?>" data-gallery-product-name="<?= htmlspecialchars($product['full_name']) ?>">
                 <div class="ref-gallery__thumbs" aria-label="Product images" data-gallery-thumbs>
                     <?php foreach ($displayGallery as $galleryIndex => $galleryItem): ?>
@@ -1021,4 +1021,16 @@ require __DIR__ . '/includes/header.php';
     </section>
 
 <?php endif; ?>
+
+<!-- Mobile Sticky Add to Bag Bar -->
+<div class="pdp-sticky-bar" data-pdp-sticky-bar aria-hidden="true">
+    <div class="pdp-sticky-bar__info">
+        <span class="pdp-sticky-bar__name" data-sticky-name><?= htmlspecialchars($product['full_name']) ?></span>
+        <span class="pdp-sticky-bar__price" data-sticky-price><?= money($product['price']) ?></span>
+    </div>
+    <button type="button" class="pdp-sticky-bar__btn" data-sticky-add-btn <?= $stock <= 0 ? 'disabled' : '' ?>>
+        <i class="ph ph-shopping-bag"></i> Add to bag
+    </button>
+</div>
+
 <?php require __DIR__ . '/includes/footer.php'; ?>
