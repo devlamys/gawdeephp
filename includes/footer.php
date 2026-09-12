@@ -168,6 +168,7 @@ $waUrl = 'https://wa.me/' . $waNumber . '?text=' . rawurlencode($waText);
     </button>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.12.2/lottie.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js" defer></script>
 <script src="assets/js/app.js" defer></script>
 </body>
 

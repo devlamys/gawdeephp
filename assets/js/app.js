@@ -542,6 +542,7 @@
     const toast = qs('[data-toast]');
     let toastTimer;
     let cart = [];
+    let newCartItemsAdded = false;
 
     try {
         const savedCart = JSON.parse(localStorage.getItem(storageKey) || '[]');
@@ -1016,6 +1017,37 @@
         
         const bar = qs('[data-checkout-sticky]');
         if (bar) bar.style.display = 'none';
+
+        if (newCartItemsAdded && typeof confetti === 'function') {
+            const duration = 2500;
+            const end = Date.now() + duration;
+            (function frame() {
+                confetti({
+                    particleCount: 4,
+                    angle: 60,
+                    spread: 55,
+                    origin: { x: 0, y: -0.1 },
+                    colors: ['#009A84', '#9CCEB4', '#c8a45d', '#E6D0BA', '#005f53'],
+                    zIndex: 10005,
+                    ticks: 300,
+                    gravity: 0.7,
+                    disableForReducedMotion: true
+                });
+                confetti({
+                    particleCount: 4,
+                    angle: 120,
+                    spread: 55,
+                    origin: { x: 1, y: -0.1 },
+                    colors: ['#009A84', '#9CCEB4', '#c8a45d', '#E6D0BA', '#005f53'],
+                    zIndex: 10005,
+                    ticks: 300,
+                    gravity: 0.7,
+                    disableForReducedMotion: true
+                });
+                if (Date.now() < end) requestAnimationFrame(frame);
+            }());
+            newCartItemsAdded = false;
+        }
     };
 
     const closeCart = () => {
@@ -1133,6 +1165,8 @@
         } else {
             window.setTimeout(() => button.classList.remove('is-added'), 1500);
         }
+        
+        newCartItemsAdded = true;
         
         showToast(`${item.name} added to your bag`);
     };
