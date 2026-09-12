@@ -73,10 +73,21 @@ if ($gxHeroSlides === []) {
     ];
     foreach ($gxFallback as $gxF) {
         $gxHeroSlides[] = [
-            'cat' => $gxF[1], 'title' => $gxF[2], 'word' => $gxF[3], 'sub' => $gxF[4],
-            'priceLabel' => $gxF[5], 'mrpLabel' => $gxF[6], 'off' => $gxF[7], 'reviews' => $gxF[8],
-            'img' => $gxF[9], 'alt' => $gxF[10], 'url' => $gxF[11], 'cartId' => $gxF[12],
-            'cartName' => $gxF[13], 'cartPrice' => $gxF[14], 'cartImage' => $gxF[15],
+            'cat' => $gxF[1],
+            'title' => $gxF[2],
+            'word' => $gxF[3],
+            'sub' => $gxF[4],
+            'priceLabel' => $gxF[5],
+            'mrpLabel' => $gxF[6],
+            'off' => $gxF[7],
+            'reviews' => $gxF[8],
+            'img' => $gxF[9],
+            'alt' => $gxF[10],
+            'url' => $gxF[11],
+            'cartId' => $gxF[12],
+            'cartName' => $gxF[13],
+            'cartPrice' => $gxF[14],
+            'cartImage' => $gxF[15],
         ];
     }
 }
@@ -94,12 +105,15 @@ $gxMarquee[] = 'Farm Fresh Purity';
 ?>
 <link rel="stylesheet" href="assets/css/hero-animated.css?v=<?= $gxCssV ?>">
 <?php if ($gxFirst['img'] !== '' && !str_starts_with($gxFirst['img'], 'data:')): ?>
-<link rel="preload" as="image" href="<?= htmlspecialchars($gxFirst['img']) ?>" fetchpriority="high">
+    <link rel="preload" as="image" href="<?= htmlspecialchars($gxFirst['img']) ?>" fetchpriority="high">
 <?php endif; ?>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
-<noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet"></noscript>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet"
+    media="print" onload="this.media='all'">
+<noscript>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+</noscript>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
 <script type="application/json"
     id="gxHeroData"><?= json_encode($gxHeroSlides, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?></script>
@@ -108,6 +122,10 @@ $gxMarquee[] = 'Farm Fresh Purity';
     <div class="gx-hero__bg" aria-hidden="true">
         <div class="gx-hero__bg-left"></div>
         <div class="gx-hero__bg-right"></div>
+        <div class="gx-hero__watermark">
+            <div class="gx-hero__wm-top-left"></div>
+            <div class="gx-hero__wm-bottom-right"></div>
+        </div>
     </div>
     <div class="gx-hero__glow gx-hero__glow--left" aria-hidden="true"></div>
     <div class="gx-hero__glow gx-hero__glow--right" aria-hidden="true"></div>
@@ -117,7 +135,8 @@ $gxMarquee[] = 'Farm Fresh Purity';
             <div class="gx-hero__kicker gx-intro">
                 <span class="gx-hero__kicker-line" aria-hidden="true"></span>
                 <span class="gx-hero__pill" id="gxCat"><?= htmlspecialchars($gxFirst['cat']) ?></span>
-                <span class="gx-hero__count" id="gxCount">01 — <?= str_pad((string) count($gxHeroSlides), 2, '0', STR_PAD_LEFT) ?></span>
+                <span class="gx-hero__count" id="gxCount">01 —
+                    <?= str_pad((string) count($gxHeroSlides), 2, '0', STR_PAD_LEFT) ?></span>
             </div>
 
             <div id="gxText" aria-live="polite">
@@ -173,9 +192,9 @@ $gxMarquee[] = 'Farm Fresh Purity';
                 <strong id="gxNextName"><?= htmlspecialchars(ucfirst(strtolower($gxNext['word']))) ?></strong>
             </div>
             <div class="gx-stage" id="gxStage">
-                <div class="gx-stage__ring" aria-hidden="true"></div>
+                <!-- <div class="gx-stage__ring" aria-hidden="true"></div>
                 <div class="gx-stage__halo" aria-hidden="true"></div>
-                <div class="gx-stage__circle" aria-hidden="true"></div>
+                <div class="gx-stage__circle" aria-hidden="true"></div> -->
                 <div class="gx-slide" data-gx-static>
                     <img src="<?= htmlspecialchars($gxFirst['img']) ?>"
                         alt="<?= htmlspecialchars($gxFirst['alt'] !== '' ? $gxFirst['alt'] : $gxFirst['cartName']) ?>"
@@ -194,7 +213,8 @@ $gxMarquee[] = 'Farm Fresh Purity';
     <div class="gx-hero__marquee" aria-hidden="true">
         <div class="gx-marquee__viewport">
             <div class="gx-marquee__track">
-                <?php foreach (array_merge($gxMarquee, $gxMarquee) as $gxWord): ?><span>✦ <?= htmlspecialchars($gxWord) ?></span><?php endforeach; ?>
+                <?php foreach (array_merge($gxMarquee, $gxMarquee) as $gxWord): ?><span>✦
+                        <?= htmlspecialchars($gxWord) ?></span><?php endforeach; ?>
             </div>
         </div>
     </div>

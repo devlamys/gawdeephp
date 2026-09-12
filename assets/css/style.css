@@ -1,94 +1,78 @@
 :root {
-  /* ---- Canonical Gawdee theme: single source of truth, uniform across
-     storefront, animated hero and admin. Do not hardcode palette hexes;
-     consume these tokens (or the --gawdee-* aliases below). ---- */
+  /* Typography */
   --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --gx-cream: #fff8f1;
-  --gx-sage: #9dd0b6;
-  --gx-ink: #009a84;
-  --gx-espresso: #005c4e;
-  --gx-gold: #c19a3d;
-  --gx-surface: #ffffff;
-  --gx-muted: rgba(0, 92, 78, 0.75);
-  --gx-border: rgba(0, 92, 78, 0.15);
+  --font-display: "Manrope", var(--font-sans);
 
-  /* ---- New Brand Color Tokens (mapped to canonical theme) ---- */
-  --color-primary: #009a84;
-  --color-primary-dark: #005c4e;
-  --color-primary-light: #e6f5f2;
+  /* New Brand Color Tokens (Directly mapped to variables used in the site) */
+  --gawdee-primary: #009a84;
+  --gawdee-primary-dark: #007a6a;
+  --gawdee-primary-deep: #005f53;
+  --gawdee-primary-light: #d9f3ee;
+  --gawdee-primary-soft: #eef9f6;
 
-  --color-dark: #005c4e;
-  --color-dark-soft: #00705e;
+  --gawdee-accent: #c8a45d;
+  --gawdee-accent-light: #e7d8b1;
 
-  --color-white: #ffffff;
-  --color-gray-50: #fff8f1;
-  --color-gray-100: #e8f1eb;
-  --color-gray-500: rgba(0, 92, 78, 0.75);
+  --gawdee-bg: #fafcfb;
+  --gawdee-surface: #ffffff;
+  --gawdee-surface-2: #ffffff;
+  --gawdee-surface-light: #eef9f6;
+  --gawdee-cream: #fafcfb;
+  --gawdee-white: #ffffff;
 
-  --color-border: rgba(0, 92, 78, 0.15);
+  --gawdee-dark: #005f53;
+  --gawdee-text: #17211e;
+  --gawdee-text-muted: #87938f;
+  --gawdee-muted: #87938f;
+  --gawdee-secondary: #5f6d68;
 
-  /* ---- Theme Token Mappings ---- */
-  --gawdee-primary: var(--color-primary);
-  --gawdee-primary-dark: var(--color-primary-dark);
-  --gawdee-primary-light: var(--color-primary-light);
-  --gawdee-secondary: var(--color-primary-dark);
-  --gawdee-dark: var(--color-dark);
+  --gawdee-border: #dde7e3;
+  --gawdee-line: #dde7e3;
+  --gawdee-line-light: #dde7e3;
 
-  --gawdee-bg: var(--color-white);
-  --gawdee-surface: var(--color-dark);
-  --gawdee-surface-2: var(--color-dark-soft);
-  --gawdee-surface-light: var(--color-primary-light);
-  --gawdee-cream: var(--color-gray-50);
-  --gawdee-white: var(--color-white);
+  --gawdee-success: #2e7d5b;
+  --gawdee-warning: #b88935;
+  --gawdee-error: #c84c4c;
 
-  --gawdee-text: var(--color-dark);
-  --gawdee-text-muted: var(--color-gray-500);
-  --gawdee-muted: var(--color-gray-500);
-  --gawdee-accent: var(--color-primary);
+  /* Additional legacy variables used heavily in CSS */
+  --gx-gold: #c8a45d;
+  --ink: #17211e;
+  --muted: #87938f;
+  --forest: #009a84;
+  --forest-deep: #005f53;
+  --green: #009a84;
+  --mint: #d9f3ee;
+  --cream: #fafcfb;
+  --paper: #fafcfb;
+  --gold: #c8a45d;
+  --line: #dde7e3;
 
-  --gawdee-border: var(--color-border);
-  --gawdee-line: var(--gx-border);
-  --gawdee-line-light: var(--color-border);
-  --gawdee-shadow: 0 24px 60px rgba(43, 42, 41, 0.12);
+  /* Shadows */
+  --gawdee-shadow: 0 12px 36px rgba(0, 154, 132, 0.08);
   --gawdee-shadow-sm: none;
-  --gawdee-shadow-xs: 0 4px 12px rgba(43, 42, 41, 0.05);
+  --gawdee-shadow-xs: 0 4px 12px rgba(0, 154, 132, 0.04);
+  --shadow: 0 12px 36px rgba(0, 154, 132, 0.08);
 
-  --gawdee-radius-sm: 10px;
-  --gawdee-radius-md: 18px;
-  --gawdee-radius-lg: 28px;
-  --gawdee-radius-xl: 40px;
-  --radius-sm: 10px;
-  --radius-md: 18px;
-  --radius-lg: 28px;
-  --radius-xl: 40px;
+  /* Radius */
+  --gawdee-radius-sm: 8px;
+  --gawdee-radius-md: 12px;
+  --gawdee-radius-lg: 24px;
+  --gawdee-radius-xl: 32px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 24px;
+  --radius-xl: 32px;
+  --radius-sm-legacy: 8px;
+  --radius-md-legacy: 12px;
+  --radius-lg-legacy: 24px;
 
-  --muted: var(--color-gray-500);
-  --mint: var(--color-primary-light);
-  --radius-xl: 40px;
-
+  /* Motion */
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
 
+  /* Layout */
   --container: 1280px;
   --header-height: 84px;
-
-  /* Legacy compatibility variables mapped to Gawdee palette */
-  --ink: var(--gawdee-dark);
-  --muted: var(--gawdee-text-muted);
-  --forest: var(--gawdee-primary);
-  --forest-deep: var(--gawdee-dark);
-  --green: var(--gawdee-secondary);
-  --mint: var(--color-primary-light);
-  --cream: var(--gawdee-cream);
-  --paper: var(--gawdee-bg);
-  --gold: var(--gx-gold);
-  --line: var(--gawdee-line-light);
-  --shadow: var(--gawdee-shadow);
-  --radius-sm-legacy: 14px;
-  --radius-md-legacy: 24px;
-  --radius-lg-legacy: 38px;
-  /* Display face follows the uniform sans stack (no serif/special faces). */
-  --font-display: var(--font-sans);
 }
 
 /* --------------------------------------------------------------------------
@@ -1363,8 +1347,8 @@ em {
    Trust & Benefit Strip
    -------------------------------------------------------------------------- */
 .trust-strip {
-  background: var(--gawdee-surface);
-  color: var(--gawdee-cream);
+  background: var(--gawdee-primary-deep);
+  color: var(--gawdee-primary);
   border-bottom: 1px solid var(--gawdee-line);
   padding-block: 28px;
 }
@@ -1379,15 +1363,20 @@ em {
   gap: 14px;
   padding: 12px 16px;
   border-radius: var(--radius-md);
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--gawdee-primary-light);
   border: 1px solid rgba(217, 184, 108, 0.1);
   transition:
     transform 0.25s ease,
     background 0.25s ease;
 }
 .trust-item:hover {
+  color: var(--gawdee-surface);
   transform: translateY(-3px);
   background: rgba(255, 255, 255, 0.08);
+}
+
+.trust-item:hover strong {
+  color: var(--gawdee-surface);
 }
 .trust-item i {
   font-size: 2.1rem;
@@ -1402,7 +1391,7 @@ em {
 .trust-item strong {
   font-family: var(--font-sans);
   font-size: 0.94rem;
-  color: var(--gawdee-white);
+  color: var(--gawdee-primary-dark);
 }
 
 /* --------------------------------------------------------------------------
@@ -1535,20 +1524,28 @@ em {
   padding: 4px 12px;
   border-radius: 999px;
   background: var(--gawdee-primary);
-  color: var(--color-primary-light);
+  color: var(--gawdee-white);
   font-family: var(--font-sans);
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
-.compact-product-card__badge.is-orange {
-  background: #d96b27;
-  color: #fff;
+.compact-product-card__badge.is-bestseller {
+  background: var(--gawdee-primary);
+  color: var(--gawdee-white);
 }
-.compact-product-card__badge.is-blue {
-  background: #1d5e3b;
-  color: #fff;
+.compact-product-card__badge.is-new {
+  background: var(--gawdee-accent);
+  color: var(--gawdee-white);
+}
+.compact-product-card__badge.is-fast {
+  background: var(--gawdee-primary-dark);
+  color: var(--gawdee-white);
+}
+.compact-product-card__badge.is-sale {
+  background: var(--gawdee-error);
+  color: var(--gawdee-white);
 }
 
 .compact-product-card__body {
@@ -1792,7 +1789,7 @@ em {
    Brand Story Section ("Why Gawdee")
    -------------------------------------------------------------------------- */
 .brand-story-section {
-  background: var(--gawdee-surface-2);
+  background: var(--gawdee-primary);
   color: var(--gawdee-cream);
   padding-block: 48px 80px;
   position: relative;
@@ -1826,7 +1823,7 @@ em {
 }
 .brand-story-header p {
   font-size: 1.15rem;
-  color: var(--gawdee-muted);
+  color: var(--gawdee-cream);
   margin: 0;
 }
 
@@ -1847,7 +1844,7 @@ em {
 }
 .story-pillar-card:hover {
   transform: translateY(-6px);
-  border-color: var(--gawdee-accent);
+  border-color: var(--gawdee-primary-deep);
 }
 .story-pillar-num {
   font-family: var(--font-sans);
@@ -2379,8 +2376,8 @@ em {
   padding-block: 40px 88px;
 }
 .newsletter-panel {
-  background: var(--gawdee-surface);
-  color: #fff;
+  background: var(--gawdee-primary-soft);
+  color: var(--gawdee-text);
   border-radius: var(--radius-xl);
   padding: 64px 48px;
   position: relative;
@@ -2389,20 +2386,20 @@ em {
   grid-template-columns: auto 1fr auto;
   align-items: center;
   gap: 36px;
-  border: 1px solid var(--gawdee-line);
-  box-shadow: var(--gawdee-shadow);
+  border: 1px solid var(--gawdee-line-light);
+  box-shadow: var(--gawdee-shadow-sm);
 }
 .newsletter-panel__icon i {
   font-size: 3.5rem;
   color: var(--gawdee-accent);
 }
 .newsletter-panel h2 {
-  color: #fff;
+  color: var(--gawdee-primary-deep);
   font-size: 2.2rem;
   margin-bottom: 6px;
 }
 .newsletter-panel p {
-  color: var(--gawdee-muted);
+  color: var(--gawdee-secondary);
   margin: 0;
   font-size: 1.05rem;
 }
@@ -2418,16 +2415,17 @@ em {
   flex: 1;
   height: 54px;
   border-radius: 999px;
-  border: 1px solid rgba(217, 184, 108, 0.3);
-  background: rgba(255, 255, 255, 0.08);
-  color: #fff;
+  border: 1px solid var(--gawdee-border);
+  background: var(--gawdee-surface);
+  color: var(--gawdee-text);
   padding-inline: 22px;
   font-size: 0.95rem;
   outline: none;
-  transition: border-color 0.2s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 .newsletter-panel input:focus {
-  border-color: var(--gawdee-accent);
+  border-color: var(--gawdee-primary);
+  box-shadow: 0 0 0 3px var(--gawdee-primary-light);
 }
 .newsletter-panel input::placeholder {
   color: var(--gawdee-muted);
@@ -2436,8 +2434,8 @@ em {
   height: 54px;
   padding-inline: 26px;
   border-radius: 999px;
-  background: var(--gawdee-accent);
-  color: var(--gawdee-dark);
+  background: var(--gawdee-primary);
+  color: var(--gawdee-white);
   font-family: var(--font-sans);
   font-weight: 800;
   font-size: 0.92rem;
@@ -2445,17 +2443,18 @@ em {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  transition: background 0.2s ease;
+  transition: background 0.2s ease, transform 0.2s ease;
 }
 .newsletter-panel button:hover {
-  background: #fff;
+  background: var(--gawdee-primary-deep);
+  transform: translateY(-2px);
 }
 .newsletter-panel__leaf {
   position: absolute;
   right: -20px;
   bottom: -20px;
   font-size: 12rem;
-  color: rgba(255, 255, 255, 0.02);
+  color: rgba(0, 154, 132, 0.04);
   pointer-events: none;
 }
 
@@ -2496,12 +2495,30 @@ em {
 
 /* Main Footer */
 .commerce-footer {
-  background: #021710;
-  color: var(--gawdee-cream);
-  padding-top: 80px;
-  padding-bottom: 40px;
+  background: var(--gawdee-dark);
+  color: var(--gawdee-primary-light);
+  padding-block: 80px 32px;
+  border-top: 1px solid var(--gawdee-primary-deep);
+  position: relative;
+  overflow: hidden;
 }
+
+.commerce-footer__watermark {
+  position: absolute;
+  inset: 0;
+  background-image: url('../images/footer-pattern.jpg');
+  background-size: 600px;
+  background-repeat: repeat;
+  background-position: center;
+  opacity: 0.12;
+  pointer-events: none;
+  z-index: 0;
+  mix-blend-mode: overlay;
+}
+
 .commerce-footer__grid {
+  position: relative;
+  z-index: 1;
   display: grid;
   grid-template-columns: 2fr repeat(3, 1fr) 2fr;
   gap: 44px;
@@ -2513,7 +2530,7 @@ em {
   margin-bottom: 20px;
 }
 .commerce-footer__brand p {
-  color: var(--gawdee-muted);
+  color: var(--gawdee-primary-light);
   font-size: 0.92rem;
   max-width: 320px;
   margin-bottom: 24px;
@@ -2602,8 +2619,11 @@ em {
 }
 
 .commerce-footer__bottom {
-  border-top: 1px solid var(--gawdee-line);
-  padding-top: 32px;
+  position: relative;
+  z-index: 1;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  margin-top: 60px;
+  padding-top: 28px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -3891,7 +3911,7 @@ em {
   padding: 4px 14px;
   border-radius: 999px;
   background: var(--gawdee-primary);
-  color: var(--gawdee-accent);
+  color: var(--gawdee-white);
   font-family: var(--font-sans);
   font-size: 0.75rem;
   font-weight: 800;

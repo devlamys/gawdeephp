@@ -2,6 +2,7 @@
 </main>
 
 <footer class="commerce-footer" id="site-footer">
+    <div class="commerce-footer__watermark" aria-hidden="true"></div>
     <div class="container commerce-footer__grid">
         <div class="commerce-footer__brand">
             <a href="index" aria-label="Gawdee home"><img src="assets/images/logo.png"

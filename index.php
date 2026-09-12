@@ -178,15 +178,18 @@ foreach ($homepageSections as $sectionKey => $section) {
                             if ($homeImage === '') {
                                 $homeImage = 'assets/images/logo.png';
                             }
-                        ?>
+                            ?>
                             <article class="compact-product-card reveal" data-delay="<?= $index * 45 ?>"
                                 data-category="<?= htmlspecialchars((string) ($product['category_key'] ?? 'all')) ?>"
                                 data-search-name="<?= htmlspecialchars(strtolower(($product['full_name'] ?? '') . ' ' . ($product['category'] ?? '') . ' ' . ($product['sku'] ?? ''))) ?>">
-                                <a class="compact-product-card__media" href="product?slug=<?= urlencode((string) $product['slug']) ?>" aria-label="View <?= htmlspecialchars((string) ($product['full_name'] ?? '')) ?>">
+                                <a class="compact-product-card__media" href="product?slug=<?= urlencode((string) $product['slug']) ?>"
+                                    aria-label="View <?= htmlspecialchars((string) ($product['full_name'] ?? '')) ?>">
                                     <span
-                                        class="compact-product-card__badge <?= $index % 3 === 2 ? 'is-blue' : ($index % 2 === 0 ? 'is-orange' : '') ?>"><?= $index === 5 ? 'New arrival' : ($index % 2 === 0 ? 'Best seller' : 'Popular') ?></span>
+                                        class="compact-product-card__badge <?= $index === 5 ? 'is-new' : ($index % 2 === 0 ? 'is-bestseller' : 'is-fast') ?>"><?= $index === 5 ? 'New Launch' : ($index % 2 === 0 ? 'Best Seller' : 'Selling Fast') ?></span>
                                     <img src="<?= htmlspecialchars($homeImage) ?>"
-                                        alt="<?= htmlspecialchars((string) ($product['full_name'] ?? '')) ?>" loading="lazy" decoding="async" data-card-main-image onerror="this.onerror=null;this.src='assets/images/logo.png'">
+                                        alt="<?= htmlspecialchars((string) ($product['full_name'] ?? '')) ?>" loading="lazy"
+                                        decoding="async" data-card-main-image
+                                        onerror="this.onerror=null;this.src='assets/images/logo.png'">
                                 </a>
                                 <div class="compact-product-card__body">
                                     <h3><a
@@ -199,7 +202,8 @@ foreach ($homepageSections as $sectionKey => $section) {
                                     }
                                     if (count($cVariants) > 1):
                                         ?>
-                                        <div class="card-variant-pills" role="group" aria-label="Select size for <?= htmlspecialchars((string) ($product['name'] ?? '')) ?>">
+                                        <div class="card-variant-pills" role="group"
+                                            aria-label="Select size for <?= htmlspecialchars((string) ($product['name'] ?? '')) ?>">
                                             <?php foreach ($cVariants as $cv):
                                                 $isCur = ($cv['slug'] ?? '') === ($product['slug'] ?? '');
                                                 $cvDiscount = discount_percentage($cv);
@@ -210,29 +214,31 @@ foreach ($homepageSections as $sectionKey => $section) {
                                                     data-card-variant-switch data-slug="<?= htmlspecialchars((string) ($cv['slug'] ?? '')) ?>"
                                                     data-id="<?= htmlspecialchars((string) ($cv['id'] ?? '')) ?>"
                                                     data-name="<?= htmlspecialchars((string) ($cv['full_name'] ?? '')) ?>"
-                                                    data-weight="<?= htmlspecialchars((string) ($cv['weight'] ?? '')) ?>" data-price="<?= (int) ($cv['price'] ?? 0) ?>"
+                                                    data-weight="<?= htmlspecialchars((string) ($cv['weight'] ?? '')) ?>"
+                                                    data-price="<?= (int) ($cv['price'] ?? 0) ?>"
                                                     data-price-formatted="<?= money((int) ($cv['price'] ?? 0)) ?>"
                                                     data-original-price-formatted="<?= money((int) ($cv['original_price'] ?? 0)) ?>"
                                                     data-discount="<?= $cvDiscount ?>" data-stock="<?= $cvStock ?>"
                                                     data-sku="<?= htmlspecialchars((string) ($cv['sku'] ?? '')) ?>"
-                                                    data-image="<?= htmlspecialchars($cvImage) ?>"
-                                                    <?= $isCur ? 'aria-pressed="true"' : 'aria-pressed="false"' ?>>
+                                                    data-image="<?= htmlspecialchars($cvImage) ?>" <?= $isCur ? 'aria-pressed="true"' : 'aria-pressed="false"' ?>>
                                                     <?= htmlspecialchars((string) ($cv['weight'] ?? '')) ?>
                                                 </button>
                                             <?php endforeach; ?>
                                         </div>
                                     <?php else: ?>
-                                        <span class="compact-product-card__weight"><?= htmlspecialchars((string) ($product['weight'] ?? '')) ?></span>
+                                        <span
+                                            class="compact-product-card__weight"><?= htmlspecialchars((string) ($product['weight'] ?? '')) ?></span>
                                     <?php endif; ?>
                                     <div class="compact-product-card__price">
-                                        <strong data-card-price><?= money((int) ($product['price'] ?? 0)) ?></strong><s data-card-original-price><?= money((int) ($product['original_price'] ?? 0)) ?></s>
+                                        <strong data-card-price><?= money((int) ($product['price'] ?? 0)) ?></strong><s
+                                            data-card-original-price><?= money((int) ($product['original_price'] ?? 0)) ?></s>
                                     </div>
                                     <div class="compact-product-card__actions">
-                                        <button type="button" data-add-to-cart data-id="<?= htmlspecialchars((string) ($product['id'] ?? '')) ?>"
+                                        <button type="button" data-add-to-cart
+                                            data-id="<?= htmlspecialchars((string) ($product['id'] ?? '')) ?>"
                                             data-name="<?= htmlspecialchars((string) ($product['full_name'] ?? '')) ?>"
                                             data-price="<?= (int) ($product['price'] ?? 0) ?>"
-                                            data-image="<?= htmlspecialchars($homeImage) ?>"
-                                            <?= ((int) ($product['stock'] ?? 0) <= 0) ? 'disabled' : '' ?>><?= ((int) ($product['stock'] ?? 0) <= 0) ? 'Out of stock' : 'Add to cart' ?></button>
+                                            data-image="<?= htmlspecialchars($homeImage) ?>" <?= ((int) ($product['stock'] ?? 0) <= 0) ? 'disabled' : '' ?>><?= ((int) ($product['stock'] ?? 0) <= 0) ? 'Out of stock' : 'Add to cart' ?></button>
 
                                     </div>
                                 </div>
@@ -554,7 +560,7 @@ foreach ($homepageSections as $sectionKey => $section) {
                     <div class="newsletter-panel">
                         <div class="newsletter-panel__icon"><i class="ph ph-envelope-simple"></i></div>
                         <div>
-                            <span class="eyebrow eyebrow--light"><i class="ph ph-paper-plane-tilt"></i>
+                            <span class="eyebrow"><i class="ph ph-paper-plane-tilt"></i>
                                 <?= htmlspecialchars($homepageSections['newsletter']['eyebrow'] ?: 'Stay Connected') ?></span>
                             <h2><?= htmlspecialchars($homepageSections['newsletter']['title']) ?></h2>
                             <p><?= htmlspecialchars($homepageSections['newsletter']['subtitle']) ?></p>

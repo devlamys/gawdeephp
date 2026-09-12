@@ -4,14 +4,14 @@
    Cutout images are background-removed PNG/WebP managed in Admin > Animated hero. */
 .gx-hero {
   --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --gx-cream: #fff8f1;
-  --gx-sage: #9dd0b6;
-  --gx-ink: #009a84;
-  --gx-espresso: #005c4e;
-  --gx-gold: #c19a3d;
-  --gx-surface: #ffffff;
-  --gx-muted: rgba(0, 92, 78, 0.75);
-  --gx-border: rgba(0, 92, 78, 0.15);
+  --gx-cream: var(--gawdee-bg);
+  --gx-sage: var(--gawdee-primary-light);
+  --gx-ink: var(--gawdee-text);
+  --gx-espresso: var(--gawdee-dark);
+  --gx-gold: var(--gawdee-accent);
+  --gx-surface: var(--gawdee-surface);
+  --gx-muted: var(--gawdee-muted);
+  --gx-border: var(--gawdee-border);
   position: relative;
   width: 100%;
   overflow: hidden;
@@ -50,6 +50,36 @@
   margin-left: -8%;
   background: var(--gx-sage);
   clip-path: polygon(8% 0, 100% 0, 100% 100%, 0% 100%);
+}
+.gx-hero__watermark {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  overflow: hidden;
+}
+.gx-hero__wm-top-left {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 50vw;
+  height: 83vh;
+  min-width: 400px;
+  background: url('../images/hero-patern-mixme.png') no-repeat top left;
+  background-size: contain;
+  mix-blend-mode: multiply;
+  transform: rotate(20deg);
+  transform-origin: top left;
+}
+.gx-hero__wm-bottom-right {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 400px;
+  height: 300px;
+  background: url('../images/hero-patern-mixme.png') no-repeat bottom right;
+  background-size: 300px;
+  mix-blend-mode: multiply;
 }
 .gx-hero__glow {
   position: absolute;
@@ -114,7 +144,7 @@
   letter-spacing: 0.25em;
   text-transform: uppercase;
   font-weight: 700;
-  background: var(--gx-ink);
+  background: var(--gawdee-primary);
   color: var(--gx-cream);
   padding: 0.5rem 1rem;
   border-radius: 999px;
@@ -131,13 +161,13 @@
   line-height: 1.05;
   font-weight: 800;
   letter-spacing: -0.02em;
-  color: var(--gx-espresso);
+  color: var(--gawdee-primary);
   margin: 0;
   text-wrap: balance;
 }
 .gx-hero__title span {
   font-weight: 400;
-  color: var(--gx-ink);
+  color: var(--gawdee-primary-dark);
 }
 .gx-hero__sub {
   margin-top: 1.25rem;
@@ -171,6 +201,7 @@
   flex-wrap: wrap;
 }
 .gx-hero__price {
+  color: var(--gawdee-primary-dark);
   font-size: 2.25rem;
   font-weight: 800;
 }
@@ -208,7 +239,7 @@
   align-items: center;
   justify-content: center;
   gap: 0.75rem;
-  border: 2px solid var(--gx-ink);
+  border: 2px solid var(--gawdee-primary-dark);
   padding: 1rem 2rem;
   min-height: 48px;
   border-radius: 999px;
@@ -217,7 +248,7 @@
   text-transform: uppercase;
   font-weight: 700;
   background: rgba(255, 255, 255, 0.2);
-  color: var(--gx-ink);
+  color: var(--gawdee-primary-deep);
   text-decoration: none;
   cursor: pointer;
   font-family: inherit;
@@ -227,7 +258,7 @@
   position: absolute;
   inset: 0;
   z-index: -1;
-  background: var(--gx-ink);
+  background: var(--gawdee-primary);
   transform: translateY(101%);
   transition: transform 0.45s cubic-bezier(0.19, 1, 0.22, 1);
   border-radius: inherit;
@@ -237,13 +268,13 @@
 }
 .gx-btn-lux:hover {
   color: #fdfbf6 !important;
-  border-color: var(--gx-ink) !important;
+  border-color: var(--gawdee-primary-deep) !important;
 }
 .gx-btn-lux__arrow {
   width: 1.75rem;
   height: 1.75rem;
   border-radius: 999px;
-  background: var(--gx-ink);
+  background: var(--gawdee-primary);
   color: var(--gx-cream);
   display: grid;
   place-items: center;
@@ -263,7 +294,7 @@
   padding: 1rem 1.75rem;
   min-height: 48px;
   border-radius: 999px;
-  background: var(--gx-ink);
+  background: var(--gawdee-primary);
   color: var(--gx-cream);
   font-size: 12px;
   letter-spacing: 0.2em;
@@ -312,18 +343,18 @@
     color 0.3s;
 }
 .gx-arrow--ghost {
-  border: 2px solid rgba(0, 92, 78, 0.3);
+  border: 2px solid var(--gawdee-primary-deep);
   background: transparent;
   color: var(--gx-ink);
 }
 .gx-arrow--ghost:hover {
-  background: var(--gx-ink);
+  background: var(--gawdee-primary);
   color: var(--gx-cream);
 }
 .gx-arrow--solid {
-  background: var(--gx-ink);
+  background: var(--gawdee-primary);
   color: var(--gx-cream);
-  border: 2px solid var(--gx-ink);
+  border: 2px solid var(--gawdee-primary-deep);
   box-shadow: 0 6px 16px rgba(0, 92, 78, 0.25);
 }
 .gx-arrow--solid:hover {
@@ -621,6 +652,8 @@
   .gx-hero__grid {
     padding-top: 8rem;
     gap: 0.5rem;
+    grid-template-columns: 1fr;
+    width: 100%;
   }
   .gx-hero__copy {
     order: 2;
@@ -628,11 +661,17 @@
   .gx-hero__stage-wrap {
     order: 1;
     min-height: 400px;
+    width: 100%;
   }
 }
 @media (max-width: 640px) {
   .gx-hero__grid {
     padding: 7.5rem 1rem 3.25rem;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    width: 100%;
   }
   .gx-hero__kicker {
     gap: 0.6rem;
@@ -666,13 +705,14 @@
     width: 100%;
   }
   .gx-stage {
-    height: 400px;
+    height: 45vh;
+    width: 100%;
   }
   .gx-slide {
-    width: min(300px, 74vw);
-    height: min(400px, 46vh);
-    margin-left: calc(min(300px, 74vw) / -2);
-    margin-top: calc(min(400px, 46vh) / -2);
+    width: 90vw;
+    height: 45vh;
+    margin-left: -45vw;
+    margin-top: -22.5vh;
   }
   .gx-hero__next {
     top: 0.25rem;
