@@ -192,74 +192,32 @@ foreach ($homepageSections as $sectionKey => $section) {
                                         onerror="this.onerror=null;this.src='assets/images/logo.png'">
                                 </a>
                                 <div class="compact-product-card__body">
+                                    <div class="product-card__meta" style="color: #4b5563;">
+                                        <?= htmlspecialchars(strtoupper((string) ($product['category'] ?? ''))) ?> &bull; <?= htmlspecialchars(strtoupper((string) ($product['weight'] ?? ''))) ?>
+                                    </div>
                                     <h3><a
                                             href="product?slug=<?= urlencode((string) $product['slug']) ?>"><?= htmlspecialchars((string) ($product['name'] ?? '')) ?></a>
                                     </h3>
-                                    <?php
-                                    $cVariants = gawdee_family_variants($products, (string) ($product['family_key'] ?? ''));
-                                    if (!$cVariants) {
-                                        $cVariants = [$product];
-                                    }
-                                    if (count($cVariants) > 1):
-                                        ?>
-                                        <div class="card-variant-pills" role="group"
-                                            aria-label="Select size for <?= htmlspecialchars((string) ($product['name'] ?? '')) ?>">
-                                            <?php foreach ($cVariants as $cv):
-                                                $isCur = ($cv['slug'] ?? '') === ($product['slug'] ?? '');
-                                                $cvDiscount = discount_percentage($cv);
-                                                $cvStock = (int) ($cv['stock'] ?? 0);
-                                                $cvImage = (string) (($cv['image'] ?? '') !== '' ? $cv['image'] : $homeImage);
-                                                ?>
-                                                <button type="button" class="card-variant-pill <?= $isCur ? 'is-active' : '' ?>"
-                                                    data-card-variant-switch data-slug="<?= htmlspecialchars((string) ($cv['slug'] ?? '')) ?>"
-                                                    data-id="<?= htmlspecialchars((string) ($cv['id'] ?? '')) ?>"
-                                                    data-name="<?= htmlspecialchars((string) ($cv['full_name'] ?? '')) ?>"
-                                                    data-weight="<?= htmlspecialchars((string) ($cv['weight'] ?? '')) ?>"
-                                                    data-price="<?= (int) ($cv['price'] ?? 0) ?>"
-                                                    data-price-formatted="<?= money((int) ($cv['price'] ?? 0)) ?>"
-                                                    data-original-price-formatted="<?= money((int) ($cv['original_price'] ?? 0)) ?>"
-                                                    data-discount="<?= $cvDiscount ?>" data-stock="<?= $cvStock ?>"
-                                                    data-sku="<?= htmlspecialchars((string) ($cv['sku'] ?? '')) ?>"
-                                                    data-image="<?= htmlspecialchars($cvImage) ?>" <?= $isCur ? 'aria-pressed="true"' : 'aria-pressed="false"' ?>>
-                                                    <?= htmlspecialchars((string) ($cv['weight'] ?? '')) ?>
-                                                </button>
-                                            <?php endforeach; ?>
-                                        </div>
-                                    <?php else: ?>
-                                        <span
-                                            class="compact-product-card__weight"><?= htmlspecialchars((string) ($product['weight'] ?? '')) ?></span>
-                                    <?php endif; ?>
+                                    <div class="compact-product-card__rating" style="display: flex; align-items: center; gap: 4px; margin-bottom: 8px; font-size: 0.85rem; font-weight: 700; color: var(--text-dark);">
+                                        <i class="ph-fill ph-star" style="color: #009a84;"></i>
+                                        <span>4.3</span>
+                                    </div>
+                                    
                                     <div class="compact-product-card__price">
                                         <strong data-card-price><?= money((int) ($product['price'] ?? 0)) ?></strong><s
                                             data-card-original-price><?= money((int) ($product['original_price'] ?? 0)) ?></s>
                                     </div>
-                                    <div class="compact-product-card__actions">
-                                        <?php
-                                        $variantDataForJs = [];
-                                        foreach ($cVariants as $cv) {
-                                            $cvImageForJs = (string) (($cv['image'] ?? '') !== '' ? $cv['image'] : $homeImage);
-                                            $variantDataForJs[] = [
-                                                'id' => (string) ($cv['id'] ?? ''),
-                                                'name' => (string) ($cv['full_name'] ?? ''),
-                                                'weight' => (string) ($cv['weight'] ?? ''),
-                                                'price' => (int) ($cv['price'] ?? 0),
-                                                'price_formatted' => money((int) ($cv['price'] ?? 0)),
-                                                'original_price' => (int) ($cv['original_price'] ?? 0),
-                                                'original_price_formatted' => money((int) ($cv['original_price'] ?? 0)),
-                                                'discount' => discount_percentage($cv),
-                                                'stock' => (int) ($cv['stock'] ?? 0),
-                                                'image' => htmlspecialchars($cvImageForJs, ENT_QUOTES | ENT_HTML5),
-                                            ];
-                                        }
-                                        $variantsJson = htmlspecialchars(json_encode($variantDataForJs, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE), ENT_QUOTES | ENT_HTML5);
-                                        ?>
-                                        <button type="button" data-add-to-cart
+                                    <div class="compact-product-card__actions" style="grid-template-columns: 1fr; gap: 6px;">
+                                        <button type="button" class="ref-add" data-add-to-cart
                                             data-id="<?= htmlspecialchars((string) ($product['id'] ?? '')) ?>"
                                             data-name="<?= htmlspecialchars((string) ($product['full_name'] ?? '')) ?>"
                                             data-price="<?= (int) ($product['price'] ?? 0) ?>"
                                             data-image="<?= htmlspecialchars($homeImage) ?>"
-                                            data-variants="<?= $variantsJson ?>"
                                             <?= ((int) ($product['stock'] ?? 0) <= 0) ? 'disabled' : '' ?>><?= ((int) ($product['stock'] ?? 0) <= 0) ? 'Out of stock' : 'Add to cart' ?></button>
+                                            
+                                        <button type="button" class="ref-add" data-buy-now
+                                            data-id="<?= htmlspecialchars((string) ($product['id'] ?? '')) ?>"
+                                            <?= ((int) ($product['stock'] ?? 0) <= 0) ? 'disabled' : '' ?>>Buy now</button>
 
                                     </div>
                                 </div>

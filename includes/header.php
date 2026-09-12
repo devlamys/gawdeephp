@@ -86,8 +86,8 @@ $isReferenceProductPage = str_contains($bodyClass, 'product-page--reference');
     </script>
     <?php if (isset($jsonLdExtra) && is_array($jsonLdExtra)): ?>
         <script type="application/ld+json">
-                                <?= json_encode($jsonLdExtra, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) ?>
-                                </script>
+                                    <?= json_encode($jsonLdExtra, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) ?>
+                                        </script>
     <?php endif; ?>
     <!-- Favicon & App Icons -->
     <link rel="icon" type="image/x-icon" href="favicon.ico">
@@ -100,9 +100,11 @@ $isReferenceProductPage = str_contains($bodyClass, 'product-page--reference');
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@600;700;800&display=swap"
         rel="stylesheet" media="print" onload="this.media='all'">
-    <noscript><link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@600;700;800&display=swap"
-        rel="stylesheet"></noscript>
+    <noscript>
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@600;700;800&display=swap"
+            rel="stylesheet">
+    </noscript>
     <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
     <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/fill/style.css">
     <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css">
@@ -148,7 +150,8 @@ $isReferenceProductPage = str_contains($bodyClass, 'product-page--reference');
                     poster="assets/images/logo.png" disablepictureinpicture>
                     <source src="assets/images/logo/Make_please.mp4" type="video/mp4">
                 </video>
-                <img src="assets/images/logo.png" alt="Gawdee — The Soul of Wellness" class="header-logo-img gx-brand__fallback" hidden>
+                <img src="assets/images/logo.png" alt="Gawdee — The Soul of Wellness"
+                    class="header-logo-img gx-brand__fallback" hidden>
             </a>
 
             <nav class="desktop-main-nav desktop-only" aria-label="Primary navigation">
@@ -210,7 +213,8 @@ $isReferenceProductPage = str_contains($bodyClass, 'product-page--reference');
                 <i class="ph ph-magnifying-glass search-icon" aria-hidden="true"></i>
                 <input type="search" name="search" data-mobile-search-input placeholder="Search pure essentials..."
                     aria-label="Search products" autocomplete="off">
-                <button type="button" class="mobile-nav-search-clear" data-mobile-search-clear aria-label="Clear search" style="display:none;">
+                <button type="button" class="mobile-nav-search-clear" data-mobile-search-clear aria-label="Clear search"
+                    style="display:none;">
                     <i class="ph ph-x"></i>
                 </button>
             </form>
@@ -251,18 +255,23 @@ $isReferenceProductPage = str_contains($bodyClass, 'product-page--reference');
                 </video>
                 <img class="gx-brand__fallback" src="assets/images/logo.png" alt="" hidden>
             </span>
-            <div><span class="eyebrow">Your selection</span>
+            <div><span class="eyebrow eyebrow--light">Your selection</span>
                 <h2 id="cart-title">Shopping bag</h2>
             </div>
             <button class="icon-button" type="button" data-cart-close aria-label="Close shopping bag"><i
                     class="ph ph-x"></i></button>
         </div>
         <div class="cart-items" data-cart-items></div>
-        <div class="cart-empty" data-cart-empty style="text-align: center; padding: 4rem 2rem; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;">
-            <i class="ph ph-tote" aria-hidden="true" style="font-size: 6rem; color: var(--gawdee-primary); opacity: 0.85; margin-bottom: 1.5rem;"></i>
-            <h3 style="font-size: 1.5rem; color: var(--gawdee-primary-dark); margin-bottom: 0.5rem; font-weight: 700;">Nothing in your cart yet.</h3>
-            <p style="color: var(--text-muted); margin-bottom: 2rem;">Let's fix that with something pure and delicious.</p>
-            <button class="button button--primary" type="button" data-cart-close style="border-radius: 99px; font-size: 1.1rem; padding: 0.8rem 2.5rem;">Continue Shopping</button>
+        <div class="cart-empty" data-cart-empty
+            style="text-align: center; padding: 4rem 2rem; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;">
+            <i class="ph ph-tote" aria-hidden="true"
+                style="font-size: 6rem; color: var(--gawdee-primary); opacity: 0.85; margin-bottom: 1.5rem;"></i>
+            <h3 style="font-size: 1.5rem; color: var(--gawdee-primary-dark); margin-bottom: 0.5rem; font-weight: 700;">
+                Nothing in your cart yet.</h3>
+            <p style="color: var(--text-muted); margin-bottom: 2rem;">Let's fix that with something pure and delicious.
+            </p>
+            <button class="button button--primary" type="button" data-cart-close
+                style="border-radius: 99px; font-size: 1.1rem; padding: 0.8rem 2.5rem;">Continue Shopping</button>
         </div>
         <div class="cart-summary" data-cart-summary hidden>
             <div class="cart-summary__line"><span>Subtotal</span><strong data-cart-total>₹0</strong></div>
