@@ -148,23 +148,18 @@ $waUrl = 'https://wa.me/' . $waNumber . '?text=' . rawurlencode($waText);
 
 <?php if (empty($bodyClass) || $bodyClass !== 'checkout-page'): ?>
 <!-- Sticky Checkout Bar -->
-<div class="checkout-sticky-bar" data-checkout-sticky
-    style="display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: calc(100% - 40px); max-width: 400px; background: var(--gawdee-primary-dark); color: #fff; border-radius: 99px; padding: 0.6rem 1rem; z-index: 9999; justify-content: space-between; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
-    <div style="display: flex; align-items: center; gap: 0.8rem;">
-        <div
-            style="width: 44px; height: 44px; border-radius: 50%; overflow: hidden; background: #fff; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-            <img data-sticky-img src="" alt="Cart Item"
-                style="width: 100%; height: 100%; object-fit: contain; padding: 4px;">
+<div class="checkout-sticky-bar" data-checkout-sticky style="display: none;">
+    <div class="checkout-sticky-bar__info">
+        <div class="checkout-sticky-bar__img-wrap">
+            <img data-sticky-img src="" alt="Cart Item" class="checkout-sticky-bar__img">
         </div>
-        <div style="display: flex; flex-direction: column;">
-            <span style="font-size: 0.8rem; font-weight: 500; opacity: 0.9;" data-sticky-count>1 item</span>
-            <strong style="font-size: 1.15rem; line-height: 1.2; font-weight: 700;" data-sticky-price>₹0</strong>
+        <div class="checkout-sticky-bar__text">
+            <span class="checkout-sticky-bar__count" data-sticky-count>1 item</span>
+            <strong class="checkout-sticky-bar__price" data-sticky-price>₹0</strong>
         </div>
     </div>
-    <button type="button" data-cart-toggle
-        style="background: #17211e; color: #fff; border: none; padding: 0.6rem 1.2rem; border-radius: 99px; font-weight: 700; display: flex; align-items: center; gap: 0.4rem; cursor: pointer;">
-        <i class="ph ph-shopping-cart" style="font-size: 1.2rem;"></i> <i class="ph ph-arrow-right"
-            style="font-size: 1rem;"></i>
+    <button type="button" class="checkout-sticky-bar__btn" data-cart-toggle>
+        <i class="ph ph-shopping-cart"></i> <i class="ph ph-arrow-right"></i>
     </button>
 </div>
 <?php endif; ?>
