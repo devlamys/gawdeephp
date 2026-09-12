@@ -668,23 +668,7 @@
   const saveCart = () => localStorage.setItem(storageKey, JSON.stringify(cart));
 
   const showToast = (message) => {
-    if (!message) return;
-    let node = qs("[data-toast]");
-    if (!node) {
-      node = document.createElement("div");
-      node.setAttribute("data-toast", "");
-      node.setAttribute("role", "status");
-      node.setAttribute("aria-live", "polite");
-      node.className = "gawdee-toast";
-      document.body.appendChild(node);
-    }
-    node.textContent = message;
-    node.classList.add("is-visible");
-    window.clearTimeout(toastTimer);
-    toastTimer = window.setTimeout(
-      () => node.classList.remove("is-visible"),
-      2400,
-    );
+    // Toast functionality removed per request
   };
 
   qsa("[data-newsletter-form]").forEach((form) => {
@@ -1202,18 +1186,18 @@
     if (bar) bar.style.display = "none";
 
     if (newCartItemsAdded && typeof confetti === "function") {
-      const duration = 3500;
+      const duration = 3000;
       const end = Date.now() + duration;
       (function frame() {
         confetti({
-          particleCount: 10,
+          particleCount: 5,
           angle: 90,
-          spread: 120,
+          spread: 12,
           startVelocity: 20,
           origin: { x: Math.random(), y: -0.1 },
           colors: [
-            "#009A84",
-            "#005f53",
+            "#ffffffff",
+            "#854700ff",
             "#c8a45d",
             "#E6D0BA",
             "#FFD700",
@@ -1223,8 +1207,8 @@
           ],
           zIndex: 10005,
           ticks: 400,
-          gravity: 0.6,
-          scalar: 1.2,
+          gravity: 1.5,
+          scalar: 1,
           shapes: ["square", "circle", "star"],
           disableForReducedMotion: true,
         });

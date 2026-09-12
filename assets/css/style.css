@@ -3960,7 +3960,7 @@ em {
    Product Detail Page (`product.php`)
    -------------------------------------------------------------------------- */
 .ref-product-page {
-  padding-block: 157px 64px;
+  padding-block: 158px 64px;
 }
 .ref-breadcrumbs {
   display: flex;
@@ -6149,9 +6149,6 @@ em {
   font-size: 0.84rem;
 }
 
-.ref-product-page {
-  padding-block: 28px 64px !important;
-}
 
 /* --------------------------------------------------------------------------
    Order Success Page (`order-success.php`)
@@ -8327,7 +8324,7 @@ em {
     padding-block: 160px 72px;
   }
   .ref-product-page {
-    padding-block: 120px 52px;
+    padding-block: 150px 52px;
   }
   .ref-review-cards {
     grid-template-columns: repeat(2, 1fr);
@@ -8346,7 +8343,7 @@ em {
     gap: 14px;
   }
   .ref-product-page {
-    padding-block: 96px 48px;
+    padding-block: 43px 48px;
   }
   .ref-product-hero {
     grid-template-columns: 1fr 1fr;
@@ -8389,7 +8386,7 @@ em {
     width: 100%;
   }
   .ref-product-page {
-    padding-block: 80px 40px;
+    padding-block: 55px 40px;
   }
   .ref-product-hero {
     grid-template-columns: 1fr;
@@ -8883,7 +8880,7 @@ em {
     font-size: 0.8rem;
   }
   .ref-product-page {
-    padding-block: 28px 32px;
+    padding-block: 39px 32px;
   }
   .ref-breadcrumbs {
     font-size: 0.8rem;
@@ -10995,38 +10992,6 @@ html {
   color: #b3261e;
 }
 
-.gawdee-toast {
-  position: fixed;
-  left: 50%;
-  bottom: 24px;
-  transform: translate(-50%, 20px);
-  opacity: 0;
-  z-index: 9999;
-  max-width: min(92vw, 420px);
-  padding: 12px 18px;
-  border-radius: 999px;
-  background: rgba(7, 60, 43, 0.94);
-  color: #fff;
-  font-size: 0.85rem;
-  font-weight: 700;
-  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.35);
-  backdrop-filter: blur(12px) saturate(160%);
-  -webkit-backdrop-filter: blur(12px) saturate(160%);
-  transition:
-    opacity 0.25s ease,
-    transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  pointer-events: none;
-  text-align: center;
-}
-.gawdee-toast.is-visible {
-  opacity: 1;
-  transform: translate(-50%, 0);
-}
-@media (prefers-reduced-motion: reduce) {
-  .gawdee-toast {
-    transition: none;
-  }
-}
 
 @media (max-width: 640px) {
   .card-variant-pills {

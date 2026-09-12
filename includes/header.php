@@ -26,7 +26,7 @@ $isReferenceProductPage = str_contains($bodyClass, 'product-page--reference');
 
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=0.86, maximum-scale=5, viewport-fit=cover">
     <meta name="theme-color" content="#009a84">
 
     <!-- SEO Primary Meta Tags -->
@@ -86,8 +86,8 @@ $isReferenceProductPage = str_contains($bodyClass, 'product-page--reference');
     </script>
     <?php if (isset($jsonLdExtra) && is_array($jsonLdExtra)): ?>
         <script type="application/ld+json">
-                                    <?= json_encode($jsonLdExtra, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) ?>
-                                        </script>
+                                            <?= json_encode($jsonLdExtra, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) ?>
+                                                </script>
     <?php endif; ?>
     <!-- Favicon & App Icons -->
     <link rel="icon" type="image/x-icon" href="favicon.ico">
@@ -180,11 +180,6 @@ $isReferenceProductPage = str_contains($bodyClass, 'product-page--reference');
                     <i class="ph <?= $headerCustomer ? 'ph-user-circle-check' : 'ph-user' ?>" aria-hidden="true"></i>
                     <span><?= $headerCustomer ? htmlspecialchars(explode(' ', trim((string) $headerCustomer['name']))[0]) : 'Account' ?></span>
                 </a>
-
-                <button class="commerce-action mobile-only mobile-search-trigger" type="button"
-                    data-mobile-search-trigger aria-label="Search products">
-                    <i class="ph ph-magnifying-glass" aria-hidden="true"></i>
-                </button>
 
                 <button class="commerce-action" type="button" data-cart-toggle aria-label="Open shopping bag">
                     <span class="commerce-action__icon">

@@ -650,7 +650,7 @@
     clip-path: polygon(0 12%, 100% 8%, 100% 100%, 0 100%);
   }
   .gx-hero__grid {
-    padding-top: 7rem;
+    padding-top: 5rem;
     padding-bottom: 2.5rem;
     gap: 1rem;
     grid-template-columns: 1fr;
@@ -671,7 +671,7 @@
 }
 @media (max-width: 640px) {
   .gx-hero__grid {
-    padding: 6.5rem 1rem 2.5rem;
+    padding: 2.5rem 1rem 1.5rem;
     min-height: 100vh;
     min-height: 100dvh;
     display: flex;

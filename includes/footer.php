@@ -145,8 +145,8 @@ $waUrl = 'https://wa.me/' . $waNumber . '?text=' . rawurlencode($waText);
 ?>
 <a class="whatsapp-float" href="<?= htmlspecialchars($waUrl) ?>" target="_blank" rel="noopener"
     aria-label="Chat with Gawdee on WhatsApp"><i class="ph ph-whatsapp-logo"></i></a>
-<div class="gawdee-toast" data-toast role="status" aria-live="polite"></div>
 
+<?php if (empty($bodyClass) || $bodyClass !== 'checkout-page'): ?>
 <!-- Sticky Checkout Bar -->
 <div class="checkout-sticky-bar" data-checkout-sticky
     style="display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: calc(100% - 40px); max-width: 400px; background: var(--gawdee-primary-dark); color: #fff; border-radius: 99px; padding: 0.6rem 1rem; z-index: 9999; justify-content: space-between; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
@@ -167,6 +167,7 @@ $waUrl = 'https://wa.me/' . $waNumber . '?text=' . rawurlencode($waText);
             style="font-size: 1rem;"></i>
     </button>
 </div>
+<?php endif; ?>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.12.2/lottie.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js" defer></script>
 <script src="assets/js/app.js" defer></script>
