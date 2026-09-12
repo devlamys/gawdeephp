@@ -650,69 +650,91 @@
     clip-path: polygon(0 12%, 100% 8%, 100% 100%, 0 100%);
   }
   .gx-hero__grid {
-    padding-top: 8rem;
-    gap: 0.5rem;
+    padding-top: 7rem;
+    padding-bottom: 2.5rem;
+    gap: 1rem;
     grid-template-columns: 1fr;
     width: 100%;
+    max-width: 100%;
+    overflow: hidden;
   }
   .gx-hero__copy {
     order: 2;
   }
   .gx-hero__stage-wrap {
     order: 1;
-    min-height: 400px;
+    min-height: 360px;
     width: 100%;
+    max-width: 100%;
+    overflow: hidden;
   }
 }
 @media (max-width: 640px) {
   .gx-hero__grid {
-    padding: 7.5rem 1rem 3.25rem;
+    padding: 6.5rem 1rem 2.5rem;
     min-height: 100vh;
+    min-height: 100dvh;
     display: flex;
     flex-direction: column;
     justify-content: center;
     width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+    box-sizing: border-box;
   }
   .gx-hero__kicker {
-    gap: 0.6rem;
-    margin-bottom: 1rem;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
   }
   .gx-hero__kicker-line {
-    width: 1.75rem;
+    width: 1.5rem;
   }
   .gx-hero__pill {
     font-size: 10px;
-    letter-spacing: 0.18em;
+    letter-spacing: 0.16em;
     max-width: 100%;
     white-space: normal;
     text-align: center;
   }
   .gx-hero__title {
-    font-size: clamp(2rem, 9vw, 2.6rem);
+    font-size: clamp(1.65rem, 7.5vw, 2.3rem);
+    line-height: 1.12;
   }
   .gx-hero__sub {
-    font-size: 14px;
+    font-size: 13.5px;
+    margin-top: 0.85rem;
+    line-height: 1.5;
+  }
+  .gx-hero__price-row {
+    margin-top: 1rem;
   }
   .gx-hero__price {
-    font-size: 1.9rem;
+    font-size: 1.8rem;
   }
   .gx-hero__cta {
+    margin-top: 1.25rem;
     flex-direction: column;
     align-items: stretch;
+    gap: 0.75rem;
   }
   .gx-btn-lux,
   .gx-btn-cart {
     width: 100%;
+    min-height: 48px;
+    font-size: 12px;
+    box-sizing: border-box;
   }
   .gx-stage {
-    height: 45vh;
+    height: clamp(260px, 38dvh, 360px);
     width: 100%;
+    max-width: 100%;
+    overflow: hidden;
   }
   .gx-slide {
-    width: 90vw;
-    height: 45vh;
-    margin-left: -45vw;
-    margin-top: -22.5vh;
+    width: min(300px, 82vw);
+    height: clamp(240px, 36dvh, 340px);
+    margin-left: calc(min(300px, 82vw) / -2);
+    margin-top: calc(clamp(240px, 36dvh, 340px) / -2);
   }
   .gx-hero__next {
     top: 0.25rem;
@@ -723,14 +745,15 @@
   .gx-hero__badge {
     bottom: 0;
     right: 0;
-    padding: 0.6rem 1rem;
+    padding: 0.5rem 0.85rem;
   }
   .gx-hero__badge b {
-    font-size: 1.4rem;
+    font-size: 1.25rem;
   }
   .gx-hero__trust {
-    gap: 0.4rem 1.25rem;
+    gap: 0.4rem 1rem;
     font-size: 10px;
+    margin-top: 1rem;
   }
   .gx-marquee__viewport {
     font-size: 10px;

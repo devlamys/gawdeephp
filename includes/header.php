@@ -26,8 +26,8 @@ $isReferenceProductPage = str_contains($bodyClass, 'product-page--reference');
 
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#5C8733">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover">
+    <meta name="theme-color" content="#009a84">
 
     <!-- SEO Primary Meta Tags -->
     <title><?= htmlspecialchars($pageTitle) ?></title>
@@ -178,6 +178,11 @@ $isReferenceProductPage = str_contains($bodyClass, 'product-page--reference');
                     <span><?= $headerCustomer ? htmlspecialchars(explode(' ', trim((string) $headerCustomer['name']))[0]) : 'Account' ?></span>
                 </a>
 
+                <button class="commerce-action mobile-only mobile-search-trigger" type="button"
+                    data-mobile-search-trigger aria-label="Search products">
+                    <i class="ph ph-magnifying-glass" aria-hidden="true"></i>
+                </button>
+
                 <button class="commerce-action" type="button" data-cart-toggle aria-label="Open shopping bag">
                     <span class="commerce-action__icon">
                         <i class="ph ph-shopping-cart" aria-hidden="true"></i>
@@ -188,6 +193,9 @@ $isReferenceProductPage = str_contains($bodyClass, 'product-page--reference');
             </div>
         </div>
 
+        <!-- Mobile Backdrop Overlay -->
+        <div class="mobile-nav-backdrop" data-mobile-backdrop style="display:none;" aria-hidden="true"></div>
+
         <!-- Mobile Navigation Menu -->
         <nav class="mobile-nav commerce-mobile-nav" data-mobile-menu aria-label="Mobile navigation">
             <div class="mobile-nav-top-bar">
@@ -196,6 +204,16 @@ $isReferenceProductPage = str_contains($bodyClass, 'product-page--reference');
                 </button>
                 <span class="mobile-nav-title"><i class="ph ph-compass"></i> Explore</span>
             </div>
+
+            <!-- Mobile In-Drawer Search -->
+            <form class="mobile-nav-search" action="products" method="get" role="search" data-mobile-nav-search>
+                <i class="ph ph-magnifying-glass search-icon" aria-hidden="true"></i>
+                <input type="search" name="search" data-mobile-search-input placeholder="Search pure essentials..."
+                    aria-label="Search products" autocomplete="off">
+                <button type="button" class="mobile-nav-search-clear" data-mobile-search-clear aria-label="Clear search" style="display:none;">
+                    <i class="ph ph-x"></i>
+                </button>
+            </form>
             <a href="products"><i class="ph ph-squares-four"></i> <span>All Products</span> <i
                     class="ph ph-arrow-right"></i></a>
             <a href="products?category=ghee"><i class="ph ph-drop"></i> <span>A2 Gir Cow Ghee</span> <i
