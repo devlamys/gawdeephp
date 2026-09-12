@@ -3372,7 +3372,7 @@ em {
 }
 
 .catalog-shell {
-  padding-block: 27px 88px;
+  padding-block: 169px 88px;
 }
 
 .catalog-toolbar {
@@ -8324,7 +8324,7 @@ em {
    -------------------------------------------------------------------------- */
 @media (max-width: 1200px) {
   .catalog-shell {
-    padding-block: 110px 72px;
+    padding-block: 160px 72px;
   }
   .ref-product-page {
     padding-block: 120px 52px;
@@ -8335,6 +8335,9 @@ em {
 }
 
 @media (max-width: 1024px) {
+  .catalog-product-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
   .catalog-shell {
     padding-block: 96px 64px;
   }
@@ -8480,6 +8483,9 @@ em {
 }
 
 @media (max-width: 768px) {
+  .catalog-product-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
   .header-announcement {
     font-size: 0.68rem !important;
   }
@@ -8801,7 +8807,7 @@ em {
 
   .catalog-shell,
   .catalog-shell.section {
-    padding-block: 9px 36px !important;
+    padding-block: 41px 36px !important;
   }
   .catalog-toolbar {
     flex-direction: column !important;
@@ -8859,7 +8865,7 @@ em {
   }
   .catalog-shell,
   .catalog-shell.section {
-    padding-block: 9px 36px !important;
+    padding-block: 32px 36px !important;
   }
   .catalog-filters {
     flex-wrap: nowrap;
