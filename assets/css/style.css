@@ -6154,7 +6154,6 @@ em {
   font-size: 0.84rem;
 }
 
-
 /* --------------------------------------------------------------------------
    Order Success Page (`order-success.php`)
    -------------------------------------------------------------------------- */
@@ -10997,7 +10996,6 @@ html {
   color: #b3261e;
 }
 
-
 @media (max-width: 640px) {
   .card-variant-pills {
     gap: 10px;
@@ -11050,65 +11048,64 @@ html {
   justify-content: space-between;
   gap: 12px;
   box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.09);
-  transform: translateY(105%);
-  opacity: 0;
-  transition:
-    transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
-    opacity 0.25s ease;
-  pointer-events: none;
-}
-.pdp-sticky-bar.is-visible {
-  transform: translateY(0);
-  opacity: 1;
-  pointer-events: auto;
 }
 @media (min-width: 769px) {
   .pdp-sticky-bar {
     display: none !important;
   }
 }
-.pdp-sticky-bar__info {
+.pdp-sticky-bar__quantity {
   display: flex;
-  flex-direction: column;
-  min-width: 0;
-  flex: 1;
+  align-items: center;
+  justify-content: space-between;
+  background: #f8f9fa;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  height: 44px;
+  padding: 0 12px;
+  width: 120px;
+  flex-shrink: 0;
 }
-.pdp-sticky-bar__name {
-  font-size: 0.82rem;
+.pdp-sticky-bar__quantity button {
+  background: none;
+  border: none;
+  color: var(--gawdee-primary);
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0 4px;
+  height: 100%;
+}
+.pdp-sticky-bar__quantity span {
   font-weight: 700;
   color: #111;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.pdp-sticky-bar__price {
-  font-size: 1.05rem;
-  font-weight: 800;
-  color: #009a84;
+  font-size: 1rem;
+  min-width: 24px;
+  text-align: center;
 }
 .pdp-sticky-bar__btn {
+  flex: 1;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 10px 22px;
-  min-height: 44px;
-  background: #009a84;
+  height: 44px;
+  background: var(--gawdee-primary);
   color: #fff;
-  border-radius: 999px;
+  border-radius: 6px;
   font-size: 0.92rem;
+  font-family: var(--font-sans);
   font-weight: 700;
+  text-transform: uppercase;
   border: none;
   cursor: pointer;
   white-space: nowrap;
-  flex-shrink: 0;
-  transition:
-    background 0.2s ease,
-    transform 0.15s ease;
+  transition: background 0.2s ease, transform 0.15s ease;
 }
 .pdp-sticky-bar__btn:active {
   transform: scale(0.97);
-  background: #007a6a;
+  background: var(--gawdee-secondary);
 }
 
 /* Floating widgets safe area & PDP sticky bar awareness */
@@ -11141,9 +11138,16 @@ html {
   }
 }
 @media (max-width: 768px) {
-  body:has(.pdp-sticky-bar.is-visible) .whatsapp-float,
-  body:has(.pdp-sticky-bar.is-visible) .ai-float {
+  .ref-quantity-row,
+  .ref-purchase-actions {
+    display: none !important;
+  }
+  body:has(.pdp-sticky-bar) .whatsapp-float,
+  body:has(.pdp-sticky-bar) .ai-float {
     bottom: calc(74px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+  body:has(.pdp-sticky-bar) .checkout-sticky-bar {
+    bottom: calc(84px + env(safe-area-inset-bottom, 0px)) !important;
   }
 }
 
@@ -11195,7 +11199,8 @@ html {
   z-index: 9999;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  transition: bottom 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .checkout-sticky-bar__info {

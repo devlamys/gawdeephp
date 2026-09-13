@@ -1024,12 +1024,17 @@ require __DIR__ . '/includes/header.php';
 
 <!-- Mobile Sticky Add to Bag Bar -->
 <div class="pdp-sticky-bar" data-pdp-sticky-bar aria-hidden="true">
-    <div class="pdp-sticky-bar__info">
-        <span class="pdp-sticky-bar__name" data-sticky-name><?= htmlspecialchars($product['full_name']) ?></span>
-        <span class="pdp-sticky-bar__price" data-sticky-price><?= money($product['price']) ?></span>
+    <div class="pdp-sticky-bar__quantity ref-quantity" aria-label="Quantity selector">
+        <button type="button" data-product-qty-minus aria-label="Decrease quantity"><i class="ph ph-minus"></i></button>
+        <span data-product-qty aria-live="polite">1</span>
+        <button type="button" data-product-qty-plus aria-label="Increase quantity"><i class="ph ph-plus"></i></button>
     </div>
-    <button type="button" class="pdp-sticky-bar__btn" data-sticky-add-btn <?= $stock <= 0 ? 'disabled' : '' ?>>
-        <i class="ph ph-shopping-bag"></i> Add to bag
+    <button type="button" class="pdp-sticky-bar__btn" data-sticky-add-btn data-add-to-cart
+        data-id="<?= htmlspecialchars((string) $product['id']) ?>"
+        data-name="<?= htmlspecialchars($product['full_name']) ?>"
+        data-price="<?= (int) $product['price'] ?>"
+        data-image="<?= htmlspecialchars($product['image']) ?>" <?= $stock <= 0 ? 'disabled' : '' ?>>
+        ADD TO CART
     </button>
 </div>
 

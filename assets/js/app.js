@@ -1022,14 +1022,12 @@
         : "Exclusive of taxes";
 
     // Reset quantity to 1 whenever the pack changes.
-    const qtyEl = qs("[data-product-qty]");
-    if (qtyEl) {
-      qtyEl.textContent = "1";
-      if (typeof productQuantity !== "undefined") {
-        try {
-          productQuantity = 1;
-        } catch (_) {}
-      }
+    const qtyEls = qsa("[data-product-qty]");
+    qtyEls.forEach(el => el.textContent = "1");
+    if (typeof productQuantity !== "undefined") {
+      try {
+        productQuantity = 1;
+      } catch (_) {}
     }
 
     qsa("[data-add-to-cart], [data-buy-now]").forEach((btn) => {
@@ -1560,15 +1558,19 @@
     updateStickyBar();
   });
 
-  const qtyDisplay = qs("[data-product-qty]");
+  const qtyDisplays = qsa("[data-product-qty]");
   let productQuantity = 1;
-  qs("[data-product-qty-minus]")?.addEventListener("click", () => {
-    productQuantity = Math.max(1, productQuantity - 1);
-    if (qtyDisplay) qtyDisplay.textContent = String(productQuantity);
+  qsa("[data-product-qty-minus]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      productQuantity = Math.max(1, productQuantity - 1);
+      qtyDisplays.forEach(el => el.textContent = String(productQuantity));
+    });
   });
-  qs("[data-product-qty-plus]")?.addEventListener("click", () => {
-    productQuantity = productQuantity + 1;
-    if (qtyDisplay) qtyDisplay.textContent = String(productQuantity);
+  qsa("[data-product-qty-plus]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      productQuantity = productQuantity + 1;
+      qtyDisplays.forEach(el => el.textContent = String(productQuantity));
+    });
   });
 
   // Product gallery: delegated thumb switching (survives gallery rebuilds
